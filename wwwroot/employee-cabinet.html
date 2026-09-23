@@ -1,0 +1,1641 @@
+﻿<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xodim Kabineti</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1B2430;
+            --ink-soft: #5B6472;
+            --base: #EEF1EF;
+            --base-2: #E4E8E5;
+            --surface: #FFFFFF;
+            --line: #DEE3DF;
+            --accent: #C97A2B;
+            --accent-dark: #9A5A1E;
+            --steel: #2F5D7C;
+            --good: #3C8158;
+            --good-soft: #E5F2EA;
+            --warn: #B4791F;
+            --warn-soft: #FBF1DF;
+            --bad: #B0432E;
+            --bad-soft: #FAE6E1;
+            --shadow: 0 1px 2px rgba(20,26,33,.06), 0 8px 20px -10px rgba(20,26,33,.12);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+        }
+
+        body {
+            background: var(--base);
+            color: var(--ink);
+            font-family: 'Inter',system-ui,sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, .brand {
+            font-family: 'Space Grotesk',system-ui,sans-serif;
+        }
+
+        /* ---------- top bar ---------- */
+        header.topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--line);
+            position: sticky;
+            top: 0;
+            z-index: 30;
+        }
+
+        .topbar-inner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 17px;
+        }
+
+        .brand-mark {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            flex: none;
+            background: linear-gradient(150deg,var(--accent),var(--accent-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        /* ---------- topbar user (top-right) ---------- */
+        .topbar-user {
+            margin-left: auto;
+            padding: 8px 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            transition: background .12s ease;
+        }
+
+            .topbar-user:hover {
+                background: var(--base);
+            }
+
+            .topbar-user .avatar {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                flex: none;
+                background: #E6EEF2;
+                color: var(--steel);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 14px;
+            }
+
+            .topbar-user .meta {
+                line-height: 1.3;
+                overflow: hidden;
+                text-align: right;
+            }
+
+                .topbar-user .meta .name {
+                    font-size: 13.5px;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .topbar-user .meta .shop {
+                    font-size: 11.5px;
+                    color: var(--ink-soft);
+                }
+
+            .topbar-user .chevron {
+                color: var(--ink-soft);
+                font-size: 11px;
+                flex: none;
+            }
+
+        .user-popover {
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            left: auto;
+            width: 220px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            box-shadow: var(--shadow);
+            padding: 12px 14px;
+            z-index: 40;
+            display: none;
+        }
+
+            .user-popover.show {
+                display: block;
+            }
+
+            .user-popover .row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-size: 12.5px;
+                padding: 6px 0;
+                border-bottom: 1px solid var(--line);
+            }
+
+                .user-popover .row:last-child {
+                    border-bottom: 0;
+                }
+
+                .user-popover .row .k {
+                    color: var(--ink-soft);
+                    font-weight: 600;
+                }
+
+                .user-popover .row .v {
+                    font-weight: 700;
+                    text-align: right;
+                }
+
+                    .user-popover .row .v.editable {
+                        cursor: pointer;
+                        color: var(--accent);
+                        text-decoration: underline dotted;
+                    }
+
+        .popover-phone-edit {
+            display: flex;
+            gap: 6px;
+            padding: 6px 0 10px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .popover-phone-input {
+            flex: 1;
+            min-width: 0;
+            font: inherit;
+            font-size: 12.5px;
+            padding: 6px 8px;
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            background: var(--base-2);
+            color: var(--ink);
+        }
+
+        .popover-phone-save {
+            border: 0;
+            background: var(--accent);
+            color: #fff;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 7px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+            .popover-phone-save:hover {
+                filter: brightness(1.06);
+            }
+
+        .popover-logout-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: var(--ink-soft);
+            font: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 9px 10px;
+            border-radius: 9px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: color .15s, border-color .15s, background .15s;
+        }
+
+            .popover-logout-btn:hover {
+                color: var(--bad);
+                border-color: var(--bad);
+                background: var(--bad-soft);
+            }
+
+        /* ---------- shell: sidebar + content ---------- */
+        .shell {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .sidebar {
+            width: 300px;
+            flex: none;
+            background: var(--surface);
+            border-right: 1px solid var(--line);
+            position: sticky;
+            top: 57px;
+            height: calc(100vh - 57px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 14px 12px;
+        }
+
+        .nav-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            text-align: left;
+            font: inherit;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--ink-soft);
+            padding: 11px 12px;
+            border-radius: 9px;
+            margin-bottom: 4px;
+            transition: background .12s ease, color .12s ease;
+        }
+
+            .nav-btn:hover {
+                background: var(--base);
+            }
+
+            .nav-btn.active {
+                background: var(--base-2);
+                color: var(--ink);
+            }
+
+            .nav-btn .ic {
+                font-size: 15px;
+                flex: none;
+            }
+
+        .muted {
+            color: var(--ink-soft);
+            text-align: center;
+            padding: 28px 14px;
+            font-size: 12.5px;
+        }
+
+        /* ---------- sales history (full page) ---------- */
+        .history-toolbar {
+            padding: 16px 18px 0;
+        }
+
+            .history-toolbar input {
+                width: 100%;
+                max-width: 280px;
+                font: inherit;
+                font-size: 13.5px;
+                background: var(--base);
+                border: 1px solid var(--line);
+                border-radius: 9px;
+                padding: 9px 12px;
+            }
+
+                .history-toolbar input:focus {
+                    outline: 2px solid var(--accent);
+                    outline-offset: 1px;
+                }
+
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .sales-table th {
+                text-align: left;
+                font-size: 10.5px;
+                font-weight: 600;
+                color: var(--ink-soft);
+                padding: 12px 14px;
+                border-bottom: 1px solid var(--line);
+                white-space: nowrap;
+            }
+
+                .sales-table th.num, .sales-table td.num {
+                    text-align: right;
+                }
+
+            .sales-table td {
+                padding: 11px 14px;
+                border-bottom: 1px solid var(--line);
+                vertical-align: middle;
+                font-size: 13px;
+            }
+
+            .sales-table tbody tr:hover {
+                background: var(--base);
+            }
+
+            .sales-table tfoot td {
+                padding: 12px 14px;
+                font-weight: 700;
+                font-size: 13px;
+                border-top: 1.5px solid var(--ink);
+            }
+
+        .idx-cell {
+            color: var(--ink-soft);
+            font-size: 12px;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        /* row action menu (⋮) */
+        .row-menu {
+            position: relative;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .kebab-btn {
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            color: var(--ink-soft);
+            font-size: 16px;
+            line-height: 1;
+            padding: 4px 8px;
+            border-radius: 7px;
+        }
+
+            .kebab-btn:hover {
+                background: var(--base-2);
+                color: var(--ink);
+            }
+
+        .row-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            min-width: 150px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            z-index: 35;
+            display: none;
+            overflow: hidden;
+        }
+
+            .row-menu-dropdown.show {
+                display: block;
+            }
+
+            .row-menu-dropdown button {
+                width: 100%;
+                text-align: left;
+                border: 0;
+                background: transparent;
+                cursor: pointer;
+                font: inherit;
+                font-size: 12.5px;
+                font-weight: 600;
+                color: var(--ink);
+                padding: 10px 13px;
+            }
+
+                .row-menu-dropdown button:hover {
+                    background: var(--base);
+                }
+
+        /* modals */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(20,26,33,.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 16px;
+        }
+
+            .modal-overlay.show {
+                display: flex;
+            }
+
+        .modal-box {
+            width: min(380px, 100%);
+            background: var(--surface);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+        }
+
+            .modal-box h3 {
+                margin: 0 0 14px;
+                font-size: 15.5px;
+                font-weight: 600;
+            }
+
+            .modal-box input[type="password"], .modal-box input[type="number"] {
+                width: 100%;
+                font: inherit;
+                font-size: 14px;
+                color: var(--ink);
+                background: var(--base);
+                border: 1px solid var(--line);
+                border-radius: 9px;
+                padding: 10px 11px;
+            }
+
+        .modal-err {
+            color: var(--bad);
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            min-height: 14px;
+        }
+
+        .edit-total {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--line);
+            font-size: 13px;
+            color: var(--ink-soft);
+        }
+
+            .edit-total b {
+                color: var(--ink);
+                font-size: 15px;
+                font-weight: 700;
+            }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .btn-secondary, .btn-primary {
+            flex: 1;
+            border: 0;
+            cursor: pointer;
+            font: inherit;
+            font-weight: 700;
+            font-size: 13.5px;
+            padding: 11px 14px;
+            border-radius: 9px;
+        }
+
+        .btn-secondary {
+            background: var(--base-2);
+            color: var(--ink-soft);
+        }
+
+            .btn-secondary:hover {
+                background: var(--base);
+            }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+
+            .btn-primary:hover {
+                filter: brightness(1.06);
+            }
+
+            .btn-primary:disabled {
+                opacity: .55;
+                cursor: not-allowed;
+            }
+
+        .sidebar-bottom {
+            padding: 14px 20px;
+            border-top: 1px solid var(--line);
+        }
+
+        .logout-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: var(--ink-soft);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 13px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: color .15s, border-color .15s, background .15s;
+        }
+
+            .logout-btn:hover {
+                color: var(--bad);
+                border-color: var(--bad);
+                background: var(--bad-soft);
+            }
+
+        /* ---------- main content ---------- */
+        main.content {
+            flex: 1;
+            padding: 26px 28px 60px;
+            min-width: 0;
+        }
+
+        .panel {
+            max-width: 620px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+        }
+
+            .panel.wide {
+                max-width: 820px;
+            }
+
+        .panel-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--line);
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .panel-body {
+            padding: 18px;
+        }
+
+        /* ---------- sale rows (cart) ---------- */
+        .field-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-soft);
+            margin: 0 0 6px;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            font: inherit;
+            font-size: 14px;
+            color: var(--ink);
+            background: var(--base);
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            padding: 10px 11px;
+            appearance: none;
+        }
+
+            select:focus, input:focus {
+                outline: 2px solid var(--accent);
+                outline-offset: 1px;
+            }
+
+        .sale-row {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+            position: relative;
+            background: var(--base);
+        }
+
+            .sale-row .row-top {
+                display: grid;
+                grid-template-columns: 1fr 110px;
+                gap: 10px;
+            }
+
+        .row-hint {
+            margin-top: 6px;
+            font-size: 11.5px;
+            color: var(--good);
+            font-weight: 600;
+        }
+
+            .row-hint.low {
+                color: var(--bad);
+            }
+
+        .row-linetotal {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--ink-soft);
+        }
+
+            .row-linetotal b {
+                color: var(--ink);
+                font-size: 14.5px;
+                font-weight: 700;
+            }
+
+        .row-remove {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 0;
+            cursor: pointer;
+            background: var(--bad-soft);
+            color: var(--bad);
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 24px;
+            text-align: center;
+            padding: 0;
+        }
+
+            .row-remove:hover {
+                filter: brightness(0.95);
+            }
+
+        .add-row-btn {
+            width: 100%;
+            border: 1.5px dashed var(--line);
+            background: transparent;
+            cursor: pointer;
+            color: var(--steel);
+            font: inherit;
+            font-weight: 600;
+            font-size: 13.5px;
+            padding: 11px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            transition: border-color .15s, background .15s;
+        }
+
+            .add-row-btn:hover {
+                border-color: var(--steel);
+                background: #F3F7F9;
+            }
+
+        .cart-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 4px;
+            border-top: 1px dashed var(--line);
+            margin-top: 4px;
+        }
+
+            .cart-summary .label {
+                font-size: 13px;
+                color: var(--ink-soft);
+                font-weight: 600;
+            }
+
+            .cart-summary .amount {
+                font-size: 20px;
+                font-weight: 700;
+                font-family: 'Space Grotesk';
+            }
+
+        .btn-submit {
+            width: 100%;
+            margin-top: 6px;
+            border: 0;
+            cursor: pointer;
+            background: var(--accent);
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            font-size: 14.5px;
+            padding: 13px 16px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: filter .15s ease, transform .1s ease;
+        }
+
+            .btn-submit:hover {
+                filter: brightness(1.06);
+            }
+
+            .btn-submit:active {
+                transform: translateY(1px);
+            }
+
+            .btn-submit:disabled {
+                opacity: .55;
+                cursor: not-allowed;
+            }
+
+        .msg-box {
+            margin-top: 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 9px;
+            padding: 11px 13px;
+            display: none;
+        }
+
+            .msg-box.show {
+                display: block;
+            }
+
+            .msg-box.ok {
+                color: var(--good);
+                background: var(--good-soft);
+            }
+
+            .msg-box.err {
+                color: var(--bad);
+                background: var(--bad-soft);
+            }
+
+        /* ---------- product cards (sotish) ---------- */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 14px;
+        }
+
+        .product-card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+            .product-card .thumb {
+                width: 100%;
+                aspect-ratio: 1 / 1;
+                background: var(--base);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+                .product-card .thumb img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+                .product-card .thumb .ph {
+                    font-size: 34px;
+                    color: var(--line);
+                }
+
+            .product-card .body {
+                padding: 12px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .product-card .pname {
+                font-weight: 700;
+                font-size: 14px;
+                line-height: 1.3;
+            }
+
+            .product-card .pstock {
+                font-size: 12px;
+                color: var(--ink-soft);
+            }
+
+                .product-card .pstock.low {
+                    color: var(--bad);
+                    font-weight: 600;
+                }
+
+            .product-card .field-mini {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+            }
+
+                .product-card .field-mini label {
+                    font-size: 11px;
+                    color: var(--ink-soft);
+                    font-weight: 600;
+                }
+
+                .product-card .field-mini input {
+                    width: 100%;
+                    border: 1px solid var(--line);
+                    border-radius: 7px;
+                    padding: 7px 8px;
+                    font-size: 13.5px;
+                    font-family: inherit;
+                }
+
+        .price-warn {
+            font-size: 11px;
+            color: var(--bad);
+            font-weight: 600;
+            display: none;
+        }
+
+            .price-warn.show {
+                display: block;
+            }
+
+        .product-card .btn-card-sell {
+            border: 0;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+            font-size: 13px;
+            padding: 9px;
+            cursor: pointer;
+            transition: filter .15s ease;
+        }
+
+            .product-card .btn-card-sell:hover {
+                filter: brightness(1.06);
+            }
+
+            .product-card .btn-card-sell:disabled {
+                opacity: .55;
+                cursor: not-allowed;
+            }
+
+        .empty-hint {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--ink-soft);
+            font-size: 13.5px;
+            padding: 30px 0;
+        }
+
+        @media (max-width:860px) {
+            .shell {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                top: 0;
+                border-right: 0;
+                border-bottom: 1px solid var(--line);
+            }
+
+            main.content {
+                padding: 20px 16px 50px;
+            }
+
+            .panel {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <div class="brand-mark">🧑‍💼</div>
+                Xodim Kabineti
+            </div>
+
+            <div class="topbar-user" id="sidebarUser" onclick="toggleUserPopover(event)">
+                <div class="meta">
+                    <div class="name" id="employeeNameText">-</div>
+                    <div class="shop" id="employeeShopText"></div>
+                </div>
+                <div class="avatar" id="employeeAvatar">•</div>
+                <span class="chevron">▾</span>
+
+                <div class="user-popover" id="userPopover">
+                    <div class="row"><span class="k">Login</span><span class="v" id="popLogin">—</span></div>
+                    <div class="row" id="popPhoneRow">
+                        <span class="k">Telefon</span>
+                        <span class="v" id="popPhone">—</span>
+                    </div>
+                    <div class="popover-phone-edit" id="popPhoneEdit" style="display:none;">
+                        <input type="text" id="popPhoneInput" class="popover-phone-input" placeholder="+998 90 123 45 67" onclick="event.stopPropagation()">
+                        <button type="button" class="popover-phone-save" onclick="event.stopPropagation(); saveEmployeePhone()">Saqlash</button>
+                    </div>
+                    <button type="button" class="popover-logout-btn" onclick="event.stopPropagation(); logout()">⎋ Chiqish</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="shell">
+
+        <aside class="sidebar">
+            <div class="sidebar-nav">
+                <button class="nav-btn active" id="navSell" onclick="setView('sell')">
+                    <span class="ic">🛒</span> Sotish
+                </button>
+                <button class="nav-btn" id="navHistory" onclick="setView('history')">
+                    <span class="ic">🧾</span> Savdo tarixi
+                </button>
+            </div>
+
+            <div class="sidebar-bottom">
+                <button class="logout-btn" onclick="logout()">⎋ Chiqish</button>
+            </div>
+        </aside>
+
+        <main class="content">
+
+            <div class="panel wide" id="view-sell">
+                <div class="panel-head">🛒 Mahsulot sotish</div>
+                <div class="panel-body">
+                    <div class="msg-box" id="saleMessage" style="margin-bottom:12px;"></div>
+                    <div class="product-grid" id="productGrid">
+                        <div class="empty-hint">Mahsulotlar yuklanmoqda...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel wide" id="view-history" style="display:none;">
+                <div class="panel-head">🧾 Savdo tarixi</div>
+                <div class="history-toolbar">
+                    <input type="text" id="historySearch" placeholder="Izlash..." oninput="renderSalesTable()">
+                </div>
+                <div class="table-scroll">
+                    <table class="sales-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Sotuvchi</th>
+                                <th>Mahsulot</th>
+                                <th>Sana</th>
+                                <th class="num">Soni</th>
+                                <th class="num">Narxi</th>
+                                <th class="num">Summa</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="mySalesTableBody">
+                            <tr><td colspan="8" class="muted">Hozircha savdolar mavjud emas</td></tr>
+                        </tbody>
+                        <tfoot id="salesFoot"></tfoot>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- ---------- password confirmation modal ---------- -->
+    <div class="modal-overlay" id="pwModalOverlay">
+        <div class="modal-box">
+            <h3>🔒 Tahrirlash uchun parolni tasdiqlang</h3>
+            <input type="password" id="pwInput" placeholder="Parolingiz" autocomplete="current-password">
+            <div class="modal-err" id="pwError"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closePasswordModal()">Bekor qilish</button>
+                <button class="btn-primary" id="pwConfirmBtn" onclick="confirmPassword()">Tasdiqlash</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ---------- edit sale modal ---------- -->
+    <div class="modal-overlay" id="editModalOverlay">
+        <div class="modal-box">
+            <h3>✏️ Savdoni tahrirlash</h3>
+            <label class="field-label">Mahsulot</label>
+            <select id="editProductSelect" onchange="updateEditTotal()"></select>
+            <label class="field-label" style="margin-top:12px;">Soni</label>
+            <input type="number" min="1" step="1" id="editQtyInput" oninput="updateEditTotal()">
+            <div class="edit-total"><span>Yangi summa</span><b id="editNewTotal">0 so'm</b></div>
+            <div class="modal-err" id="editError"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeEditModal()">Bekor qilish</button>
+                <button class="btn-primary" id="editSaveBtn" onclick="saveSaleEdit()">Saqlash</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ---------- cart modal (sotish) ---------- -->
+    <div class="modal-overlay" id="cartModalOverlay">
+        <div class="modal-box" style="width:min(460px, 100%);">
+            <h3>🛒 Savat</h3>
+            <label class="field-label">Yana mahsulot qo'shish</label>
+            <select id="cartAddSelect" onchange="if(this.value){ addToCart(parseInt(this.value)); this.value=''; }">
+                <option value="">+ Yana mahsulot qo'shish</option>
+            </select>
+            <div id="cartRows" style="margin-top:14px;"></div>
+            <div class="cart-summary">
+                <span class="label">Umumiy summa</span>
+                <span class="amount" id="cartModalTotal">0 so'm</span>
+            </div>
+            <div class="modal-err" id="cartError"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeCartModal()">Bekor qilish</button>
+                <button class="btn-primary" id="cartSubmitBtn" onclick="submitCart()">💵 Sotish</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let productsList = [];
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const employeeId = localStorage.getItem("currentEmployeeId");
+            if (!employeeId) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            const employeeName = localStorage.getItem("employeeName") || "";
+            const shopName = localStorage.getItem("shopName") || "";
+            document.getElementById("employeeNameText").textContent = employeeName || "-";
+            document.getElementById("employeeShopText").textContent = shopName;
+            document.getElementById("employeeAvatar").textContent = (employeeName.trim()[0] || "•").toUpperCase();
+
+            await fetchProducts();
+            await fetchMySales();
+
+            // Mahsulotlar ro'yxati va qoldiqlarni har 20 soniyada avtomatik yangilab turish
+            // (boshliq tomonda element o'chirilsa/o'zgarsa, xodim sahifani yangilamasdan ham ko'radi).
+            setInterval(fetchProducts, 20000);
+        });
+
+        /* ---------------- view switching ---------------- */
+        function setView(view) {
+            document.getElementById("view-sell").style.display = view === "sell" ? "" : "none";
+            document.getElementById("view-history").style.display = view === "history" ? "" : "none";
+            document.getElementById("navSell").classList.toggle("active", view === "sell");
+            document.getElementById("navHistory").classList.toggle("active", view === "history");
+        }
+
+        /* ---------------- user popover (login / phone) ---------------- */
+        let popoverLoaded = false;
+
+        function toggleUserPopover(e) {
+            e.stopPropagation();
+            const pop = document.getElementById("userPopover");
+            const willShow = !pop.classList.contains("show");
+            pop.classList.toggle("show", willShow);
+            if (willShow && !popoverLoaded) loadUserContactInfo();
+        }
+
+        document.addEventListener("click", (e) => {
+            const wrap = document.getElementById("sidebarUser");
+            if (!wrap.contains(e.target)) document.getElementById("userPopover").classList.remove("show");
+        });
+
+        async function loadUserContactInfo() {
+            const loginEl = document.getElementById("popLogin");
+            const phoneEl = document.getElementById("popPhone");
+
+            // 1) try what's already stored locally from login step
+            let login = localStorage.getItem("employeeLogin") || "";
+            let phone = localStorage.getItem("employeePhone") || "";
+
+            // 2) if something is still missing, try to fetch employee details from backend
+            if (!login || !phone) {
+                const shopId = localStorage.getItem("currentShopId");
+                const employeeId = localStorage.getItem("currentEmployeeId");
+                try {
+                    const response = await fetch(`/api/shop-cabinet/${shopId}/employees/${employeeId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        login = login || data.login || data.username || "";
+                        phone = phone || data.phone || data.phoneNumber || data.phone_number || "";
+                    }
+                } catch (error) {
+                    console.error("Xodim ma'lumotlarini olishda xatolik:", error);
+                }
+            }
+
+            loginEl.textContent = login || "Noma'lum";
+            phoneEl.textContent = phone || "Kiritilmagan";
+            phoneEl.classList.add("editable");
+            phoneEl.title = "Tahrirlash uchun bosing";
+            phoneEl.onclick = (e) => { e.stopPropagation(); openPhoneEdit(phone); };
+            popoverLoaded = true;
+        }
+
+        function openPhoneEdit(currentPhone) {
+            document.getElementById("popPhoneEdit").style.display = "flex";
+            const input = document.getElementById("popPhoneInput");
+            input.value = currentPhone || "";
+            input.focus();
+        }
+
+        async function saveEmployeePhone() {
+            const shopId = localStorage.getItem("currentShopId");
+            const employeeId = localStorage.getItem("currentEmployeeId");
+            const input = document.getElementById("popPhoneInput");
+            const phone = input.value.trim();
+
+            if (!phone) {
+                alert("Telefon raqamini kiriting!");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/employees/${employeeId}/phone`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ phone: phone })
+                });
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    localStorage.setItem("employeePhone", phone);
+                    document.getElementById("popPhone").textContent = phone;
+                    document.getElementById("popPhoneEdit").style.display = "none";
+                } else {
+                    alert(result.message || "Saqlashda xatolik yuz berdi!");
+                }
+            } catch (error) {
+                console.error("Telefonni saqlashda xatolik:", error);
+                alert("Server bilan aloqa yo'q!");
+            }
+        }
+
+        /* ---------------- products (card grid) ---------------- */
+        async function fetchProducts() {
+            const shopId = localStorage.getItem("currentShopId");
+            try {
+                // Elementlar (joriy, dublikatsiz katalog) asosidagi real vaqtdagi ro'yxat —
+                // o'chirilgan mahsulot darhol yo'qoladi, bir xil nom faqat bir marta chiqadi.
+                const response = await fetch(`/api/shop-cabinet/${shopId}/employees/sellable-products`);
+                if (!response.ok) return;
+                productsList = await response.json();
+            } catch (error) {
+                console.error("Mahsulotlarni olishda xatolik:", error);
+            }
+            renderProductCards();
+        }
+
+        function renderProductCards() {
+            const grid = document.getElementById("productGrid");
+
+            if (productsList.length === 0) {
+                grid.innerHTML = `<div class="empty-hint">Hozircha sotiladigan mahsulot yo'q</div>`;
+                return;
+            }
+
+            // Har bir karta o'z ichida qiymatlarini saqlaydi, shuning uchun qayta chizishda
+            // foydalanuvchi hozir kiritayotgan son/narxni yo'qotmaymiz.
+            grid.innerHTML = productsList.map(p => {
+                const thumb = p.imageUrl
+                    ? `<img src="${p.imageUrl}" alt="${p.name}">`
+                    : `<span class="ph">📦</span>`;
+                const low = p.availableStock <= 0 ? "low" : "";
+                return `
+                          <div class="product-card" data-product-id="${p.id}">
+                            <div class="thumb">${thumb}</div>
+                            <div class="body">
+                              <div class="pname">${p.name}</div>
+                              <div class="pstock ${low}">Omborda: ${p.availableStock} ${p.unit}</div>
+                              <div class="pstock" style="color:var(--ink);font-weight:700;font-size:14px;">${Number(p.elementSellPrice).toLocaleString()} so'm</div>
+                              <button type="button" class="btn-card-sell" ${p.availableStock <= 0 ? "disabled" : ""}
+                                      onclick="openCartModal(${p.id})">🛒 Sotish</button>
+                            </div>
+                          </div>
+                        `;
+            }).join("");
+        }
+
+        /* ---------------- cart modal (bir nechta mahsulotni bitta savdo sifatida yig'ish) ---------------- */
+        let cart = [];        // {cartId, productId, qty, price}
+        let cartIdSeq = 1;
+
+        function openCartModal(productId) {
+            cart = [];
+            addToCart(productId);
+            document.getElementById("cartError").textContent = "";
+            populateCartAddSelect();
+            renderCartRows();
+            document.getElementById("cartModalOverlay").classList.add("show");
+        }
+
+        function closeCartModal() {
+            document.getElementById("cartModalOverlay").classList.remove("show");
+        }
+
+        function cartAllocatedQty(productId, excludingCartId) {
+            return cart
+                .filter(c => c.productId === productId && c.cartId !== excludingCartId)
+                .reduce((sum, c) => sum + (c.qty || 0), 0);
+        }
+
+        function addToCart(productId) {
+            const product = productsList.find(p => p.id === productId);
+            if (!product) return;
+
+            const existing = cart.find(c => c.productId === productId);
+            if (existing) {
+                const allocated = cartAllocatedQty(productId, existing.cartId);
+                if (existing.qty + 1 + allocated <= product.availableStock) {
+                    existing.qty += 1;
+                }
+            } else {
+                cart.push({
+                    cartId: cartIdSeq++,
+                    productId: productId,
+                    qty: 1,
+                    price: product.elementSellPrice
+                });
+            }
+            renderCartRows();
+            populateCartAddSelect();
+        }
+
+        function removeFromCart(cartId) {
+            cart = cart.filter(c => c.cartId !== cartId);
+            renderCartRows();
+            populateCartAddSelect();
+            if (cart.length === 0) closeCartModal();
+        }
+
+        function onCartQtyChange(cartId, value) {
+            const item = cart.find(c => c.cartId === cartId);
+            if (item) item.qty = parseInt(value) || 0;
+            renderCartRows();
+        }
+
+        function onCartPriceChange(cartId, value) {
+            const item = cart.find(c => c.cartId === cartId);
+            if (item) item.price = parseFloat(value);
+            renderCartRows();
+        }
+
+        function populateCartAddSelect() {
+            const select = document.getElementById("cartAddSelect");
+            const inCart = new Set(cart.map(c => c.productId));
+            const available = productsList.filter(p => !inCart.has(p.id) && p.availableStock > 0);
+
+            select.innerHTML = `<option value="">+ Yana mahsulot qo'shish</option>` +
+                available.map(p => `<option value="${p.id}">${p.name} (${p.availableStock} ${p.unit})</option>`).join("");
+        }
+
+        function renderCartRows() {
+            const container = document.getElementById("cartRows");
+            let anyInvalid = cart.length === 0;
+            let total = 0;
+
+            container.innerHTML = cart.map(item => {
+                const product = productsList.find(p => p.id === item.productId);
+                if (!product) return "";
+                const allocated = cartAllocatedQty(item.productId, item.cartId);
+                const available = product.availableStock - allocated;
+                const isOver = item.qty > available || item.qty <= 0;
+                if (isOver) anyInvalid = true;
+                const isPriceLow = item.price < product.elementSellPrice;
+                const lineTotal = (item.price || 0) * (item.qty || 0);
+                total += lineTotal;
+
+                return `
+                          <div class="sale-row" data-cart-id="${item.cartId}">
+                            <button type="button" class="row-remove" onclick="removeFromCart(${item.cartId})" title="O'chirish">−</button>
+                            <div class="row-top">
+                              <div>
+                                <label class="field-label">${product.name}</label>
+                                <div style="font-size:11.5px;color:var(--ink-soft);">Omborda: ${available} ${product.unit}</div>
+                              </div>
+                              <div>
+                                <label class="field-label">Miqdori</label>
+                                <input type="number" min="1" step="1" value="${item.qty}" oninput="onCartQtyChange(${item.cartId}, this.value)">
+                              </div>
+                            </div>
+                            <div class="row-top" style="margin-top:8px;">
+                              <div>
+                                <label class="field-label">Narxi (so'm)</label>
+                                <input type="number" min="0" step="1" value="${item.price}" oninput="onCartPriceChange(${item.cartId}, this.value)">
+                              </div>
+                              <div></div>
+                            </div>
+                            ${isOver ? `<div class="row-hint low">Miqdor noto'g'ri yoki omborda yetarli emas!</div>` : ""}
+                            ${isPriceLow ? `<div class="row-hint low">⚠️ Belgilangan narxdan past (${Number(product.elementSellPrice).toLocaleString()} so'm) — boshliqqa qayd etiladi</div>` : ""}
+                            <div class="row-linetotal"><span>Jami</span><b>${Number(lineTotal).toLocaleString()} so'm</b></div>
+                          </div>
+                        `;
+            }).join("");
+
+            document.getElementById("cartModalTotal").textContent = Number(total).toLocaleString() + " so'm";
+            document.getElementById("cartSubmitBtn").disabled = anyInvalid;
+        }
+
+        async function submitCart() {
+            const shopId = localStorage.getItem("currentShopId");
+            const employeeId = localStorage.getItem("currentEmployeeId");
+            const errEl = document.getElementById("cartError");
+            const btn = document.getElementById("cartSubmitBtn");
+
+            const validItems = cart.filter(c => c.qty > 0 && !isNaN(c.price) && c.price >= 0);
+            if (validItems.length === 0) {
+                errEl.textContent = "Kamida bitta mahsulot bo'lishi kerak.";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = "Yuklanmoqda...";
+            errEl.textContent = "";
+
+            let successCount = 0;
+            let failCount = 0;
+            let lastError = "";
+
+            for (const item of validItems) {
+                try {
+                    const response = await fetch(`/api/shop-cabinet/${shopId}/employees/${employeeId}/make-sale`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ productId: item.productId, quantity: item.qty, salePrice: item.price })
+                    });
+                    const data = await response.json().catch(() => ({}));
+                    if (response.ok && data.success) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                        lastError = data.message || "Xatolik yuz berdi!";
+                    }
+                } catch (error) {
+                    console.error("Sotishda xatolik:", error);
+                    failCount++;
+                    lastError = "Server bilan bog'lanishda xatolik yuz berdi!";
+                }
+            }
+
+            btn.textContent = "💵 Sotish";
+            btn.disabled = false;
+
+            const msgEl = document.getElementById("saleMessage");
+            if (successCount > 0 && failCount === 0) {
+                showMessage(msgEl, "ok", `✅ ${successCount} turdagi mahsulot sotildi`);
+                closeCartModal();
+            } else if (successCount > 0 && failCount > 0) {
+                showMessage(msgEl, "err", `${successCount} ta sotildi, ${failCount} ta amalga oshmadi: ${lastError}`);
+                closeCartModal();
+            } else {
+                errEl.textContent = lastError || "Xatolik yuz berdi!";
+            }
+
+            await fetchProducts();
+            await fetchMySales();
+        }
+
+        function showMessage(el, type, text) {
+            el.className = "msg-box show " + type;
+            el.textContent = text;
+        }
+
+        /* ---------------- sales history ("Savdo tarixi" section) ---------------- */
+        let salesData = [];       // normalized sales list kept in memory for render/search/edit
+        let openRowMenuId = null;
+        let pendingEditSale = null;
+
+        async function fetchMySales() {
+            const shopId = localStorage.getItem("currentShopId");
+            const employeeId = localStorage.getItem("currentEmployeeId");
+            const employeeName = localStorage.getItem("employeeName") || "-";
+
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/employees/${employeeId}/sales`);
+                if (!response.ok) return;
+                const sales = await response.json();
+
+                salesData = sales.map(s => ({
+                    id: s.id ?? null,                 // needed to edit — see note below the code
+                    productId: s.productId ?? null,
+                    productName: s.productName,
+                    quantity: s.quantity,
+                    unitPrice: s.quantity ? Math.round(s.totalSum / s.quantity) : 0,
+                    totalSum: s.totalSum,
+                    soldAt: s.soldAt,
+                    employeeName
+                }));
+            } catch (error) {
+                console.error("Savdolar tarixini olishda xatolik:", error);
+            }
+            renderSalesTable();
+        }
+
+        function renderSalesTable() {
+            const tbody = document.getElementById("mySalesTableBody");
+            const foot = document.getElementById("salesFoot");
+            const query = (document.getElementById("historySearch")?.value || "").trim().toLowerCase();
+
+            const list = query
+                ? salesData.filter(s => s.productName.toLowerCase().includes(query))
+                : salesData;
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="muted">Hozircha savdolar mavjud emas</td></tr>`;
+                foot.innerHTML = "";
+                return;
+            }
+
+            tbody.innerHTML = list.map((s, i) => {
+                const d = new Date(s.soldAt);
+                const dateFormatted = d.toLocaleString('uz-UZ', {
+                    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                const menu = s.id != null ? `
+                          <div class="row-menu">
+                            <button class="kebab-btn" onclick="toggleRowMenu('${s.id}', event)">⋮</button>
+                            <div class="row-menu-dropdown" id="menu-${s.id}">
+                              <button onclick="openEditFlow('${s.id}')">✏️ Tahrirlash</button>
+                            </div>
+                          </div>` : "";
+                return `
+                          <tr>
+                            <td class="idx-cell">${i + 1}</td>
+                            <td>${s.employeeName}</td>
+                            <td>${s.productName}</td>
+                            <td>${dateFormatted}</td>
+                            <td class="num">${s.quantity}</td>
+                            <td class="num">${Number(s.unitPrice).toLocaleString()} so'm</td>
+                            <td class="num">${Number(s.totalSum).toLocaleString()} so'm</td>
+                            <td>${menu}</td>
+                          </tr>`;
+            }).join("");
+
+            const totalQty = list.reduce((a, s) => a + s.quantity, 0);
+            const totalSum = list.reduce((a, s) => a + s.totalSum, 0);
+            foot.innerHTML = `
+                        <tr>
+                          <td colspan="4">Jami</td>
+                          <td class="num">${totalQty}</td>
+                          <td></td>
+                          <td class="num">${Number(totalSum).toLocaleString()} so'm</td>
+                          <td></td>
+                        </tr>`;
+        }
+
+        /* ---- row kebab menu ---- */
+        function toggleRowMenu(saleId, e) {
+            e.stopPropagation();
+            closeAllRowMenus();
+            const dd = document.getElementById(`menu-${saleId}`);
+            if (dd && openRowMenuId !== saleId) { dd.classList.add("show"); openRowMenuId = saleId; }
+            else openRowMenuId = null;
+        }
+        function closeAllRowMenus() {
+            document.querySelectorAll(".row-menu-dropdown.show").forEach(el => el.classList.remove("show"));
+            openRowMenuId = null;
+        }
+        document.addEventListener("click", () => closeAllRowMenus());
+
+        /* ---- step 1: password confirmation before editing ---- */
+        function openEditFlow(saleId) {
+            pendingEditSale = salesData.find(s => String(s.id) === String(saleId));
+            if (!pendingEditSale) return;
+            document.getElementById("pwInput").value = "";
+            document.getElementById("pwError").textContent = "";
+            document.getElementById("pwModalOverlay").classList.add("show");
+            document.getElementById("pwInput").focus();
+        }
+        function closePasswordModal() {
+            document.getElementById("pwModalOverlay").classList.remove("show");
+        }
+
+        async function confirmPassword() {
+            const shopId = localStorage.getItem("currentShopId");
+            const employeeId = localStorage.getItem("currentEmployeeId");
+            const password = document.getElementById("pwInput").value;
+            const errEl = document.getElementById("pwError");
+            const btn = document.getElementById("pwConfirmBtn");
+
+            if (!password) { errEl.textContent = "Parolni kiriting."; return; }
+
+            btn.disabled = true; btn.textContent = "Tekshirilmoqda...";
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/employees/${employeeId}/verify-password`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ password })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (response.ok && data.success) {
+                    closePasswordModal();
+                    openEditModal(pendingEditSale);
+                } else {
+                    errEl.textContent = data.message || "Parol noto'g'ri.";
+                }
+            } catch (error) {
+                console.error("Parolni tekshirishda xatolik:", error);
+                errEl.textContent = "Server bilan bog'lanishda xatolik yuz berdi.";
+            }
+            btn.disabled = false; btn.textContent = "Tasdiqlash";
+        }
+
+        /* ---- step 2: edit the sale ---- */
+        function openEditModal(sale) {
+            const select = document.getElementById("editProductSelect");
+            select.innerHTML = productsList.map(p => `
+                        <option value="${p.id}" ${p.id == sale.productId ? "selected" : (p.name === sale.productName && !sale.productId ? "selected" : "")}>
+                          ${p.name} — ${Number(p.elementSellPrice).toLocaleString()} so'm
+                        </option>`).join("");
+
+            document.getElementById("editQtyInput").value = sale.quantity;
+            document.getElementById("editError").textContent = "";
+            updateEditTotal();
+            document.getElementById("editModalOverlay").classList.add("show");
+        }
+        function closeEditModal() {
+            document.getElementById("editModalOverlay").classList.remove("show");
+            pendingEditSale = null;
+        }
+        function updateEditTotal() {
+            const productId = document.getElementById("editProductSelect").value;
+            const qty = parseInt(document.getElementById("editQtyInput").value) || 0;
+            const product = productsList.find(p => p.id == productId);
+            const total = product ? product.elementSellPrice * qty : 0;
+            document.getElementById("editNewTotal").textContent = Number(total).toLocaleString() + " so'm";
+        }
+
+        async function saveSaleEdit() {
+            if (!pendingEditSale) return;
+            const shopId = localStorage.getItem("currentShopId");
+            const employeeId = localStorage.getItem("currentEmployeeId");
+            const productId = parseInt(document.getElementById("editProductSelect").value);
+            const quantity = parseInt(document.getElementById("editQtyInput").value);
+            const errEl = document.getElementById("editError");
+            const btn = document.getElementById("editSaveBtn");
+
+            if (!productId || !quantity || quantity < 1) {
+                errEl.textContent = "Mahsulot va miqdorni to'g'ri kiriting.";
+                return;
+            }
+
+            btn.disabled = true; btn.textContent = "Saqlanmoqda...";
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/sales/${pendingEditSale.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ productId, quantity, employeeId: parseInt(employeeId) })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (response.ok && data.success) {
+                    closeEditModal();
+                    await fetchProducts();
+                    await fetchMySales();
+                } else {
+                    errEl.textContent = data.message || "Tahrirlashda xatolik yuz berdi.";
+                }
+            } catch (error) {
+                console.error("Savdoni tahrirlashda xatolik:", error);
+                errEl.textContent = "Server bilan bog'lanishda xatolik yuz berdi.";
+            }
+            btn.disabled = false; btn.textContent = "Saqlash";
+        }
+
+        function logout() {
+            localStorage.removeItem("currentEmployeeId");
+            localStorage.removeItem("employeeName");
+            localStorage.removeItem("employeeLogin");
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

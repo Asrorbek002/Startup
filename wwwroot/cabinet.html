@@ -1,0 +1,2115 @@
+﻿<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iqtisodchi Kabineti - Mison</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            border-right: 1px solid #dee2e6;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-heading {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            padding: 15px 15px 5px 15px;
+            font-weight: bold;
+        }
+
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+            .sidebar-menu-item:hover {
+                background-color: #f1f3f5;
+                color: #0d6efd;
+            }
+
+            .sidebar-menu-item.active {
+                background-color: #e7f1ff;
+                color: #0d6efd;
+                border-left-color: #0d6efd;
+                font-weight: 600;
+            }
+
+        .balance-badge {
+            background: #ffffff;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            padding: 4px 12px;
+            text-align: right;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column h-100">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary px-4 shadow-sm flex-shrink-0">
+        <a class="navbar-brand fw-bold" href="#" data-i18n="brand">Mison Iqtisodchi Kabineti</a>
+
+        <div class="ms-auto d-flex align-items-center gap-3">
+            <select id="langSelect" class="form-select form-select-sm" style="width: 120px;" onchange="changeLanguage(this.value)">
+                <option value="uz">O'zbekcha</option>
+                <option value="ru">Русский</option>
+            </select>
+
+            <div class="balance-badge d-none d-sm-block">
+                <div style="font-size: 9px; font-weight: bold; color: #6c757d; letter-spacing: 0.5px;" data-i18n="balance_title">BALANS</div>
+                <div style="font-size: 14px; font-weight: bold; color: #198754;" id="navBalance">0 so'm</div>
+            </div>
+
+            <div class="text-white text-end d-none d-md-block" style="line-height: 1.2;">
+                <div class="fw-bold small" id="navLoginText">admin</div>
+                <div class="text-light" style="font-size: 11px;" id="navIdText">ID: #1</div>
+            </div>
+
+            <button class="btn btn-outline-light btn-sm" onclick="logout()" data-i18n="logout">Chiqish</button>
+        </div>
+    </nav>
+
+    <!-- Asosiy Layout Wrapper -->
+    <div class="d-flex flex-grow-1 overflow-hidden">
+
+        <!-- Yon Menyu (Sidebar) -->
+        <div class="sidebar py-3 d-none d-md-flex">
+            <div>
+                <div class="sidebar-heading" data-i18n="menu_analysis">Iqtisodiy Tahlil</div>
+                <a href="#" class="sidebar-menu-item active" onclick="switchTab('dashboard', this)">
+                    📊 <span data-i18n="tab_dashboard">Boshqaruv Paneli</span>
+                </a>
+                <a href="#" class="sidebar-menu-item" onclick="switchTab('elements', this)">
+                    📋 <span data-i18n="tab_elements">Elementlar</span>
+                </a>
+                <a href="#" class="sidebar-menu-item" onclick="switchTab('products', this)">
+                    📦 <span data-i18n="tab_products">Tovar Qabul qilish</span>
+                </a>
+                <a href="#" class="sidebar-menu-item" onclick="switchTab('history', this)">
+                    🕒 <span data-i18n="tab_history">Tarix</span>
+                </a>
+                <a href="#" class="sidebar-menu-item" onclick="switchTab('reports', this)">
+                    📈 <span data-i18n="tab_reports">Moliyaviy Hisobotlar</span>
+                </a>
+                <a href="#" class="sidebar-menu-item" onclick="switchTab('staff', this)">
+                    👥 <span data-i18n="tab_staff">Xodimlar Nazorati</span>
+                </a>
+                <a href="#" class="sidebar-menu-item" onclick="switchTab('sales', this)">
+                    🧾 <span data-i18n="tab_sales">Savdolar</span>
+                </a>
+            </div>
+
+            <div class="mt-auto px-3">
+                <button class="btn btn-outline-danger btn-sm w-100" onclick="logout()" data-i18n="logout">Chiqish</button>
+            </div>
+        </div>
+
+        <!-- Asosiy Kontent -->
+        <div class="container-fluid py-4 flex-grow-1 d-flex flex-column overflow-auto" id="mainContentArea">
+
+            <!-- 1. BOSHQARUV PANELI (DASHBOARD) -->
+            <div id="section-dashboard" class="content-section">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card shadow-sm p-3 border-start border-primary border-4">
+                            <span class="text-muted small" data-i18n="stat_sales">SAVDO</span>
+                            <h4 class="fw-bold text-dark mt-1">270 000 so'm</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm p-3 border-start border-success border-4">
+                            <span class="text-muted small" data-i18n="stat_checks">CHEKLAR</span>
+                            <h4 class="fw-bold text-dark mt-1">2 ta</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm p-3 border-start border-warning border-4">
+                            <span class="text-muted small" data-i18n="stat_avg_check">O'RTACHA CHEK</span>
+                            <h4 class="fw-bold text-dark mt-1">135 000 so'm</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm p-3 border-start border-info border-4">
+                            <span class="text-muted small" data-i18n="stat_profit">YALPI DAROMAD</span>
+                            <h4 class="fw-bold text-dark mt-1">27 014 so'm</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white fw-bold" data-i18n="recent_ops">So'nggi iqtisodiy amaliyotlar</div>
+                            <div class="card-body">
+                                <p class="text-muted" data-i18n="no_operations">Hozircha qo'shilgan amaliyotlar mavjud emas.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. ELEMENTLAR BO'LIMI -->
+            <div id="section-elements" class="content-section d-none">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold mb-0">Elementlar <span id="elementsCountBadge" class="badge bg-secondary">0</span></h4>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createElementModal" onclick="openCreateElementModal()" data-i18n="btn_create">＋ Yaratish</button>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 60px;">#</th>
+                                        <th style="width: 56px;">Surat</th>
+                                        <th data-i18n="el_name">Element Nomi</th>
+                                        <th data-i18n="el_size">Uzunligi / Miqdori</th>
+                                        <th data-i18n="el_unit">O'lchov Birligi</th>
+                                        <th data-i18n="el_buyprice">Tan narx</th>
+                                        <th data-i18n="el_sellprice">Sotish narx</th>
+                                        <th data-i18n="el_date">Qo'shilgan Vaqti</th>
+                                        <th data-i18n="el_actions" style="width: 100px;">Amallar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="elementsTableBody">
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted py-4" data-i18n="no_elements">Hozircha elementlar yaratilmagan</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
+                            <div class="fw-bold small text-dark">
+                                <span data-i18n="el_total">Jami:</span> <span id="elementsTotalCount">0</span> <span data-i18n="el_total_unit">ta</span>
+                            </div>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0" id="elementsPagination"></ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. TOVAR QABUL QILISH -->
+            <div id="section-products" class="content-section d-none">
+                <div class="row">
+                    <div class="col-lg-7 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white fw-bold" data-i18n="accept_product_title">Yangi Tovar Qabul Qilish (O'lchamlari bilan)</div>
+                            <div class="card-body">
+                                <form onsubmit="addProduct(event)">
+                                    <div class="mb-3">
+                                        <label class="form-label small" data-i18n="prod_name">Mahsulot nomi</label>
+                                        <select class="form-select" id="prodName" onchange="onProductElementChange()" required>
+                                            <option value="" selected disabled data-i18n="prod_select_placeholder">Elementni tanlang...</option>
+                                        </select>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label small" data-i18n="unit_type">O'lchov birligi</label>
+                                            <input type="text" class="form-control" id="prodUnit" readonly>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label small" data-i18n="quantity">Miqdori / O'lchami</label>
+                                            <input type="number" step="0.01" class="form-control" id="prodQuantity" placeholder="Masalan: 1.5 yoki 50" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label small" data-i18n="buy_price">Kelish narxi (tan narxi)</label>
+                                            <input type="number" step="0.01" class="form-control" id="prodBuyPrice" placeholder="so'mda" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label small" data-i18n="sell_price">Sotish narxi</label>
+                                            <input type="number" step="0.01" class="form-control" id="prodSellPrice" placeholder="so'mda" required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100" data-i18n="btn_save_product">Tovarni Omborga Qabul Qilish</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white fw-bold" data-i18n="accepted_list">Qabul qilingan tovarlar ro'yxati (Oxirgi 1 yil)</div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush" id="acceptedProductsList">
+                                    <li class="list-group-item text-muted text-center py-3" data-i18n="no_products">Hozircha tovarlar kiritilmadi</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3.1 TOVARLAR TARIXI -->
+            <div id="section-history" class="content-section d-none">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <div class="d-flex flex-column">
+                        <h4 class="fw-bold mb-0" data-i18n="history_title">Qabul qilingan tovarlar tarixi (Oxirgi 1 yil)</h4>
+                        <span class="small text-muted" id="historyFilterBadge"></span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary" id="historyCountBadge">0</span>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
+                                    id="historyFilterDropdownBtn" data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside" aria-expanded="false">
+                                🔍 Filtrlash
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 320px;" aria-labelledby="historyFilterDropdownBtn">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="fw-bold small text-muted text-uppercase">Sana bo'yicha filtr</span>
+                                    <a href="#" class="small text-decoration-none" onclick="resetHistoryFilterTmp(event)">Tozalash</a>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted mb-1">Boshlanish sanasi (dan)</label>
+                                    <input type="date" id="historyFilterFromTmp" class="form-control form-control-sm">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted mb-1">Tugash sanasi (gacha)</label>
+                                    <input type="date" id="historyFilterToTmp" class="form-control form-control-sm">
+                                </div>
+
+                                <div class="d-flex justify-content-between gap-2">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="cancelHistoryFilterDropdown()">Orqaga</button>
+                                    <button type="button" class="btn btn-primary btn-sm flex-fill" onclick="saveHistoryFilter()">Saqlash</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 60px;">#</th>
+                                        <th data-i18n="hist_name">Tovar nomi</th>
+                                        <th data-i18n="hist_quantity">Miqdori</th>
+                                        <th data-i18n="hist_unit">O'lchov birligi</th>
+                                        <th data-i18n="hist_buy_price">Kelish narxi</th>
+                                        <th data-i18n="hist_sell_price">Sotish narxi</th>
+                                        <th data-i18n="hist_date">Qabul qilingan sana</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4" data-i18n="no_products">Hozircha tovarlar kiritilmadi</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. MOLIYAVIY HISOBOTLAR -->
+            <div id="section-reports" class="content-section d-none h-100 d-flex flex-column">
+                <div class="card shadow-sm mb-0 flex-grow-1 d-flex flex-column">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center flex-shrink-0">
+                        <span class="fw-bold" data-i18n="reports_staff_salaries">Xodimlar va Ularning Oyliklari Ro'yxati</span>
+                        <button class="btn btn-primary btn-sm" onclick="alert('Hisobot Excel formatiga eksport qilindi!')">📥 Excelga Export qilish</button>
+                    </div>
+                    <div class="card-body p-0 flex-grow-1 overflow-auto">
+                        <div class="table-responsive h-100">
+                            <table class="table table-hover table-bordered align-middle mb-0">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th style="width: 60px;">#</th>
+                                        <th>Ism</th>
+                                        <th>Familiya</th>
+                                        <th>Telefon raqami</th>
+                                        <th>Login</th>
+                                        <th>Oyligi</th>
+                                        <th>To'langan</th>
+                                        <th>Qoldiq</th>
+                                        <th style="width: 80px;" class="text-center">Amallar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportsStaffTableBody">
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted py-4">Hozircha xodimlar mavjud emas</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. XODIMLAR NAZORATI -->
+            <div id="section-staff" class="content-section d-none">
+                <div class="row justify-content-center">
+                    <div class="col-lg-7 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white fw-bold" id="staffFormTitle" data-i18n="staff_form_title">Yangi Xodim Qo'shish</div>
+                            <div class="card-body">
+                                <form onsubmit="saveStaff(event)">
+                                    <input type="hidden" id="editingStaffIndex" value="">
+                                    <div class="mb-3">
+                                        <label class="form-label small" data-i18n="staff_firstname">Ismi</label>
+                                        <input type="text" class="form-control" id="staffFirstname" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small" data-i18n="staff_lastname">Familiyasi</label>
+                                        <input type="text" class="form-control" id="staffLastname" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small" data-i18n="staff_phone">Telefon raqami</label>
+                                        <input type="text" class="form-control" id="staffPhone" placeholder="+998 90 123 45 67" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small" data-i18n="staff_login">Login</label>
+                                        <input type="text" class="form-control" id="staffLogin" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small" data-i18n="staff_pass">Parol</label>
+                                        <input type="password" class="form-control" id="staffPassword" placeholder="Tahrirlashda bo'sh qoldirsangiz, eski parol saqlanib qoladi">
+                                        <div class="form-text" id="staffPasswordHint" style="display:none;">Parolni o'zgartirmoqchi bo'lmasangiz, bu maydonni bo'sh qoldiring.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small" data-i18n="staff_salary">Oyligi (so'm)</label>
+                                        <input type="number" step="0.01" class="form-control" id="staffSalary" placeholder="Masalan: 3500000" required>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary w-100" id="staffSubmitBtn" data-i18n="btn_create_staff">Xodim yaratish</button>
+                                        <button type="button" class="btn btn-secondary d-none" id="staffCancelBtn" onclick="resetStaffForm()">Bekor qilish</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. SAVDOLAR -->
+            <div id="section-sales" class="content-section d-none">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white fw-bold d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                        <div class="d-flex flex-column">
+                            <span data-i18n="sales_title">Barcha Savdolar Ro'yxati</span>
+                            <span class="small text-muted fw-normal" id="salesFilterBadge"></span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
+                                        id="salesFilterDropdownBtn" data-bs-toggle="dropdown"
+                                        data-bs-auto-close="outside" aria-expanded="false">
+                                    🔍 Filtrlash
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 320px;" aria-labelledby="salesFilterDropdownBtn">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="fw-bold small text-muted text-uppercase">Sana bo'yicha filtr</span>
+                                        <a href="#" class="small text-decoration-none" onclick="resetSalesFilterTmp(event)">Tozalash</a>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label class="form-label small text-muted mb-1">Boshlanish sanasi (dan)</label>
+                                        <input type="date" id="salesFilterFromTmp" class="form-control form-control-sm">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted mb-1">Tugash sanasi (gacha)</label>
+                                        <input type="date" id="salesFilterToTmp" class="form-control form-control-sm">
+                                    </div>
+
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="cancelSalesFilterDropdown()">Orqaga</button>
+                                        <button type="button" class="btn btn-primary btn-sm flex-fill" onclick="saveSalesFilter()">Saqlash</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-success btn-sm" onclick="exportSalesToExcel()">📊 Excel'ga eksport</button>
+                        </div>
+                    </div>
+                    <div class="p-3 border-bottom bg-light d-flex flex-wrap gap-3">
+                        <div>
+                            <div class="text-muted small">Narx pasaytirilgan savdolar</div>
+                            <div class="fw-bold" id="priceDropCount">0 ta</div>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Shu bo'yicha jami zarar</div>
+                            <div class="fw-bold text-danger" id="priceDropLossSum">0 so'm</div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th data-i18n="sales_date">Sana</th>
+                                    <th data-i18n="sales_employee">Xodim</th>
+                                    <th data-i18n="sales_product">Mahsulot</th>
+                                    <th data-i18n="sales_qty">Miqdori</th>
+                                    <th>Belgilangan narx</th>
+                                    <th data-i18n="sales_price">Sotilgan narx</th>
+                                    <th data-i18n="sales_total">Jami</th>
+                                    <th data-i18n="sales_profit">Foyda</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody">
+                                <tr><td colspan="9" class="text-center text-muted py-4">Hozircha savdolar mavjud emas</td></tr>
+                            </tbody>
+                            <tfoot id="salesTableFooter" class="d-none">
+                                <tr class="table-light fw-bold">
+                                    <td colspan="6"></td>
+                                    <td></td>
+                                    <td id="salesFooterTotal">0 so'm</td>
+                                    <td class="text-success" id="salesFooterProfit">0 so'm</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Element Yaratish Modal Oynasi -->
+    <div class="modal fade" id="createElementModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="elementModalTitle" data-i18n="modal_element_title">Yangi Element Yaratish</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createElementForm" onsubmit="saveElement(event)">
+                        <input type="hidden" id="editingElementId" value="">
+                        <div class="mb-3">
+                            <label class="form-label small" data-i18n="el_name_input">Element nomi</label>
+                            <input type="text" class="form-control" id="elementName" placeholder="Masalan: Natijnoy 240 / Profil" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small" data-i18n="el_unit_input">O'lchov birligi</label>
+                                <select class="form-select" id="elementUnit">
+                                    <option value="Metr (m)">Metr (m)</option>
+                                    <option value="Santimetr (sm)">Santimetr (sm)</option>
+                                    <option value="Dona (sht)">Dona (sht)</option>
+                                    <option value="Kilogramm (kg)">Kilogramm (kg)</option>
+                                    <option value="Litr (l)">Litr (l)</option>
+                                    <option value="Kvadrat metr (m²)">Kvadrat metr (m²)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small" data-i18n="el_length_input">Uzunligi / Miqdori</label>
+                                <input type="number" step="0.01" class="form-control" id="elementLength" placeholder="Masalan: 100" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small" data-i18n="el_buyprice_input">Tan narx (so'mda)</label>
+                                <input type="number" step="0.01" class="form-control" id="elementBuyPrice" placeholder="Masalan: 50000" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small" data-i18n="el_sellprice_input">Sotish narx (so'mda)</label>
+                                <input type="number" step="0.01" class="form-control" id="elementSellPrice" placeholder="Masalan: 100000" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Mahsulot surati</label>
+                            <input type="file" accept="image/*" class="form-control" id="elementImageFile" onchange="previewElementImage(event)">
+                            <img id="elementImagePreview" src="" alt="" class="mt-2 d-none rounded border" style="max-width:110px;max-height:110px;object-fit:cover;">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100" id="elementSaveBtn" data-i18n="btn_save_element">Saqlash</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Elementni o'chirish — parol tasdiqlash Modal Oynasi -->
+    <div class="modal fade" id="deleteElementModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Elementni o'chirish</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-danger small mb-3">⚠️ Diqqat! Bu amalni ortga qaytarib bo'lmaydi. Elementni o'chirish uchun parolingizni kiriting.</p>
+                    <input type="hidden" id="deletingElementId" value="">
+                    <div class="mb-2">
+                        <label class="form-label small">Parol</label>
+                        <input type="password" class="form-control" id="deleteConfirmPassword" placeholder="Parolingiz">
+                    </div>
+                    <div id="deleteElementError" class="text-danger small"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDeleteElement()">O'chirish</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Qabul qilingan tovar tafsilotlari Modal Oynasi -->
+    <div class="modal fade" id="productDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tovar tafsilotlari</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="productDetailsBody">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Xodimga To'lov Qilish Modal Oynasi -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">To'lov amalga oshirish</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="paymentForm" onsubmit="submitPayment(event)">
+                        <input type="hidden" id="paymentStaffIndex" value="">
+
+                        <div class="mb-3 text-center">
+                            <div class="text-muted small">Xodim</div>
+                            <div class="fw-bold fs-5" id="paymentStaffName">-</div>
+                        </div>
+
+                        <table class="table table-sm table-borderless mb-3">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted">Oyligi</td>
+                                    <td class="text-end fw-bold" id="paymentSalaryText">0 so'm</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Hozirgacha to'langan</td>
+                                    <td class="text-end fw-bold text-success" id="paymentPaidText">0 so'm</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Qoldiq</td>
+                                    <td class="text-end fw-bold text-danger" id="paymentRemainingText">0 so'm</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="mb-3">
+                            <label class="form-label small">Tizimga kirgan login parolini tasdiqlang (<span id="currentAdminLoginDisplay" class="fw-bold">admin</span>)</label>
+                            <input type="password" class="form-control" id="paymentPasswordConfirm" placeholder="Parolni kiriting" required>
+                            <div class="form-text text-danger d-none" id="paymentPasswordError">Parol noto'g'ri!</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small">To'lov miqdori (so'm)</label>
+                            <input type="number" step="0.01" min="0.01" class="form-control" id="paymentAmount" placeholder="Masalan: 500000" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small">Izoh <span class="text-muted">(ixtiyoriy)</span></label>
+                            <textarea class="form-control" id="paymentNote" rows="2" placeholder="Masalan: avans, bayram sovg'asi va h.k."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">💵 To'lovni tasdiqlash</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- To'lovlar Tarixi Modal Oynasi -->
+    <div class="modal fade" id="paymentHistoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">To'lovlar tarixi — <span id="paymentHistoryStaffName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="paymentHistoryBody">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tahrirlash / O'chirish uchun Admin Parolini Tasdiqlash Modal Oynasi -->
+    <div class="modal fade" id="staffActionPasswordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staffActionPasswordTitle">Amalni tasdiqlash</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="staffActionPasswordForm" onsubmit="confirmStaffActionPassword(event)">
+                        <p class="mb-3" id="staffActionPasswordDesc">Davom etish uchun kabinet parolini tasdiqlang.</p>
+                        <div class="mb-3">
+                            <label class="form-label small">Tizim parolini tasdiqlang</label>
+                            <input type="password" class="form-control" id="staffActionPasswordInput" placeholder="Parolni kiriting" required autofocus>
+                            <div class="form-text text-danger d-none" id="staffActionPasswordError">Parol noto'g'ri!</div>
+                        </div>
+                        <button type="submit" class="btn w-100" id="staffActionPasswordSubmitBtn">Tasdiqlash</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- JavaScript Tarjimalar va Funksiyalar -->
+    <script>
+        const translations = {
+            uz: {
+                brand: "Mison Iqtisodchi Kabineti",
+                balance_title: "BALANS",
+                logout: "Chiqish",
+                menu_analysis: "Iqtisodiy Tahlil",
+                tab_dashboard: "Boshqaruv Paneli",
+                tab_elements: "Elementlar",
+                tab_products: "Tovar Qabul qilish",
+                tab_reports: "Moliyaviy Hisobotlar",
+                tab_staff: "Xodimlar Nazorati",
+                stat_sales: "SAVDO",
+                stat_checks: "CHEKLAR",
+                stat_avg_check: "O'RTACHA CHEK",
+                stat_profit: "YALPI DAROMAD",
+                recent_ops: "So'nggi iqtisodiy amaliyotlar",
+                no_operations: "Hozircha qo'shilgan amaliyotlar mavjud emas.",
+                btn_create: "＋ Yaratish",
+                el_name: "Element Nomi",
+                el_size: "Uzunligi / Miqdori",
+                el_unit: "O'lchov Birligi",
+                el_buyprice: "Tan narx",
+                el_sellprice: "Sotish narx",
+                el_date: "Qo'shilgan Vaqti",
+                el_actions: "Amallar",
+                el_total: "Jami:",
+                el_total_unit: "ta",
+                btn_edit: "Tahrirlash",
+                btn_delete: "O'chirish",
+                modal_element_title_edit: "Elementni Tahrirlash",
+                no_elements: "Hozircha elementlar yaratilmagan",
+                modal_element_title: "Yangi Element Yaratish",
+                el_name_input: "Element nomi",
+                el_unit_input: "O'lchov birligi",
+                el_length_input: "Uzunligi / Miqdori",
+                el_buyprice_input: "Tan narx (so'mda)",
+                el_sellprice_input: "Sotish narx (so'mda)",
+                btn_save_element: "Saqlash",
+                accept_product_title: "Yangi Tovar Qabul Qilish (O'lchamlari bilan)",
+                prod_name: "Mahsulot nomi",
+                prod_select_placeholder: "Elementni tanlang...",
+                unit_type: "O'lchov birligi",
+                quantity: "Miqdori / O'lchami",
+                buy_price: "Kelish narxi (tan narxi)",
+                sell_price: "Sotish narxi",
+                btn_save_product: "Tovarni Omborga Qabul Qilish",
+                accepted_list: "Qabul qilingan tovarlar ro'yxati (Oxirgi 1 yil)",
+                no_products: "Hozircha tovarlar kiritilmadi",
+                tab_history: "Tarix",
+                history_title: "Qabul qilingan tovarlar tarixi (Oxirgi 1 yil)",
+                history_filter_label: "Sana bo'yicha qidirish",
+                history_filter_clear: "Barchasini ko'rsatish",
+                hist_name: "Tovar nomi",
+                hist_quantity: "Miqdori",
+                hist_unit: "O'lchov birligi",
+                hist_buy_price: "Kelish narxi",
+                hist_sell_price: "Sotish narxi",
+                hist_date: "Qabul qilingan sana",
+                reports_staff_salaries: "Xodimlar va Ularning Oyliklari Ro'yxati",
+                staff_form_title: "Yangi Xodim Qo'shish",
+                staff_firstname: "Ismi",
+                staff_lastname: "Familiyasi",
+                staff_phone: "Telefon raqami",
+                staff_login: "Login",
+                staff_pass: "Parol",
+                staff_salary: "Oyligi (so'm)",
+                btn_create_staff: "Xodim yaratish",
+                staff_list_title: "Yaratilgan xodimlar ro'yxati",
+                th_name: "Ism Familiya",
+                th_phone: "Telefon raqami",
+                th_login: "Login",
+                th_salary: "Oyligi"
+            },
+            ru: {
+                brand: "Кабинет Экономиста Mison",
+                balance_title: "БАЛАНС",
+                logout: "Выйти",
+                menu_analysis: "Экономический Анализ",
+                tab_dashboard: "Панель управления",
+                tab_elements: "Элементы",
+                tab_products: "Прием товаров",
+                tab_reports: "Финансовые отчеты",
+                tab_staff: "Контроль сотрудников",
+                stat_sales: "ПРОДАЖИ",
+                stat_checks: "ЧЕКИ",
+                stat_avg_check: "СРЕДНИЙ ЧЕК",
+                stat_profit: "ВАЛОВАЯ ПРИБЫЛЬ",
+                recent_ops: "Последние экономические операции",
+                no_operations: "Пока нет добавленных операций.",
+                btn_create: "＋ Создать",
+                el_name: "Имя элемента",
+                el_size: "Длина / Количество",
+                el_unit: "Единица измерения",
+                el_buyprice: "Себестоимость",
+                el_sellprice: "Цена продажи",
+                el_date: "Время добавления",
+                el_actions: "Действия",
+                el_total: "Всего:",
+                el_total_unit: "шт",
+                btn_edit: "Изменить",
+                btn_delete: "Удалить",
+                modal_element_title_edit: "Редактировать элемент",
+                no_elements: "Элементы пока не созданы",
+                modal_element_title: "Создать новый элемент",
+                el_name_input: "Название элемента",
+                el_unit_input: "Единица измерения",
+                el_length_input: "Длина / Количество",
+                el_buyprice_input: "Себестоимость (сум)",
+                el_sellprice_input: "Цена продажи (сум)",
+                btn_save_element: "Сохранить",
+                accept_product_title: "Прием нового товара (с размерами)",
+                prod_name: "Наименование товара",
+                prod_select_placeholder: "Выберите элемент...",
+                unit_type: "Единица измерения",
+                quantity: "Количество / Размер",
+                buy_price: "Цена закупки (себестоимость)",
+                sell_price: "Цена продажи",
+                btn_save_product: "Принять товар на склад",
+                accepted_list: "Список принятых товаров (Последний 1 год)",
+                no_products: "Товары пока не добавлены",
+                tab_history: "История",
+                history_title: "История принятых товаров (Последний 1 год)",
+                history_filter_label: "Поиск по дате",
+                history_filter_clear: "Показать все",
+                hist_name: "Название товара",
+                hist_quantity: "Количество",
+                hist_unit: "Единица измерения",
+                hist_buy_price: "Закупочная цена",
+                hist_sell_price: "Цена продажи",
+                hist_date: "Дата приема",
+                reports_staff_salaries: "Список сотрудников и их зарплат",
+                staff_form_title: "Добавить нового сотрудника",
+                staff_firstname: "Имя",
+                staff_lastname: "Фамилия",
+                staff_phone: "Телефон номер",
+                staff_login: "Логин",
+                staff_pass: "Пароль",
+                staff_salary: "Зарплата (сум)",
+                btn_create_staff: "Создать сотрудника",
+                staff_list_title: "Список созданных сотрудников",
+                th_name: "Имя Фамилия",
+                th_phone: "Телефон номер",
+                th_login: "Логин",
+                th_salary: "Зарплата"
+            }
+        };
+
+        let currentLang = 'uz';
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            renderElements();
+            renderProducts();
+            applyHistoryFilter();
+            renderStaffTable();
+            renderReportsStaffTable();
+        }
+
+        function switchTab(sectionId, element) {
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.add('d-none'));
+            document.getElementById('section-' + sectionId).classList.remove('d-none');
+
+            document.querySelectorAll('.sidebar-menu-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+
+            if (sectionId === 'sales') fetchSales();
+        }
+
+        let elementsList = [];
+        let productsList = [];
+        let staffList = [];
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const shopId = localStorage.getItem("currentShopId");
+            if (!shopId) {
+                localStorage.setItem("currentShopId", "18");
+                localStorage.setItem("shopName", "Rahmatillo");
+                localStorage.setItem("shopLogin", "rahmatillo");
+                // Tizimga kirgan foydalanuvchi paroli (tekshiruv uchun asosiy parol)
+                localStorage.setItem("shopPassword", "admin123");
+            }
+
+            const currentLogin = localStorage.getItem("shopLogin") || "rahmatillo";
+            document.getElementById("navLoginText").textContent = "Login: " + currentLogin;
+            document.getElementById("navIdText").textContent = "ID: #" + (localStorage.getItem("currentShopId") || "23");
+            document.getElementById("navBalance").textContent = "1 450 000 so'm";
+
+            const adminDisplay = document.getElementById("currentAdminLoginDisplay");
+            if (adminDisplay) adminDisplay.textContent = currentLogin;
+
+            await fetchEmployees();
+            await fetchElements();
+            await fetchProducts();
+            await fetchSales();
+
+            // Xodimlar real vaqtda sotayotgan savdolarni boshliq kabinetida avtomatik yangilab turish
+            setInterval(fetchSales, 15000);
+        });
+
+        // --- SAVDOLARNI BAZADAN OLISH ---
+        let allSales = [];        // serverdan kelgan to'liq ro'yxat
+        let lastFetchedSales = []; // joriy filtr bo'yicha ko'rsatilayotgan ro'yxat (eksport ham shundan oladi)
+
+        async function fetchSales() {
+            const shopId = localStorage.getItem("currentShopId") || "18";
+            const tbody = document.getElementById("salesTableBody");
+            if (!tbody) return;
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/sales`);
+                if (!response.ok) return;
+                const sales = await response.json();
+                allSales = sales;
+                applySalesFilter();
+            } catch (error) {
+                console.error("Savdolarni olishda xatolik:", error);
+            }
+        }
+
+        // --- "DAVR" (dan - gacha) FILTRI: hozir amalda bo'lgan sanalar ---
+        let salesFilterFrom = "";
+        let salesFilterTo = "";
+
+        function getSalesFilterDropdown() {
+            const btn = document.getElementById("salesFilterDropdownBtn");
+            if (!btn || typeof bootstrap === "undefined") return null;
+            return bootstrap.Dropdown.getInstance(btn) || new bootstrap.Dropdown(btn);
+        }
+
+        // Dropdown ochilganda vaqtinchalik maydonlarni joriy amaldagi filtr bilan to'ldirish
+        document.addEventListener("shown.bs.dropdown", (e) => {
+            if (e.target && e.target.id === "salesFilterDropdownBtn") {
+                document.getElementById("salesFilterFromTmp").value = salesFilterFrom;
+                document.getElementById("salesFilterToTmp").value = salesFilterTo;
+            }
+        });
+
+        // "Tozalash" - faqat panel ichidagi vaqtinchalik maydonlarni bo'shatadi (hali qo'llanmaydi)
+        function resetSalesFilterTmp(e) {
+            if (e) e.preventDefault();
+            document.getElementById("salesFilterFromTmp").value = "";
+            document.getElementById("salesFilterToTmp").value = "";
+        }
+
+        // "Orqaga" - o'zgarishlarni bekor qilib panelni yopadi
+        function cancelSalesFilterDropdown() {
+            const dropdown = getSalesFilterDropdown();
+            if (dropdown) dropdown.hide();
+        }
+
+        // "Saqlash" - tanlangan sanalarni qo'llab jadvalni filtrlaydi va panelni yopadi
+        function saveSalesFilter() {
+            salesFilterFrom = document.getElementById("salesFilterFromTmp").value || "";
+            salesFilterTo = document.getElementById("salesFilterToTmp").value || "";
+
+            applySalesFilter();
+            updateSalesFilterBadge();
+
+            const dropdown = getSalesFilterDropdown();
+            if (dropdown) dropdown.hide();
+        }
+
+        function formatDateUZ(isoDate) {
+            if (!isoDate) return "...";
+            const [y, m, d] = isoDate.split("-");
+            return `${d}.${m}.${y}`;
+        }
+
+        function updateSalesFilterBadge() {
+            const badge = document.getElementById("salesFilterBadge");
+            if (!badge) return;
+            if (salesFilterFrom || salesFilterTo) {
+                badge.textContent = `Davr: ${formatDateUZ(salesFilterFrom)} - ${formatDateUZ(salesFilterTo)}`;
+            } else {
+                badge.textContent = "";
+            }
+        }
+
+        // Joriy amaldagi (salesFilterFrom/salesFilterTo) sanalar bo'yicha ro'yxatni filtrlab chizadi
+        function applySalesFilter() {
+            let filtered = allSales;
+
+            if (salesFilterFrom) {
+                const fromDate = new Date(salesFilterFrom + "T00:00:00");
+                filtered = filtered.filter(s => new Date(s.soldAt) >= fromDate);
+            }
+            if (salesFilterTo) {
+                const toDate = new Date(salesFilterTo + "T23:59:59");
+                filtered = filtered.filter(s => new Date(s.soldAt) <= toDate);
+            }
+
+            renderSalesTable(filtered);
+        }
+
+        // --- JADVALNI CHIZISH (filtrlangan yoki to'liq ro'yxat bilan) ---
+        function renderSalesTable(sales) {
+            const tbody = document.getElementById("salesTableBody");
+            if (!tbody) return;
+
+            lastFetchedSales = sales;
+
+            const footer = document.getElementById("salesTableFooter");
+
+            if (!sales || sales.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Hozircha savdolar mavjud emas</td></tr>`;
+                if (footer) footer.classList.add("d-none");
+                updatePriceDropSummary(sales || []);
+                return;
+            }
+
+            tbody.innerHTML = "";
+            let totalSum = 0;
+            let totalProfit = 0;
+            sales.forEach((s, idx) => {
+                const d = new Date(s.soldAt);
+                const dateFormatted = d.toLocaleString('uz-UZ', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+                const listed = s.listedPrice || 0;
+                const isDropped = listed > 0 && s.salePrice < listed;
+                const rowClass = isDropped ? "table-danger" : "";
+                const priceCell = isDropped
+                    ? `<span class="fw-bold text-danger">${Number(s.salePrice).toLocaleString()} so'm</span>
+                           <div class="small text-danger">−${Number(listed - s.salePrice).toLocaleString()} so'm/dona</div>`
+                    : `${Number(s.salePrice).toLocaleString()} so'm`;
+                tbody.innerHTML += `
+                                                            <tr class="${rowClass}">
+                                                                <td>${idx + 1}</td>
+                                                                <td>${dateFormatted}</td>
+                                                                <td>${s.employeeName || "-"}</td>
+                                                                <td>${s.productName}${isDropped ? ' <span class="badge bg-danger">narx pasaytirilgan</span>' : ''}</td>
+                                                                <td>${s.quantity}</td>
+                                                                <td>${listed ? Number(listed).toLocaleString() + " so'm" : "—"}</td>
+                                                                <td>${priceCell}</td>
+                                                                <td class="fw-bold">${Number(s.totalSum).toLocaleString()} so'm</td>
+                                                                <td class="fw-bold text-success">${Number(s.profit).toLocaleString()} so'm</td>
+                                                            </tr>
+                                                        `;
+                totalSum += s.totalSum;
+                totalProfit += s.profit;
+            });
+
+            if (footer) {
+                footer.classList.remove("d-none");
+                document.getElementById("salesFooterTotal").textContent = Number(totalSum).toLocaleString() + " so'm";
+                document.getElementById("salesFooterProfit").textContent = Number(totalProfit).toLocaleString() + " so'm";
+            }
+
+            updatePriceDropSummary(sales);
+        }
+
+        // Narxi belgilangandan pastga sotilgan savdolar bo'yicha jami zararni hisoblaydi
+        function updatePriceDropSummary(sales) {
+            const dropped = sales.filter(s => (s.listedPrice || 0) > 0 && s.salePrice < s.listedPrice);
+            const lossSum = dropped.reduce((sum, s) => sum + (s.listedPrice - s.salePrice) * s.quantity, 0);
+
+            const countEl = document.getElementById("priceDropCount");
+            const sumEl = document.getElementById("priceDropLossSum");
+            if (countEl) countEl.textContent = `${dropped.length} ta`;
+            if (sumEl) sumEl.textContent = Number(lossSum).toLocaleString() + " so'm";
+        }
+
+        // --- SAVDOLARNI EXCEL'GA EKSPORT QILISH (joriy filtr bo'yicha) ---
+        function exportSalesToExcel() {
+            if (!lastFetchedSales || lastFetchedSales.length === 0) {
+                showToast(currentLang === 'uz' ? "Eksport qilish uchun savdolar mavjud emas!" : "Нет данных для экспорта!", false);
+                return;
+            }
+
+            const rows = lastFetchedSales.map((s, idx) => {
+                const d = new Date(s.soldAt);
+                const dateFormatted = d.toLocaleString('uz-UZ', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+                return {
+                    "#": idx + 1,
+                    "Sana": dateFormatted,
+                    "Xodim": s.employeeName || "-",
+                    "Mahsulot": s.productName,
+                    "Miqdori": s.quantity,
+                    "Belgilangan narx": s.listedPrice || "",
+                    "Sotilgan narx": s.salePrice,
+                    "Jami": s.totalSum,
+                    "Foyda": s.profit
+                };
+            });
+
+            const totalSum = lastFetchedSales.reduce((a, s) => a + s.totalSum, 0);
+            const totalProfit = lastFetchedSales.reduce((a, s) => a + s.profit, 0);
+            rows.push({ "#": "", "Sana": "", "Xodim": "", "Mahsulot": "", "Miqdori": "", "Narxi": "", "Jami": totalSum, "Foyda": totalProfit });
+
+            const worksheet = XLSX.utils.json_to_sheet(rows);
+            worksheet["!cols"] = [
+                { wch: 5 }, { wch: 18 }, { wch: 22 }, { wch: 18 },
+                { wch: 10 }, { wch: 14 }, { wch: 14 }, { wch: 14 }
+            ];
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Savdolar");
+
+            let fileSuffix = new Date().toISOString().slice(0, 10);
+            if (salesFilterFrom || salesFilterTo) {
+                fileSuffix = `${salesFilterFrom || "boshi"}_${salesFilterTo || "hozir"}`;
+            }
+            XLSX.writeFile(workbook, `Savdolar_${fileSuffix}.xlsx`);
+        }
+
+        // --- XODIMLARNI BAZADAN OLISH ---
+        async function fetchEmployees() {
+            const shopId = localStorage.getItem("currentShopId") || "18";
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/employees`);
+                if (response.ok) {
+                    const data = await response.json();
+                    staffList = data.map(e => {
+                        const nameParts = (e.fullName || "").split(" ");
+                        return {
+                            id: e.id,
+                            firstname: nameParts[0] || "",
+                            lastname: nameParts.slice(1).join(" ") || "",
+                            phone: e.phone || "",
+                            login: e.username || "",
+                            salary: e.salary || 0,
+                            paid: e.paid || 0
+                        };
+                    });
+                } else {
+                    staffList = [];
+                }
+            } catch (error) {
+                console.error("Xodimlarni olishda xatolik:", error);
+                staffList = [];
+            }
+            renderStaffTable();
+            renderReportsStaffTable();
+        }
+
+        // --- ADMIN PAROLINI TIZIM ORQALI TASDIQLASH ---
+        async function verifyAdminPassword(password) {
+            const currentLogin = localStorage.getItem("shopLogin") || "rahmatillo";
+            try {
+                const response = await fetch(`/api/shop-cabinet/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ login: currentLogin, password: password })
+                });
+                const data = await response.json();
+                return !!data.success;
+            } catch (error) {
+                console.error("Parolni tekshirishda xatolik:", error);
+                return false;
+            }
+        }
+
+        async function fetchElements() {
+            const shopId = localStorage.getItem("currentShopId") || "18";
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/elements`);
+                if (response.ok) {
+                    elementsList = await response.json();
+                    renderElements();
+                }
+            } catch (error) {
+                console.error("Elementlarni olishda xatolik:", error);
+            }
+        }
+
+        async function fetchProducts() {
+            const shopId = localStorage.getItem("currentShopId") || "18";
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/products`);
+                if (response.ok) {
+                    productsList = await response.json();
+                    renderProducts();
+                    applyHistoryFilter();
+                }
+            } catch (error) {
+                console.error("Tovarlarni olishda xatolik:", error);
+            }
+        }
+
+        function renderHistory(list) {
+            const dataList = list || productsList;
+            const tbody = document.getElementById("historyTableBody");
+            const badge = document.getElementById("historyCountBadge");
+            if (badge) badge.textContent = dataList.length;
+
+            if (!tbody) return;
+
+            if (dataList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">${translations[currentLang].no_products}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = "";
+            dataList.forEach((p, i) => {
+                const originalIdx = productsList.indexOf(p);
+                const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
+                tbody.innerHTML += `
+                                                            <tr style="cursor: pointer;" onclick="showProductDetails(${originalIdx})">
+                                                                <td><strong>${i + 1}</strong></td>
+                                                                <td>${p.name}</td>
+                                                                <td>${p.quantity}</td>
+                                                                <td><span class="badge bg-info text-dark">${p.unit}</span></td>
+                                                                <td>${p.buyPrice} so'm</td>
+                                                                <td>${p.sellPrice} so'm</td>
+                                                                <td class="text-muted small">${dateFormatted}</td>
+                                                            </tr>
+                                                        `;
+            });
+        }
+
+        // --- TOVARLAR TARIXI: "DAVR" (dan - gacha) FILTRI ---
+        let historyFilterFrom = "";
+        let historyFilterTo = "";
+
+        function getHistoryFilterDropdown() {
+            const btn = document.getElementById("historyFilterDropdownBtn");
+            if (!btn || typeof bootstrap === "undefined") return null;
+            return bootstrap.Dropdown.getInstance(btn) || new bootstrap.Dropdown(btn);
+        }
+
+        document.addEventListener("shown.bs.dropdown", (e) => {
+            if (e.target && e.target.id === "historyFilterDropdownBtn") {
+                document.getElementById("historyFilterFromTmp").value = historyFilterFrom;
+                document.getElementById("historyFilterToTmp").value = historyFilterTo;
+            }
+        });
+
+        function resetHistoryFilterTmp(e) {
+            if (e) e.preventDefault();
+            document.getElementById("historyFilterFromTmp").value = "";
+            document.getElementById("historyFilterToTmp").value = "";
+        }
+
+        function cancelHistoryFilterDropdown() {
+            const dropdown = getHistoryFilterDropdown();
+            if (dropdown) dropdown.hide();
+        }
+
+        function saveHistoryFilter() {
+            historyFilterFrom = document.getElementById("historyFilterFromTmp").value || "";
+            historyFilterTo = document.getElementById("historyFilterToTmp").value || "";
+
+            applyHistoryFilter();
+            updateHistoryFilterBadge();
+
+            const dropdown = getHistoryFilterDropdown();
+            if (dropdown) dropdown.hide();
+        }
+
+        function updateHistoryFilterBadge() {
+            const badge = document.getElementById("historyFilterBadge");
+            if (!badge) return;
+            if (historyFilterFrom || historyFilterTo) {
+                badge.textContent = `Davr: ${formatDateUZ(historyFilterFrom)} - ${formatDateUZ(historyFilterTo)}`;
+            } else {
+                badge.textContent = "";
+            }
+        }
+
+        function applyHistoryFilter() {
+            let filtered = productsList;
+
+            if (historyFilterFrom) {
+                const fromDate = new Date(historyFilterFrom + "T00:00:00");
+                filtered = filtered.filter(p => p.createdAt && new Date(p.createdAt) >= fromDate);
+            }
+            if (historyFilterTo) {
+                const toDate = new Date(historyFilterTo + "T23:59:59");
+                filtered = filtered.filter(p => p.createdAt && new Date(p.createdAt) <= toDate);
+            }
+
+            renderHistory(filtered);
+        }
+
+        function openCreateElementModal() {
+            document.getElementById("createElementForm").reset();
+            document.getElementById("editingElementId").value = "";
+            document.getElementById("elementModalTitle").textContent = translations[currentLang].modal_element_title;
+            document.getElementById("elementSaveBtn").textContent = translations[currentLang].btn_save_element;
+            document.getElementById("elementImageFile").value = "";
+            const preview = document.getElementById("elementImagePreview");
+            preview.src = "";
+            preview.classList.add("d-none");
+        }
+
+        function previewElementImage(event) {
+            const file = event.target.files && event.target.files[0];
+            const preview = document.getElementById("elementImagePreview");
+            if (!file) { preview.classList.add("d-none"); return; }
+            const reader = new FileReader();
+            reader.onload = () => { preview.src = reader.result; preview.classList.remove("d-none"); };
+            reader.readAsDataURL(file);
+        }
+
+        // Elementga surat yuklash — element allaqachon yaratilgan/tahrirlangandan so'ng chaqiriladi
+        async function uploadElementImageIfSelected(elementId) {
+            const fileInput = document.getElementById("elementImageFile");
+            const file = fileInput.files && fileInput.files[0];
+            if (!file || !elementId) return;
+
+            const shopId = localStorage.getItem("currentShopId") || "18";
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                await fetch(`/api/shop-cabinet/${shopId}/elements/${elementId}/image`, {
+                    method: "POST",
+                    body: formData
+                });
+            } catch (error) {
+                console.error("Suratni yuklashda xatolik:", error);
+            }
+        }
+
+        function deleteElement(id) {
+            document.getElementById("deletingElementId").value = id;
+            document.getElementById("deleteConfirmPassword").value = "";
+            document.getElementById("deleteElementError").textContent = "";
+
+            const modalEl = document.getElementById('deleteElementModal');
+            let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        async function confirmDeleteElement() {
+            const elementId = document.getElementById("deletingElementId").value;
+            const password = document.getElementById("deleteConfirmPassword").value;
+            const errEl = document.getElementById("deleteElementError");
+            const btn = document.getElementById("confirmDeleteBtn");
+
+            if (!password) {
+                errEl.textContent = "Parolni kiriting!";
+                return;
+            }
+
+            const shopId = localStorage.getItem("currentShopId") || "18";
+            btn.disabled = true;
+            btn.textContent = "Tekshirilmoqda...";
+
+            try {
+                const verifyResponse = await fetch(`/api/shop-cabinet/${shopId}/verify-password`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ password })
+                });
+                const verifyData = await verifyResponse.json().catch(() => ({}));
+
+                if (!verifyResponse.ok || !verifyData.success) {
+                    errEl.textContent = (verifyData && verifyData.message) ? verifyData.message : "Parol noto'g'ri!";
+                    btn.disabled = false;
+                    btn.textContent = "O'chirish";
+                    return;
+                }
+
+                const deleteResponse = await fetch(`/api/shop-cabinet/${shopId}/elements/${elementId}`, {
+                    method: "DELETE"
+                });
+                const deleteData = await deleteResponse.json().catch(() => ({}));
+
+                if (deleteResponse.ok && deleteData.success) {
+                    const modalEl = document.getElementById('deleteElementModal');
+                    let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    modal.hide();
+
+                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+
+                    await fetchElements();
+                    showToast(currentLang === 'uz' ? "Element muvaffaqiyatli o'chirildi!" : "Элемент успешно удалён!", true);
+                } else {
+                    errEl.textContent = (deleteData && deleteData.message) ? deleteData.message : "O'chirishda xatolik yuz berdi!";
+                }
+            } catch (error) {
+                console.error("Xato:", error);
+                errEl.textContent = "Server bilan aloqa yo'q!";
+            }
+
+            btn.disabled = false;
+            btn.textContent = "O'chirish";
+        }
+
+        function editElement(id) {
+            const el = elementsList.find(e => e.id === id);
+            if (!el) return;
+
+            document.getElementById("editingElementId").value = el.id;
+            document.getElementById("elementName").value = el.name;
+            document.getElementById("elementUnit").value = el.unit;
+            document.getElementById("elementLength").value = el.length;
+            document.getElementById("elementBuyPrice").value = el.buyPrice || 0;
+            document.getElementById("elementSellPrice").value = el.sellPrice || 0;
+            document.getElementById("elementImageFile").value = "";
+            const preview = document.getElementById("elementImagePreview");
+            if (el.imageUrl) { preview.src = el.imageUrl; preview.classList.remove("d-none"); }
+            else { preview.src = ""; preview.classList.add("d-none"); }
+
+            document.getElementById("elementModalTitle").textContent = translations[currentLang].modal_element_title_edit;
+            document.getElementById("elementSaveBtn").textContent = translations[currentLang].btn_save_element;
+
+            const modalEl = document.getElementById('createElementModal');
+            let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        async function saveElement(e) {
+            e.preventDefault();
+
+            const nameInput = document.getElementById("elementName");
+            const unitInput = document.getElementById("elementUnit");
+            const lengthInput = document.getElementById("elementLength");
+            const buyPriceInput = document.getElementById("elementBuyPrice");
+            const sellPriceInput = document.getElementById("elementSellPrice");
+            const editingId = document.getElementById("editingElementId").value;
+
+            if (!nameInput.value || !lengthInput.value) return;
+
+            const shopId = localStorage.getItem("currentShopId") || "18";
+
+            const newElement = {
+                name: nameInput.value,
+                unit: unitInput.value,
+                length: parseFloat(lengthInput.value),
+                buyPrice: parseFloat(buyPriceInput.value) || 0,
+                sellPrice: parseFloat(sellPriceInput.value) || 0
+            };
+
+            const isEditing = !!editingId;
+            const url = isEditing
+                ? `/api/shop-cabinet/${shopId}/elements/${editingId}`
+                : `/api/shop-cabinet/${shopId}/elements`;
+            const method = isEditing ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newElement)
+                });
+
+                let result = null;
+                try { result = await response.json(); } catch (parseErr) { }
+
+                if (response.ok) {
+                    const savedElementId = isEditing ? parseInt(editingId) : (result && result.id);
+                    await uploadElementImageIfSelected(savedElementId);
+
+                    const modalEl = document.getElementById('createElementModal');
+                    let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    modal.hide();
+
+                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+
+                    document.getElementById("createElementForm").reset();
+                    document.getElementById("editingElementId").value = "";
+                    document.getElementById("elementImageFile").value = "";
+                    document.getElementById("elementImagePreview").classList.add("d-none");
+
+                    await fetchElements();
+
+                    showToast(isEditing
+                        ? (currentLang === 'uz' ? "Element muvaffaqiyatli tahrirlandi!" : "Элемент успешно отредактирован!")
+                        : (currentLang === 'uz' ? "Element muvaffaqiyatli yaratildi!" : "Элемент успешно создан!"), true);
+                } else {
+                    const errMsg = (result && result.message) ? result.message : `Saqlashda xatolik yuz berdi!`;
+                    showToast(errMsg, false);
+                }
+            } catch (error) {
+                console.error("Xato:", error);
+                showToast("Server bilan aloqa yo'q!", false);
+            }
+        }
+
+        let currentElementsPage = 1;
+        const elementsPageSize = 10;
+
+        function renderElements() {
+            let tbody = document.getElementById("elementsTableBody");
+            let badge = document.getElementById("elementsCountBadge");
+            if (badge) badge.textContent = elementsList.length;
+
+            let totalCountEl = document.getElementById("elementsTotalCount");
+            if (totalCountEl) totalCountEl.textContent = elementsList.length;
+
+            populateProductElementOptions();
+
+            if (!tbody) return;
+
+            if (elementsList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">${translations[currentLang].no_elements}</td></tr>`;
+                renderElementsPagination();
+                return;
+            }
+
+            const totalPages = Math.max(1, Math.ceil(elementsList.length / elementsPageSize));
+            if (currentElementsPage > totalPages) currentElementsPage = totalPages;
+
+            const startIdx = (currentElementsPage - 1) * elementsPageSize;
+            const pageItems = elementsList.slice(startIdx, startIdx + elementsPageSize);
+
+            tbody.innerHTML = "";
+            pageItems.forEach((el, i) => {
+                const idx = startIdx + i;
+                let dateFormatted = el.createdAt ? new Date(el.createdAt).toLocaleString() : '';
+                const imgCell = el.imageUrl
+                    ? `<img src="${el.imageUrl}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">`
+                    : `<span class="text-muted">—</span>`;
+                tbody.innerHTML += `
+                                                            <tr>
+                                                                <td><strong>${idx + 1}</strong></td>
+                                                                <td>${imgCell}</td>
+                                                                <td>${el.name}</td>
+                                                                <td>${el.length}</td>
+                                                                <td><span class="badge bg-info text-dark">${el.unit}</span></td>
+                                                                <td>${Number(el.buyPrice || 0).toLocaleString()} so'm</td>
+                                                                <td>${Number(el.sellPrice || 0).toLocaleString()} so'm</td>
+                                                                <td class="text-muted small">${dateFormatted}</td>
+                                                                <td class="text-center">
+                                                                    <div class="dropdown">
+                                                                        <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
+                                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteElement(${el.id}); return false;">🗑️ ${translations[currentLang].btn_delete}</a></li>
+                                                                            <li><a class="dropdown-item" href="#" onclick="editElement(${el.id}); return false;">✏️ ${translations[currentLang].btn_edit}</a></li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        `;
+            });
+
+            renderElementsPagination();
+        }
+
+        function renderElementsPagination() {
+            const paginationEl = document.getElementById("elementsPagination");
+            if (!paginationEl) return;
+
+            const totalPages = Math.max(1, Math.ceil(elementsList.length / elementsPageSize));
+            paginationEl.innerHTML = "";
+
+            if (totalPages <= 1) return;
+
+            const addPageItem = (label, page, disabled, active) => {
+                paginationEl.innerHTML += `
+                                                            <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
+                                                                <a class="page-link" href="#" onclick="goToElementsPage(${page}); return false;">${label}</a>
+                                                            </li>`;
+            };
+
+            addPageItem('«', currentElementsPage - 1, currentElementsPage === 1, false);
+            for (let p = 1; p <= totalPages; p++) {
+                addPageItem(p, p, false, p === currentElementsPage);
+            }
+            addPageItem('»', currentElementsPage + 1, currentElementsPage === totalPages, false);
+        }
+
+        function goToElementsPage(page) {
+            const totalPages = Math.max(1, Math.ceil(elementsList.length / elementsPageSize));
+            if (page < 1 || page > totalPages) return;
+            currentElementsPage = page;
+            renderElements();
+        }
+
+        function populateProductElementOptions() {
+            const select = document.getElementById("prodName");
+            if (!select) return;
+
+            const previousValue = select.value;
+
+            select.innerHTML = `<option value="" disabled selected>${translations[currentLang].prod_select_placeholder}</option>`;
+            elementsList.forEach(el => {
+                select.innerHTML += `<option value="${el.name}">${el.name} (${el.unit})</option>`;
+            });
+
+            if (previousValue && elementsList.some(el => el.name === previousValue)) {
+                select.value = previousValue;
+            } else {
+                select.value = "";
+            }
+
+            onProductElementChange();
+        }
+
+        function onProductElementChange() {
+            const select = document.getElementById("prodName");
+            const unitInput = document.getElementById("prodUnit");
+            if (!select || !unitInput) return;
+
+            const selectedElement = elementsList.find(el => el.name === select.value);
+            unitInput.value = selectedElement ? selectedElement.unit : "";
+        }
+
+        function showToast(message, isSuccess) {
+            let container = document.getElementById("toastContainer");
+            if (!container) {
+                container = document.createElement("div");
+                container.id = "toastContainer";
+                container.style.position = "fixed";
+                container.style.bottom = "20px";
+                container.style.right = "20px";
+                container.style.zIndex = "2000";
+                document.body.appendChild(container);
+            }
+
+            const toastEl = document.createElement("div");
+            toastEl.className = `toast align-items-center text-white ${isSuccess ? 'bg-success' : 'bg-danger'} border-0 mb-2`;
+            toastEl.setAttribute("role", "alert");
+            toastEl.setAttribute("aria-live", "assertive");
+            toastEl.setAttribute("aria-atomic", "true");
+            toastEl.innerHTML = `
+                                                        <div class="d-flex">
+                                                            <div class="toast-body">${message}</div>
+                                                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                                        </div>`;
+            container.appendChild(toastEl);
+
+            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            toast.show();
+            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        }
+
+        async function addProduct(e) {
+            e.preventDefault();
+
+            const select = document.getElementById("prodName");
+            const productName = select.value;
+            const unit = document.getElementById("prodUnit").value;
+            const quantity = parseFloat(document.getElementById("prodQuantity").value);
+            const buyPrice = parseFloat(document.getElementById("prodBuyPrice").value);
+            const sellPrice = parseFloat(document.getElementById("prodSellPrice").value);
+
+            if (!productName) {
+                showToast(currentLang === 'uz' ? "Iltimos, ro'yxatdan element tanlang!" : "Пожалуйста, выберите элемент!", false);
+                return;
+            }
+
+            const shopId = localStorage.getItem("currentShopId") || "18";
+
+            const newProduct = {
+                name: productName,
+                unit: unit,
+                quantity: quantity,
+                buyPrice: buyPrice,
+                sellPrice: sellPrice
+            };
+
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/products`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newProduct)
+                });
+
+                let result = null;
+                try { result = await response.json(); } catch (parseErr) { }
+
+                if (response.ok) {
+                    await fetchProducts();
+                    showToast(currentLang === 'uz' ? "Tovar muvaffaqiyatli qabul qilindi!" : "Товар успешно принят!", true);
+                    e.target.reset();
+                    document.getElementById("prodUnit").value = "";
+                } else {
+                    const errMsg = (result && result.message) ? result.message : "Xatolik yuz berdi!";
+                    showToast(errMsg, false);
+                }
+            } catch (error) {
+                console.error("Xato:", error);
+                showToast("Server bilan aloqa yo'q!", false);
+            }
+        }
+
+        function renderProducts() {
+            let listContainer = document.getElementById("acceptedProductsList");
+            if (!listContainer) return;
+
+            if (productsList.length === 0) {
+                listContainer.innerHTML = `<li class="list-group-item text-muted text-center py-3">${translations[currentLang].no_products}</li>`;
+                return;
+            }
+
+            listContainer.innerHTML = "";
+            productsList.forEach((p, idx) => {
+                listContainer.innerHTML += `
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="showProductDetails(${idx})">
+                                                                <div>
+                                                                    <strong>${p.name}</strong><br>
+                                                                    <small class="text-muted">Miqdor: ${p.quantity} ${p.unit} | Narx: ${p.sellPrice} so'm</small>
+                                                                </div>
+                                                                <span class="badge bg-primary rounded-pill">#${idx + 1}</span>
+                                                            </li>
+                                                        `;
+            });
+        }
+
+        function showProductDetails(idx) {
+            const p = productsList[idx];
+            if (!p) return;
+
+            const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
+
+            document.getElementById("productDetailsBody").innerHTML = `
+                                                        <table class="table table-borderless mb-0">
+                                                            <tr><td class="text-muted">Nomi</td><td class="text-end fw-bold">${p.name}</td></tr>
+                                                            <tr><td class="text-muted">Qabul qilingan miqdor</td><td class="text-end fw-bold">${p.quantity} ${p.unit}</td></tr>
+                                                            <tr><td class="text-muted">Kelish narxi</td><td class="text-end">${p.buyPrice} so'm</td></tr>
+                                                            <tr><td class="text-muted">Sotish narxi</td><td class="text-end">${p.sellPrice} so'm</td></tr>
+                                                            <tr><td class="text-muted">Qabul qilingan sana/vaqt</td><td class="text-end">${dateFormatted}</td></tr>
+                                                        </table>
+                                                    `;
+
+            const modalEl = document.getElementById('productDetailsModal');
+            let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        // --- XODIMLAR VA OYLIKLAR BO'LIMI ---
+        async function saveStaff(e) {
+            e.preventDefault();
+            const firstname = document.getElementById("staffFirstname").value.trim();
+            const lastname = document.getElementById("staffLastname").value.trim();
+            const phone = document.getElementById("staffPhone").value.trim();
+            const login = document.getElementById("staffLogin").value.trim();
+            const password = document.getElementById("staffPassword").value.trim();
+            const salary = parseFloat(document.getElementById("staffSalary").value);
+            const editingId = document.getElementById("editingStaffIndex").value;
+            const shopId = localStorage.getItem("currentShopId") || "18";
+
+            if (!firstname || !lastname || !phone || !login || isNaN(salary)) return;
+            if (editingId === "" && !password) {
+                showToast("Yangi xodim uchun parol kiritish shart!", false);
+                return;
+            }
+
+            const payload = {
+                id: editingId === "" ? 0 : parseInt(editingId),
+                fullName: `${firstname} ${lastname}`.trim(),
+                username: login,
+                phone: phone,
+                salary: salary,
+                isActive: true
+            };
+            if (password) payload.passwordHash = password; // backend uni hashlaydi
+
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/employees`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    showToast(editingId === ""
+                        ? (currentLang === 'uz' ? "Xodim muvaffaqiyatli yaratildi!" : "Сотрудник успешно создан!")
+                        : (currentLang === 'uz' ? "Xodim ma'lumotlari tahrirlandi!" : "Данные отредактированы!"), true);
+                    await fetchEmployees();
+                    resetStaffForm();
+                } else {
+                    showToast(data.message || "Xodimni saqlashda xatolik yuz berdi!", false);
+                }
+            } catch (error) {
+                console.error("Xodimni saqlashda xatolik:", error);
+                showToast("Server bilan bog'lanishda xatolik yuz berdi!", false);
+            }
+        }
+
+        function renderStaffTable() {
+            const tbody = document.getElementById("staffTableBody");
+            if (!tbody) return;
+
+            if (staffList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Hozircha xodimlar mavjud emas</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = "";
+            staffList.forEach((staff, idx) => {
+                tbody.innerHTML += `
+                                                            <tr>
+                                                                <td><strong>${idx + 1}</strong></td>
+                                                                <td>${staff.firstname} ${staff.lastname}</td>
+                                                                <td>${staff.phone}</td>
+                                                                <td>${staff.login}</td>
+                                                                <td>${staff.salary.toLocaleString()} so'm</td>
+                                                                <td class="text-center">
+                                                                    <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="requestStaffAction('edit', ${idx})">✏️</button>
+                                                                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="requestStaffAction('delete', ${idx})">🗑️</button>
+                                                                </td>
+                                                            </tr>
+                                                        `;
+            });
+        }
+
+        function renderReportsStaffTable() {
+            const tbody = document.getElementById("reportsStaffTableBody");
+            if (!tbody) return;
+
+            if (staffList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Hozircha xodimlar mavjud emas</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = "";
+            staffList.forEach((staff, idx) => {
+                const paid = staff.paid || 0;
+                const remaining = Math.max(staff.salary - paid, 0);
+                tbody.innerHTML += `
+                                                            <tr>
+                                                                <td><strong>${idx + 1}</strong></td>
+                                                                <td>${staff.firstname}</td>
+                                                                <td>${staff.lastname}</td>
+                                                                <td>${staff.phone}</td>
+                                                                <td>${staff.login}</td>
+                                                                <td class="fw-bold text-success">${staff.salary.toLocaleString()} so'm</td>
+                                                                <td class="fw-bold text-primary" style="cursor:pointer; text-decoration:underline;" onclick="showPaymentHistory(${idx})" title="To'lovlar tarixini ko'rish">${paid.toLocaleString()} so'm</td>
+                                                                <td class="fw-bold ${remaining > 0 ? 'text-danger' : 'text-success'}">${remaining.toLocaleString()} so'm</td>
+                                                                <td class="text-center">
+                                                                    <div class="dropdown">
+                                                                        <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                                            <li><a class="dropdown-item py-2" href="#" onclick="executeAction('pay', ${idx}); return false;">💵 To'lov</a></li>
+                                                                            <li><a class="dropdown-item py-2" href="#" onclick="executeAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
+                                                                            <li><hr class="dropdown-divider"></li>
+                                                                            <li><a class="dropdown-item py-2 text-danger" href="#" onclick="executeAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        `;
+            });
+        }
+
+        function executeAction(actionType, idx) {
+            const targetStaff = staffList[idx];
+            if (!targetStaff) return;
+
+            if (actionType === 'pay') {
+                openPaymentModal(idx);
+            } else if (actionType === 'edit') {
+                requestStaffAction('edit', idx);
+            } else if (actionType === 'delete') {
+                requestStaffAction('delete', idx);
+            }
+        }
+
+        // --- TAHRIRLASH / O'CHIRISH UCHUN ADMIN (TIZIM) PAROLINI TASDIQLASH ---
+        let pendingStaffAction = null;
+
+        function requestStaffAction(actionType, idx) {
+            const staff = staffList[idx];
+            if (!staff) return;
+
+            pendingStaffAction = { actionType, idx };
+
+            const titleEl = document.getElementById("staffActionPasswordTitle");
+            const descEl = document.getElementById("staffActionPasswordDesc");
+            const submitBtn = document.getElementById("staffActionPasswordSubmitBtn");
+            const currentLogin = localStorage.getItem("shopLogin") || "rahmatillo";
+
+            if (actionType === 'edit') {
+                titleEl.textContent = "Tahrirlashni tasdiqlash";
+                descEl.textContent = `"${staff.firstname} ${staff.lastname}" ma'lumotlarini tahrirlash uchun tizimdagi admin (${currentLogin}) parolini kiriting.`;
+                submitBtn.textContent = "Tahrirlashni tasdiqlash";
+                submitBtn.className = "btn btn-primary w-100";
+            } else if (actionType === 'delete') {
+                titleEl.textContent = "O'chirishni tasdiqlash";
+                descEl.textContent = `"${staff.firstname} ${staff.lastname}" ni ro'yxatdan o'chirish uchun tizimdagi admin (${currentLogin}) parolini kiriting. Bu amalni ortga qaytarib bo'lmaydi.`;
+                submitBtn.textContent = "O'chirishni tasdiqlash";
+                submitBtn.className = "btn btn-danger w-100";
+            }
+
+            document.getElementById("staffActionPasswordForm").reset();
+            document.getElementById("staffActionPasswordError").classList.add("d-none");
+
+            const modalEl = document.getElementById('staffActionPasswordModal');
+            let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        async function confirmStaffActionPassword(e) {
+            e.preventDefault();
+            if (!pendingStaffAction) return;
+
+            const { actionType, idx } = pendingStaffAction;
+            const staff = staffList[idx];
+            const errorEl = document.getElementById("staffActionPasswordError");
+
+            if (!staff) return;
+
+            const enteredPassword = document.getElementById("staffActionPasswordInput").value;
+
+            // Tizimga kirgan admin parolini backend orqali tekshirish
+            const isValid = await verifyAdminPassword(enteredPassword);
+            if (!isValid) {
+                errorEl.classList.remove("d-none");
+                return;
+            }
+            errorEl.classList.add("d-none");
+
+            const modalEl = document.getElementById('staffActionPasswordModal');
+            let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.hide();
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+
+            if (actionType === 'edit') {
+                switchTab('staff', document.querySelectorAll('.sidebar-menu-item')[5]);
+                editStaff(idx);
+                showToast("Xodim ma'lumotlarini tahrirlashingiz mumkin.", true);
+            } else if (actionType === 'delete') {
+                const shopId = localStorage.getItem("currentShopId") || "18";
+                try {
+                    const response = await fetch(`/api/shop-cabinet/${shopId}/employees/${staff.id}`, {
+                        method: "DELETE"
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.success) {
+                        await fetchEmployees();
+                        showToast("Xodim muvaffaqiyatli o'chirildi!", true);
+                    } else {
+                        showToast(data.message || "Xodimni o'chirishda xatolik yuz berdi!", false);
+                    }
+                } catch (error) {
+                    console.error("Xodimni o'chirishda xatolik:", error);
+                    showToast("Server bilan bog'lanishda xatolik yuz berdi!", false);
+                }
+            }
+
+            pendingStaffAction = null;
+        }
+
+        // --- TO'LOVLAR TARIXINI KO'RSATISH ---
+        async function showPaymentHistory(idx) {
+            const staff = staffList[idx];
+            if (!staff) return;
+
+            document.getElementById("paymentHistoryStaffName").textContent = `${staff.firstname} ${staff.lastname}`;
+            const bodyEl = document.getElementById("paymentHistoryBody");
+            bodyEl.innerHTML = `<p class="text-center text-muted py-3 mb-0">Yuklanmoqda...</p>`;
+
+            const modalEl = document.getElementById('paymentHistoryModal');
+            let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+
+            const shopId = localStorage.getItem("currentShopId") || "18";
+            let payments = [];
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/employees/${staff.id}/payments`);
+                if (response.ok) payments = await response.json();
+            } catch (error) {
+                console.error("To'lovlar tarixini olishda xatolik:", error);
+            }
+
+            if (payments.length === 0) {
+                bodyEl.innerHTML = `<p class="text-center text-muted py-3 mb-0">Hozircha to'lovlar mavjud emas</p>`;
+            } else {
+                const rows = payments
+                    .map(p => {
+                        const d = new Date(p.paidAt);
+                        const dateFormatted = d.toLocaleString('uz-UZ', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                        const noteRow = p.note
+                            ? `<div class="text-muted small mt-1">📝 ${p.note}</div>`
+                            : "";
+                        return `
+                                                            <tr>
+                                                                <td>
+                                                                    <div>${dateFormatted}</div>
+                                                                    ${noteRow}
+                                                                </td>
+                                                                <td class="text-end fw-bold text-success">${p.amount.toLocaleString()} so'm</td>
+                                                            </tr>
+                                                        `;
+                    })
+                    .join("");
+
+                bodyEl.innerHTML = `
+                                                    <table class="table table-sm table-hover align-middle mb-0">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Sana</th>
+                                                                <th class="text-end">Miqdor</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>${rows}</tbody>
+                                                        <tfoot>
+                                                            <tr class="table-light">
+                                                                <td class="fw-bold">Jami to'langan</td>
+                                                                <td class="text-end fw-bold text-success">${(staff.paid || 0).toLocaleString()} so'm</td>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                `;
+            }
+        }
+
+        // --- XODIMGA TO'LOV QILISH ---
+        function openPaymentModal(idx) {
+            const staff = staffList[idx];
+            if (!staff) return;
+
+            if (!staff.paid) staff.paid = 0;
+
+            const remaining = Math.max(staff.salary - staff.paid, 0);
+
+            document.getElementById("paymentStaffIndex").value = idx;
+            document.getElementById("paymentStaffName").textContent = `${staff.firstname} ${staff.lastname}`;
+            document.getElementById("paymentSalaryText").textContent = `${staff.salary.toLocaleString()} so'm`;
+            document.getElementById("paymentPaidText").textContent = `${staff.paid.toLocaleString()} so'm`;
+            document.getElementById("paymentRemainingText").textContent = `${remaining.toLocaleString()} so'm`;
+
+            document.getElementById("paymentForm").reset();
+            document.getElementById("paymentStaffIndex").value = idx;
+            document.getElementById("paymentAmount").max = remaining;
+            document.getElementById("paymentPasswordError").classList.add("d-none");
+
+            const modalEl = document.getElementById('paymentModal');
+            let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        async function submitPayment(e) {
+            e.preventDefault();
+
+            const idx = parseInt(document.getElementById("paymentStaffIndex").value);
+            const staff = staffList[idx];
+            if (!staff) return;
+
+            const enteredPassword = document.getElementById("paymentPasswordConfirm").value;
+            const errorEl = document.getElementById("paymentPasswordError");
+
+            // Tizimdagi admin parolini backend orqali tasdiqlash
+            const isValid = await verifyAdminPassword(enteredPassword);
+            if (!isValid) {
+                errorEl.classList.remove("d-none");
+                return;
+            }
+            errorEl.classList.add("d-none");
+
+            const amount = parseFloat(document.getElementById("paymentAmount").value);
+            if (isNaN(amount) || amount <= 0) return;
+
+            const note = document.getElementById("paymentNote").value.trim();
+            const shopId = localStorage.getItem("currentShopId") || "18";
+
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/employees/${staff.id}/payments`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount: amount, note: note })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    showToast(data.message || "To'lovni saqlashda xatolik yuz berdi!", false);
+                    return;
+                }
+            } catch (error) {
+                console.error("To'lovni saqlashda xatolik:", error);
+                showToast("Server bilan bog'lanishda xatolik yuz berdi!", false);
+                return;
+            }
+
+            await fetchEmployees();
+
+            const modalEl = document.getElementById('paymentModal');
+            let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.hide();
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+
+            const updatedStaff = staffList.find(s => s.id === staff.id) || staff;
+            const remainingAfter = Math.max(updatedStaff.salary - updatedStaff.paid, 0);
+            showToast(`"${staff.firstname} ${staff.lastname}" ga ${amount.toLocaleString()} so'm to'lov qilindi. Qoldiq: ${remainingAfter.toLocaleString()} so'm`, true);
+        }
+
+        function editStaff(idx) {
+            const staff = staffList[idx];
+            if (!staff) return;
+
+            document.getElementById("staffFirstname").value = staff.firstname;
+            document.getElementById("staffLastname").value = staff.lastname;
+            document.getElementById("staffPhone").value = staff.phone;
+            document.getElementById("staffLogin").value = staff.login;
+            document.getElementById("staffPassword").value = "";
+            document.getElementById("staffPasswordHint").style.display = "block";
+            document.getElementById("staffSalary").value = staff.salary;
+            document.getElementById("editingStaffIndex").value = staff.id;
+            document.getElementById("staffSubmitBtn").textContent = currentLang === 'uz' ? "Saqlash" : "Сохранить";
+            document.getElementById("staffCancelBtn").classList.remove("d-none");
+            document.getElementById("staffFormTitle").textContent = currentLang === 'uz' ? "Xodimni Tahrirlash" : "Редактировать сотрудника";
+        }
+
+        function resetStaffForm() {
+            document.getElementById("editingStaffIndex").value = "";
+            document.getElementById("staffFirstname").value = "";
+            document.getElementById("staffLastname").value = "";
+            document.getElementById("staffPhone").value = "";
+            document.getElementById("staffLogin").value = "";
+            document.getElementById("staffPassword").value = "";
+            document.getElementById("staffPasswordHint").style.display = "none";
+            document.getElementById("staffSalary").value = "";
+            document.getElementById("staffSubmitBtn").textContent = translations[currentLang].btn_create_staff || "Xodim yaratish";
+            document.getElementById("staffCancelBtn").classList.add("d-none");
+            document.getElementById("staffFormTitle").textContent = translations[currentLang].staff_form_title || "Yangi Xodim Qo'shish";
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

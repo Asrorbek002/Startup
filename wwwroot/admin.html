@@ -1,0 +1,797 @@
+﻿<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin - Hisob</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+
+        .dropdown-toggle::after {
+            display: none !important;
+        }
+
+        /* Chap yon menyu (Sidebar) dizayni */
+        .sidebar {
+            width: 240px;
+            background-color: #ffffff;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-heading {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            padding: 10px 15px 5px 15px;
+            font-weight: bold;
+        }
+
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            color: #333;
+            text-decoration: none;
+            font-size: 13px;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+            .sidebar-menu-item:hover {
+                background-color: #f1f3f5;
+                color: #0d6efd;
+            }
+
+            .sidebar-menu-item.active {
+                background-color: #e7f1ff;
+                color: #0d6efd;
+                border-left-color: #0d6efd;
+                font-weight: 600;
+            }
+
+        /* Modal chiqganda filtr ustiga chiqib ketmasligi uchun z-index larni to'g'riladik */
+        .my-filter-wrapper {
+            position: relative;
+            z-index: 1020;
+        }
+
+        .my-filter-menu {
+            width: 300px;
+            padding: 15px;
+            z-index: 1030;
+        }
+
+        .profile-dropdown-wrapper {
+            position: relative;
+            z-index: 1020;
+        }
+
+        .my-profile-menu {
+            width: 240px;
+            padding: 12px 15px;
+            z-index: 1030;
+        }
+
+        .navbar {
+            z-index: 1020;
+        }
+
+        /* Modal har doim barcha elementlardan ustda turishi uchun */
+        .modal {
+            z-index: 1080 !important;
+        }
+
+        .modal-backdrop {
+            z-index: 1070 !important;
+        }
+
+        .table-responsive {
+            position: relative;
+            z-index: 1;
+        }
+
+        .table thead.sticky-top {
+            z-index: 2 !important;
+        }
+
+        /* Odamcha ikonkali tugma - Yumaloq shaklda */
+        .profile-icon-btn {
+            background: #198754;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+            .profile-icon-btn:hover {
+                background: #157347;
+                color: white;
+            }
+
+        /* Balans bloki dizayni */
+        .balance-badge {
+            background: #ffffff;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            padding: 3px 10px;
+            text-align: right;
+            line-height: 1.2;
+        }
+
+        /* "Hisob Admin" yozuvi uchun ranglar animatsiyasi */
+        @keyframes rainbowGlow {
+            0% {
+                color: #ff3366;
+                filter: drop-shadow(0 0 2px rgba(255, 51, 102, 0.4));
+            }
+
+            25% {
+                color: #33ccff;
+                filter: drop-shadow(0 0 2px rgba(51, 204, 255, 0.4));
+            }
+
+            50% {
+                color: #33ff66;
+                filter: drop-shadow(0 0 2px rgba(51, 255, 102, 0.4));
+            }
+
+            75% {
+                color: #ffcc00;
+                filter: drop-shadow(0 0 2px rgba(255, 204, 0, 0.4));
+            }
+
+            100% {
+                color: #ff3366;
+                filter: drop-shadow(0 0 2px rgba(255, 51, 102, 0.4));
+            }
+        }
+
+        .animated-rainbow-text {
+            font-weight: 800;
+            animation: rainbowGlow 6s linear infinite;
+            text-decoration: none;
+        }
+
+            .animated-rainbow-text:hover {
+                color: #ffffff;
+                text-decoration: none;
+            }
+
+        .filter-arrow {
+            display: inline-block;
+            transition: transform 0.25s ease;
+            font-size: 10px;
+            vertical-align: middle;
+            margin-left: 4px;
+        }
+
+        .dropdown.my-filter-wrapper.show .filter-arrow {
+            transform: rotate(180deg);
+        }
+
+        .copy-login {
+            color: #212529 !important;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+            .copy-login:hover {
+                color: #0d6efd !important;
+            }
+    </style>
+</head>
+<body class="d-flex flex-column h-100">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 shadow-sm flex-shrink-0">
+        <a class="navbar-brand animated-rainbow-text fs-5" href="#">Hisob Admin</a>
+
+        <div class="ms-auto d-flex align-items-center gap-3">
+            <div class="balance-badge d-none d-sm-block">
+                <div style="font-size: 9px; font-weight: bold; color: #6c757d; letter-spacing: 0.5px;">BALANS</div>
+                <div style="font-size: 14px; font-weight: bold; color: #212529;" id="navBalance">0</div>
+            </div>
+
+            <div class="text-white text-end d-none d-md-block" style="line-height: 1.2;">
+                <div class="fw-bold small" id="navLoginText">admin</div>
+                <div class="text-muted" style="font-size: 11px;">—</div>
+            </div>
+
+            <div class="dropdown profile-dropdown-wrapper">
+                <a href="#" class="profile-icon-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
+                        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+                    </svg>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end my-profile-menu shadow">
+                    <li class="mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Ism:</span>
+                            <span class="fw-bold text-dark" id="dropdownName">Админ</span>
+                        </div>
+                    </li>
+                    <li class="mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Login:</span>
+                            <span class="fw-bold text-dark" id="dropdownLogin">admin</span>
+                        </div>
+                    </li>
+                    <li class="mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">ID:</span>
+                            <span class="fw-bold text-dark" id="dropdownId">1</span>
+                        </div>
+                    </li>
+                    <li class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Balans:</span>
+                            <span class="fw-bold text-success" id="dropdownBalance">0</span>
+                        </div>
+                    </li>
+                    <li>
+                        <button class="dropdown-item text-danger d-flex align-items-center justify-content-between px-2 py-2 rounded bg-light" onclick="logout()">
+                            <span>Chiqish</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />
+                                <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
+                            </svg>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Asosiy qism va Chap Menyu (Layout wrapper) -->
+    <div class="d-flex flex-grow-1 overflow-hidden">
+
+        <!-- Chap Yon Menyu (Sidebar) -->
+        <div class="sidebar py-2 d-none d-md-flex">
+            <div>
+                <div class="sidebar-heading">Mijozlar</div>
+                <a href="#" class="sidebar-menu-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shop" viewBox="0 0 16 16">
+                        <path d="M2.97 1.35A1 1 0 0 1 3.73 1h8.54a1 1 0 0 1 .76.35l2.609 3.044A1.5 1.5 0 0 1 16 5.38v.255a2.25 2.25 0 0 1-2 2.225V12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7.86A2.25 2.25 0 0 1 0 5.635v-.255a1.5 1.5 0 0 1 .361-.986zm3.05.964a.5.5 0 0 0-.32.03L1.5 4.395a.5.5 0 0 0-.1.76V5.38a1.25 1.25 0 0 0 1.25 1.25h10.705a1.25 1.25 0 0 0 1.25-1.25v-.225a.5.5 0 0 0-.1-.76l-4.2-2.05a.5.5 0 0 0-.32-.03L8 3.58zM3 11V7.5a1.25 1.25 0 0 1 1.25-1.25h7.5A1.25 1.25 0 0 1 13 7.5V11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1m2.5 1a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5" />
+                    </svg>
+                    Savdo nuqtasi
+                </a>
+            </div>
+
+            <!-- Chiqish tugmasi -->
+            <div class="mt-auto px-2 pb-2">
+                <button class="sidebar-menu-item text-danger fw-bold w-100 border border-danger-subtle bg-danger-subtle rounded py-2 shadow-sm justify-content-center" onclick="logout()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />
+                        <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
+                    </svg>
+                    <span>Chiqish</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Asosiy kontent qismi -->
+        <div class="container-fluid py-3 flex-grow-1 d-flex flex-column overflow-auto">
+
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-shrink-0">
+                <h4 class="fw-bold text-secondary mb-0 d-flex align-items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-shop text-primary" viewBox="0 0 16 16">
+                        <path d="M2.97 1.35A1 1 0 0 1 3.73 1h8.54a1 1 0 0 1 .76.35l2.609 3.044A1.5 1.5 0 0 1 16 5.38v.255a2.25 2.25 0 0 1-2 2.225V12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7.86A2.25 2.25 0 0 1 0 5.635v-.255a1.5 1.5 0 0 1 .361-.986zm3.05.964a.5.5 0 0 0-.32.03L1.5 4.395a.5.5 0 0 0-.1.76V5.38a1.25 1.25 0 0 0 1.25 1.25h10.705a1.25 1.25 0 0 0 1.25-1.25v-.225a.5.5 0 0 0-.1-.76l-4.2-2.05a.5.5 0 0 0-.32-.03L8 3.58zM3 11V7.5a1.25 1.25 0 0 1 1.25-1.25h7.5A1.25 1.25 0 0 1 13 7.5V11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1m2.5 1a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5" />
+                    </svg>
+                    Savdo nuqtalari boshqaruvi
+                </h4>
+                <button class="btn btn-primary shadow-sm" onclick="openCreateModal()">
+                    ➕ Yaratish
+                </button>
+            </div>
+
+            <div class="card shadow-sm mb-2 flex-shrink-0 border-0">
+                <div class="card-body py-2 px-3 d-flex flex-wrap gap-2 align-items-center justify-content-between bg-white rounded">
+
+                    <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 600px;">
+                        <div class="input-group input-group-sm flex-grow-1">
+                            <span class="input-group-text bg-white text-muted border-end-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                                </svg>
+                            </span>
+                            <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Izlash (nomi, login, telefon, viloyat...)" oninput="filterShops()">
+                        </div>
+
+                        <div class="dropdown my-filter-wrapper flex-shrink-0" id="filterDropdownContainer">
+                            <button class="btn btn-sm btn-primary dropdown-toggle px-3 py-1.5" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                                ⚙️ Filtrlash <span class="filter-arrow">▼</span>
+                            </button>
+                            <div class="dropdown-menu my-filter-menu shadow border-0">
+                                <h6 class="dropdown-header px-0 fw-bold text-dark">Holati bo'yicha</h6>
+                                <div class="mb-2">
+                                    <select id="filterStatus" class="form-select form-select-sm">
+                                        <option value="">Barchasi</option>
+                                        <option value="active">Faollashtirilgan</option>
+                                        <option value="inactive">Faol emas</option>
+                                    </select>
+                                </div>
+
+                                <h6 class="dropdown-header px-0 fw-bold text-dark">Hudud</h6>
+                                <div class="mb-2">
+                                    <input type="text" id="filterRegion" class="form-control form-control-sm" placeholder="Viloyat yoki shahar...">
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="filterTestTariff">
+                                    <label class="form-check-label small" for="filterTestTariff">
+                                        Faqat tarifi bor (test emas)
+                                    </label>
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <button class="btn btn-outline-secondary btn-sm px-3" type="button" onclick="closeFilterAndReset()">Orqaga</button>
+                                    <button class="btn btn-primary btn-sm px-3" type="button" onclick="applyFiltersAndClose()">Saqlash</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-sm btn-light border text-primary fw-bold px-3 py-1.5" onclick="loadShops()">🔄 Yangilash</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm flex-grow-1 d-flex flex-column mb-2 border-0">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center flex-shrink-0">
+                    <span>Savdo nuqtalari ro'yxati</span>
+                    <span id="filteredCountBadge" class="badge bg-light text-dark">Jami: 2 ta</span>
+                </div>
+                <div class="card-body p-0 d-flex flex-column flex-grow-1 bg-white">
+                    <div class="table-responsive flex-grow-1">
+                        <table class="table table-bordered table-striped align-middle mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th style="width: 70px;">ID</th>
+                                    <th>Login</th>
+                                    <th>Do'kon nomi</th>
+                                    <th>Viloyat</th>
+                                    <th>Telefon</th>
+                                    <th style="width: 130px;">Tarif</th>
+                                    <th style="width: 140px;" class="text-center">Holati</th>
+                                    <th class="text-center" style="width: 60px;">Amallar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shopsTableBody">
+                                <!-- Ma'lumotlar avtomatik tushadi -->
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr class="fw-bold">
+                                    <td colspan="2" class="text-end">Jami:</td>
+                                    <td colspan="4"></td>
+                                    <td id="totalTariffSum" class="text-success">400 000 so'm</td>
+                                    <td colspan="2" id="totalActiveStatusCount" class="text-primary">Faol: 2 ta</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-white border-top mt-auto flex-shrink-0">
+                        <div class="text-muted small">Topildi: <span id="totalCount" class="fw-bold">2</span> ta do'kon</div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="paginationContainer"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Oyna -->
+    <div class="modal fade" id="shopModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalTitle">Yangi Savdo Nuqtasini Yaratish</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="shopForm" onsubmit="saveShop(event)">
+                        <input type="hidden" id="shopId">
+                        <div class="mb-3">
+                            <label class="form-label">Do'kon nomi (Biznes egasi)</label>
+                            <input type="text" class="form-control" id="shopName" placeholder="Masalan: Central Fast Food" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Viloyat / Hudud</label>
+                            <input type="text" class="form-control" id="shopRegion" placeholder="Masalan: Toshkent shahar" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Telefon raqam</label>
+                            <input type="text" class="form-control" id="shopPhone" placeholder="+998 90 123-45-67" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Login</label>
+                            <input type="text" class="form-control" id="shopUsername" placeholder="Kirish uchun login" oninput="clearLoginError()" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tarif (so'mda)</label>
+                            <input type="number" class="form-control" id="shopTariff" placeholder="Masalan: 200000" value="200000" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Maxfiy so'z (Parol)</label>
+                            <input type="password" class="form-control" id="shopPassword" placeholder="Parol">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100" id="saveButtonText">Saqlash va Yaratish</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nusxalandi va Bildirishnoma uchun toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="copyToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="copyToastMessage">
+                    Login nusxalandi!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const SECRET_KEY = "MY_SUPER_SECRET_ADMIN_KEY_2026";
+        let shopModal;
+        let allShops = [];
+        let filteredShops = [];
+        let currentPage = 1;
+        const pageSize = 10;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            shopModal = new bootstrap.Modal(document.getElementById('shopModal'));
+            loadShops();
+        });
+
+        // Bildirishnomalarni chiqarish uchun yordamchi funksiya
+        function showNotification(message, type = 'success') {
+            let toastEl = document.getElementById('copyToast');
+            let toastBody = document.getElementById('copyToastMessage');
+
+            toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+            toastBody.innerText = message;
+
+            let toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        async function loadShops() {
+            try {
+                let response = await fetch('/api/super-admin/shops', {
+                    headers: { 'Secret-Key': SECRET_KEY }
+                });
+
+                if (response.ok) {
+                    allShops = await response.json();
+                    filteredShops = [...allShops];
+                    updateTotalsAndRender();
+                } else {
+                    console.error("Do'konlarni yuklashda xatolik yuz berdi.");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function filterShops() {
+            let searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
+            let statusQuery = document.getElementById("filterStatus").value;
+            let regionQuery = document.getElementById("filterRegion").value.toLowerCase().trim();
+            let testTariffChecked = document.getElementById("filterTestTariff").checked;
+
+            filteredShops = allShops.filter(shop => {
+                let name = (shop.name || "").toLowerCase();
+                let username = (shop.username || "").toLowerCase();
+                let phone = (shop.phone || "").toLowerCase();
+                let region = (shop.region || "").toLowerCase();
+
+                let matchesSearch = name.includes(searchQuery) || username.includes(searchQuery) || phone.includes(searchQuery) || region.includes(searchQuery);
+
+                let isShopActive = (shop.status === "Faollashtirilgan" || shop.status === "Faol");
+                let matchesStatus = true;
+                if (statusQuery === "active") matchesStatus = isShopActive === true;
+                if (statusQuery === "inactive") matchesStatus = isShopActive === false;
+
+                let matchesRegion = regionQuery === "" || region.includes(regionQuery);
+
+                let matchesTariff = true;
+                if (testTariffChecked) {
+                    let tariffVal = Number(shop.tariff) || 0;
+                    matchesTariff = tariffVal > 0;
+                }
+
+                return matchesSearch && matchesStatus && matchesRegion && matchesTariff;
+            });
+
+            currentPage = 1;
+            updateTotalsAndRender();
+        }
+
+        function applyFiltersAndClose() {
+            filterShops();
+            let dropdownEl = document.getElementById('filterDropdownContainer');
+            let dropdownToggle = dropdownEl.querySelector('.dropdown-toggle');
+            let dropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+            if (dropdown) {
+                dropdown.hide();
+            }
+        }
+
+        function closeFilterAndReset() {
+            document.getElementById("filterStatus").value = "";
+            document.getElementById("filterRegion").value = "";
+            document.getElementById("filterTestTariff").checked = false;
+
+            filterShops();
+
+            let dropdownEl = document.getElementById('filterDropdownContainer');
+            let dropdownToggle = dropdownEl.querySelector('.dropdown-toggle');
+            let dropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+            if (dropdown) {
+                dropdown.hide();
+            }
+        }
+
+        function updateTotalsAndRender() {
+            document.getElementById("totalCount").innerText = filteredShops.length;
+            document.getElementById("filteredCountBadge").innerText = `Jami: ${filteredShops.length} ta`;
+
+            let activeShops = filteredShops.filter(s => (s.status === "Faollashtirilgan" || s.status === "Faol" || s.status === undefined));
+            let totalSum = activeShops.reduce((sum, shop) => sum + (Number(shop.tariff) || 200000), 0);
+
+            document.getElementById("totalTariffSum").innerText = totalSum.toLocaleString('uz-UZ') + " so'm";
+            document.getElementById("totalActiveStatusCount").innerText = `Faol: ${activeShops.length} ta`;
+
+            renderTable();
+            renderPagination();
+        }
+
+        function renderTable() {
+            let tbody = document.getElementById("shopsTableBody");
+            tbody.innerHTML = "";
+
+            if (filteredShops.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-3">Hech qanday ma'lumot topilmadi.</td></tr>`;
+                return;
+            }
+
+            let start = (currentPage - 1) * pageSize;
+            let end = start + pageSize;
+            let paginatedShops = filteredShops.slice(start, end);
+
+            paginatedShops.forEach((shop, index) => {
+                let globalIndex = start + index + 1;
+                let isShopActive = (shop.status === "Faollashtirilgan" || shop.status === "Faol" || !shop.status);
+
+                let statusBadge = isShopActive
+                    ? `<span class="badge bg-primary px-3 py-2" style="background-color: #3b71ca !important;">Faollashtirilgan</span>`
+                    : `<span class="badge bg-danger px-3 py-2">Faol emas</span>`;
+
+                let toggleText = isShopActive ? "🔴 Vaqtincha o'chirish" : "🟢 Qayta yoqish";
+                let shopTariff = (Number(shop.tariff) || 200000).toLocaleString('uz-UZ') + " so'm";
+                let shopUsername = shop.username || '-';
+
+                tbody.innerHTML += `
+                                <tr>
+                                    <td>${globalIndex}</td>
+                                    <td><b>#${shop.id}</b></td>
+                                    <td><span class="copy-login" onclick="copyToClipboard('${shopUsername}')" title="Nusxalash uchun bosing">${shopUsername}</span></td>
+                                    <td>${shop.name}</td>
+                                    <td>${shop.region || '-'}</td>
+                                    <td>${shop.phone || '-'}</td>
+                                    <td><span class="text-success fw-bold">${shopTariff}</span></td>
+                                    <td class="text-center">${statusBadge}</td>
+                                    <td class="text-center p-1">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light border px-2 py-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 16px; line-height: 1.2;">
+                                                ⋮
+                                            </button>
+                                            <ul class="dropdown-menu shadow">
+                                                <li><a class="dropdown-item" href="javascript:void(0);" onclick="openEditModal(${shop.id})">✏️ Tahrirlash</a></li>
+                                                <li><a class="dropdown-item fw-semibold" href="javascript:void(0);" onclick="toggleShopStatus(${shop.id})">${toggleText}</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteShop(${shop.id})">🗑️ O'chirish</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+            });
+        }
+
+        function copyToClipboard(text) {
+            if (text === '-') return;
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification(`"${text}" nusxalandi!`);
+            }).catch(err => {
+                console.error('Nusxalashda xatolik:', err);
+            });
+        }
+
+        function renderPagination() {
+            let paginationContainer = document.getElementById("paginationContainer");
+            paginationContainer.innerHTML = "";
+
+            let totalPages = Math.ceil(filteredShops.length / pageSize);
+            if (totalPages <= 1) return;
+
+            paginationContainer.innerHTML += `
+                            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                                <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">‹</a>
+                            </li>
+                        `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                paginationContainer.innerHTML += `
+                                <li class="page-item ${currentPage === i ? 'active' : ''}">
+                                    <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                                </li>
+                            `;
+            }
+
+            paginationContainer.innerHTML += `
+                            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                                <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">›</a>
+                            </li>
+                        `;
+        }
+
+        function changePage(page) {
+            let totalPages = Math.ceil(filteredShops.length / pageSize);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderTable();
+            renderPagination();
+        }
+
+        function clearLoginError() {
+            document.getElementById("shopUsername").classList.remove("is-invalid");
+        }
+
+        function openCreateModal() {
+            document.getElementById("shopForm").reset();
+            document.getElementById("shopId").value = "";
+            document.getElementById("shopTariff").value = "200000";
+            document.getElementById("shopUsername").classList.remove("is-invalid");
+            document.getElementById("modalTitle").innerText = "Yangi Savdo Nuqtasini Yaratish";
+            document.getElementById("saveButtonText").innerText = "Saqlash va Yaratish";
+            document.getElementById("shopPassword").setAttribute("required", "required");
+            shopModal.show();
+        }
+
+        function openEditModal(shopId) {
+            let shop = allShops.find(s => s.id === shopId);
+            if (!shop) return;
+
+            document.getElementById("shopId").value = shop.id;
+            document.getElementById("shopName").value = shop.name;
+            document.getElementById("shopRegion").value = shop.region || '';
+            document.getElementById("shopPhone").value = shop.phone || '';
+            document.getElementById("shopUsername").value = shop.username || '';
+            document.getElementById("shopUsername").classList.remove("is-invalid");
+            document.getElementById("shopTariff").value = shop.tariff || 200000;
+            document.getElementById("shopPassword").value = "";
+            document.getElementById("shopPassword").removeAttribute("required");
+
+            document.getElementById("modalTitle").innerText = "Savdo Nuqtasini Tahrirlash";
+            document.getElementById("saveButtonText").innerText = "O'zgarishlarni Saqlash";
+            shopModal.show();
+        }
+
+        async function toggleShopStatus(id) {
+            try {
+                let response = await fetch(`/api/super-admin/toggle-status/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Secret-Key': SECRET_KEY }
+                });
+
+                if (response.ok) {
+                    loadShops();
+                    showNotification("Savdo nuqtasi holati o'zgartirildi!");
+                } else {
+                    showNotification("Holatni o'zgartirib bo'lmadi.", "danger");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function saveShop(event) {
+            event.preventDefault();
+            const id = document.getElementById("shopId").value;
+            const name = document.getElementById("shopName").value;
+            const region = document.getElementById("shopRegion").value;
+            const phone = document.getElementById("shopPhone").value;
+            const username = document.getElementById("shopUsername").value.trim();
+            const tariff = document.getElementById("shopTariff").value;
+            const password = document.getElementById("shopPassword").value;
+
+            // Takroriy login tekshiruvi (faqat yangi qo'shish jarayonida)
+            if (!id) {
+                let existingShop = allShops.find(s => s.username && s.username.toLowerCase() === username.toLowerCase());
+                if (existingShop) {
+                    document.getElementById("shopUsername").classList.add("is-invalid");
+                    showNotification(`"${username}" logini allaqachon band qilingan!`, "danger");
+                    return;
+                }
+            }
+
+            let url = id ? `/api/super-admin/update-shop/${id}` : '/api/super-admin/create-shop';
+            let method = id ? 'PUT' : 'POST';
+
+            try {
+                let response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json', 'Secret-Key': SECRET_KEY },
+                    body: JSON.stringify({ name, region, phone, username, tariff: Number(tariff), password })
+                });
+
+                if (response.ok) {
+                    shopModal.hide();
+                    loadShops();
+                    if (id) {
+                        showNotification("Savdo nuqtasi muvaffaqiyatli tahrirlandi!");
+                    } else {
+                        showNotification("Yangi savdo nuqtasi muvaffaqiyatli yaratildi!");
+                    }
+                } else {
+                    let errData = await response.json().catch(() => ({}));
+                    showNotification("Xatolik: " + (errData.message || "Amaliyot bajarilmadi."), "danger");
+                }
+            } catch (err) {
+                console.error(err);
+                showNotification("Tarmoqda xatolik yuz berdi!", "danger");
+            }
+        }
+
+        async function deleteShop(id) {
+            if (!confirm("Haqiqatan ham ushbu do'konni o'chirmoqchimisiz?")) return;
+            try {
+                let response = await fetch(`/api/super-admin/delete-shop/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Secret-Key': SECRET_KEY }
+                });
+                if (response.ok) {
+                    loadShops();
+                    showNotification("Savdo nuqtasi o'chirib yuborildi!", "danger");
+                } else {
+                    showNotification("O'chirishda xatolik yuz berdi.", "danger");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function logout() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

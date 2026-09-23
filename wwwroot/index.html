@@ -1,0 +1,328 @@
+﻿<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hisob - Tizimga kirish</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Telegram ikonkalari uchun Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0d9488 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bg-radar-circles-top-left {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 350px;
+            height: 350px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .bg-radar-circles-bottom-right {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            height: 400px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .radar-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            border-radius: 50%;
+            animation: radarPulse 4s infinite linear;
+            opacity: 0;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+            .radar-ring:nth-child(2) {
+                animation-delay: 1.3s;
+            }
+
+            .radar-ring:nth-child(3) {
+                animation-delay: 2.6s;
+            }
+
+        @keyframes radarPulse {
+            0% {
+                transform: scale(0.1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        .background-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: floatShape 10s infinite alternate ease-in-out;
+        }
+
+        .shape-1 {
+            width: 400px;
+            height: 400px;
+            background: #3b82f6;
+            top: -100px;
+            left: -100px;
+            animation-duration: 12s;
+        }
+
+        .shape-2 {
+            width: 500px;
+            height: 500px;
+            background: #10b981;
+            bottom: -150px;
+            right: -150px;
+            animation-duration: 15s;
+        }
+
+        @keyframes floatShape {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(50px, 40px) scale(1.1);
+            }
+        }
+
+        .login-card-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 18px;
+            overflow: hidden;
+            padding: 3px;
+            z-index: 10;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+            .login-card-wrapper::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: conic-gradient(from 0deg, transparent 0deg, transparent 300deg, #38bdf8 330deg, #4ade80 360deg);
+                animation: rotateBorder 4s linear infinite;
+            }
+
+        @keyframes rotateBorder {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 40px 45px;
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-radar-circles-top-left">
+        <div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-ring"></div>
+    </div>
+    <div class="bg-radar-circles-bottom-right">
+        <div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-ring"></div>
+    </div>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div><div class="shape shape-2"></div>
+    </div>
+
+    <div class="login-card-wrapper">
+        <div class="login-card">
+            <div class="d-flex justify-content-end mb-3">
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light border dropdown-toggle py-1 px-2 text-muted small" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="currentLangBtn">
+                        🇺🇿 O'zbekcha
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size: 13px;">
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('uz')">🇺🇿 O'zbekcha</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('ru')">🇷🇺 Русский</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center mb-4">
+                <h4 class="fw-bold text-primary">MyHisob</h4>
+                <h5 class="fw-semibold" data-i18n="loginTitle">Tizimga kirish</h5>
+                <p class="text-muted small" data-i18n="subTitle">Boshqaruv paneli</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="mb-3">
+                    <label class="form-label text-muted small" data-i18n="loginLabel">Login</label>
+                    <input type="text" class="form-control py-2" id="loginInput" placeholder="Login" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small" data-i18n="passwordLabel">Parol</label>
+                    <input type="password" class="form-control py-2" id="passwordInput" placeholder="parol" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 mb-3" data-i18n="submitBtn">Kirish</button>
+            </form>
+
+            <div class="text-start mb-2">
+                <span id="errorMsg" class="text-danger fw-semibold small"></span>
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="#" class="text-decoration-none small text-muted" data-i18n="forgotPassword">Maxfiy so'zni unutdingizmi?</a>
+            </div>
+            <hr class="my-4">
+
+            <!-- Footer qismi (Telegram ikonka va murojaat qo'shildi) -->
+            <div class="text-center text-muted" style="font-size: 11px;">
+                <span data-i18n="footerText">
+                    Ishlab chiqaruvchi: ООО «_________», O'zbekiston Respublikasi<br>
+                    Biznesni avtomatlashtirish uchun dasturiy ta'minot<br>
+                    📞 +998 94 568 12 11
+                </span>
+                <div class="mt-2">
+                    <a href="https://t.me/TuronApex" target="_blank" class="text-decoration-none text-primary fw-bold d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-telegram fs-6 text-info"></i> @TuronApex
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const translations = {
+            uz: {
+                currentBtn: "🇺🇿 O'zbekcha", loginTitle: "Tizimga kirish", subTitle: "Boshqaruv paneli",
+                loginLabel: "Login", passwordLabel: "Parol", submitBtn: "Kirish",
+                forgotPassword: "Maxfiy so'zni unutdingizmi?",
+                footerText: "Ishlab chiqaruvchi: ООО «_________», O'zbekiston Respublikasi<br>Biznesni avtomatlashtirish uchun dasturiy ta'minot<br>📞 +998 94 568 12 11",
+                errorServer: "Server bilan aloqa yo'q!", errorLogin: "Login yoki parol xato!"
+            },
+            ru: {
+                currentBtn: "🇷🇺 Русский", loginTitle: "Вход в систему", subTitle: "Панель управления",
+                loginLabel: "Логин", passwordLabel: "Пароль", submitBtn: "Войти",
+                forgotPassword: "Забыли пароль?",
+                footerText: "Производитель: ООО «_________», Республика Узбекистан<br>Программное обеспечение для автоматизации бизнеса<br>📞 +998 94 568 12 11",
+                errorServer: "Нет связи с сервером!", errorLogin: "Неверный логин или пароль!"
+            }
+        };
+
+        let currentLang = localStorage.getItem("appLang") || "uz";
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem("appLang", lang);
+            applyTranslations();
+        }
+
+        function applyTranslations() {
+            const t = translations[currentLang];
+            document.getElementById("currentLangBtn").innerHTML = t.currentBtn;
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (t[key]) el.innerHTML = t[key];
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => { applyTranslations(); });
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const login = document.getElementById("loginInput").value.trim();
+            const password = document.getElementById("passwordInput").value.trim();
+            const errorSpan = document.getElementById("errorMsg");
+            const t = translations[currentLang];
+
+            errorSpan.textContent = "";
+
+            if (login === "admin" && password === "admin_2002") {
+                window.location.href = "admin.html";
+                return;
+            }
+
+            try {
+                let response = await fetch('/api/shop-cabinet/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ login: login, password: password })
+                });
+
+                let result = await response.json();
+
+                if (response.ok && result.success) {
+                    localStorage.setItem("currentShopId", result.shopId);
+                    localStorage.setItem("shopName", result.shopName);
+                    localStorage.setItem("shopLogin", login);
+
+                    window.location.href = "cabinet.html";
+                    return;
+                }
+
+                // Do'kon egasi sifatida topilmadi — xodim sifatida urinib ko'ramiz
+                let empResponse = await fetch('/api/shop-cabinet/employee-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ login: login, password: password })
+                });
+
+                let empResult = await empResponse.json();
+
+                if (empResponse.ok && empResult.success) {
+                    localStorage.setItem("currentShopId", empResult.shopId);
+                    localStorage.setItem("shopName", empResult.shopName);
+                    localStorage.setItem("currentEmployeeId", empResult.employeeId);
+                    localStorage.setItem("employeeName", empResult.employeeName);
+                    localStorage.setItem("employeeLogin", login);
+
+                    window.location.href = "employee-cabinet.html";
+                    return;
+                }
+
+                errorSpan.textContent = empResult.message || result.message || t.errorLogin;
+            } catch (err) {
+                console.error(err);
+                errorSpan.textContent = t.errorServer;
+            }
+        }
+    </script>
+</body>
+</html>
