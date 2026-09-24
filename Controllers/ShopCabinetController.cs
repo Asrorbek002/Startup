@@ -595,7 +595,7 @@ public class ShopCabinetController : ControllerBase
         try
         {
             element.ShopId = shopId;
-            element.CreatedAt = DateTime.Now;
+            element.CreatedAt = DateTime.UtcNow;
 
             _context.Elements.Add(element);
 
@@ -617,7 +617,7 @@ public class ShopCabinetController : ControllerBase
                     Quantity = element.Length,
                     BuyPrice = element.BuyPrice,
                     SellPrice = element.SellPrice,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 });
             }
 
@@ -777,7 +777,7 @@ public class ShopCabinetController : ControllerBase
         try
         {
             product.ShopId = shopId;
-            product.CreatedAt = DateTime.Now;
+            product.CreatedAt = DateTime.UtcNow;
 
             _context.Products.Add(product);
 
@@ -809,7 +809,7 @@ public class ShopCabinetController : ControllerBase
         var statusError = await CheckShopStatusAsync(shopId);
         if (statusError != null) return statusError;
 
-        var oneYearAgo = DateTime.Now.AddYears(-1);
+        var oneYearAgo = DateTime.UtcNow.AddYears(-1);
 
         var products = await _context.Products
             .Where(p => p.ShopId == shopId && p.CreatedAt >= oneYearAgo)
