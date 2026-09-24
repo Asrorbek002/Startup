@@ -11,8 +11,8 @@ using ShopManagementSystem.Data;
 namespace ShopManagementSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260923104602_AddImageAndListedPrice")]
-    partial class AddImageAndListedPrice
+    [Migration("20260924044050_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -75,6 +75,9 @@ namespace ShopManagementSystem.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageUrl")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Length")
@@ -231,6 +234,9 @@ namespace ShopManagementSystem.Migrations
 
                     b.Property<string>("EmployeeName")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("ListedPrice")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("MenuCategory")
