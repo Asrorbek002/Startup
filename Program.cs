@@ -32,6 +32,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         var dbPath = Path.Combine(builder.Environment.ContentRootPath, "shopmanagement.db");
         options.UseSqlite($"Data Source={dbPath}");
     }
+
+    // Migratsiya SQLite bilan yaratilgani, ammo serverda Postgres ishlatilgani uchun
+    // EF Core "model mos kelmayapti" degan yolg'on ogohlantirish beradi — shuni o'chiramiz.
+    options.ConfigureWarnings(w =>
+        w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 });
 
 builder.Services.AddControllers();
