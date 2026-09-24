@@ -64,6 +64,9 @@ public class ShopCabinetController : ControllerBase
         {
             shop.Id,
             shop.Name,
+            shop.Phone,
+            shop.Region,
+            shop.Username,
             shop.Balance,
             shop.Status
         });

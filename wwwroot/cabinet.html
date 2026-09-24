@@ -62,6 +62,291 @@
             text-align: right;
             line-height: 1.2;
         }
+
+        /* ===== Til almashtirish (globus) ===== */
+        .lang-wrap {
+            position: relative;
+        }
+
+        .lang-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: rgba(255,255,255,.14);
+            border: 1px solid rgba(255,255,255,.4);
+            color: #fff;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+            .lang-btn:hover, .lang-btn:focus-visible {
+                background: rgba(255,255,255,.26);
+                outline: none;
+            }
+
+            .lang-btn svg {
+                width: 22px;
+                height: 22px;
+            }
+
+        .lang-menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 10px);
+            min-width: 150px;
+            z-index: 2000;
+            background: #fff;
+            border-radius: 12px;
+            padding: 6px;
+            box-shadow: 0 12px 30px rgba(13,42,90,.26);
+            opacity: 0;
+            transform: translateY(-6px);
+            pointer-events: none;
+            transition: opacity .18s, transform .18s;
+        }
+
+        .lang-wrap.open .lang-menu {
+            opacity: 1;
+            transform: none;
+            pointer-events: auto;
+        }
+
+        .lang-item {
+            display: block;
+            width: 100%;
+            text-align: left;
+            border: 0;
+            background: transparent;
+            color: #212529;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+            .lang-item:hover {
+                background: #f1f3f5;
+            }
+
+            .lang-item.active {
+                background: #e7f1ff;
+                color: #0d6efd;
+                font-weight: 600;
+            }
+        /* ===== Profil (avatar + karta) ===== */
+        .profile-wrap {
+            position: relative;
+        }
+
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,.14);
+            border: 1px solid rgba(255,255,255,.4);
+            border-radius: 999px;
+            padding: 3px 12px 3px 3px;
+            color: #fff;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+            .profile-btn:hover, .profile-btn:focus-visible {
+                background: rgba(255,255,255,.26);
+                outline: none;
+            }
+
+            .profile-btn .p-name {
+                font-size: 13px;
+                font-weight: 600;
+                max-width: 110px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .profile-btn .p-caret {
+                width: 10px;
+                height: 10px;
+                opacity: .85;
+                transition: transform .2s;
+            }
+
+        .profile-wrap.open .p-caret {
+            transform: rotate(180deg);
+        }
+
+        .p-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #fff;
+            color: #0d6efd;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+        }
+
+            .p-avatar svg {
+                width: 20px;
+                height: 20px;
+            }
+
+        .profile-card {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 12px);
+            width: 300px;
+            z-index: 2000;
+            background: #fff;
+            color: #212529;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 14px 36px rgba(13,42,90,.28);
+            opacity: 0;
+            transform: translateY(-6px);
+            pointer-events: none;
+            transition: opacity .18s, transform .18s;
+        }
+
+        .profile-wrap.open .profile-card {
+            opacity: 1;
+            transform: none;
+            pointer-events: auto;
+        }
+
+        .pc-head {
+            background: linear-gradient(135deg, #0a58ca, #3d8bfd);
+            color: #fff;
+            text-align: center;
+            padding: 22px 16px 20px;
+        }
+
+            .pc-head .p-avatar {
+                width: 68px;
+                height: 68px;
+                margin: 0 auto 10px;
+                border: 3px solid rgba(255,255,255,.55);
+            }
+
+                .pc-head .p-avatar svg {
+                    width: 38px;
+                    height: 38px;
+                }
+
+            .pc-head h5 {
+                margin: 0 0 8px;
+                font-size: 18px;
+                font-weight: 700;
+            }
+
+        .pc-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(255,255,255,.2);
+            border-radius: 999px;
+            padding: 3px 11px;
+        }
+
+            .pc-status i {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: #5df2a4;
+            }
+
+            .pc-status.off i {
+                background: #ff8d8d;
+            }
+
+        .pc-body {
+            padding: 6px 16px 10px;
+        }
+
+        .pc-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 0;
+            border-bottom: 1px solid #eef1f5;
+        }
+
+            .pc-row:last-child {
+                border-bottom: 0;
+            }
+
+        .pc-ico {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #e7f1ff;
+            color: #0d6efd;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+        }
+
+            .pc-ico svg {
+                width: 18px;
+                height: 18px;
+            }
+
+        .pc-row small {
+            display: block;
+            font-size: 11px;
+            color: #6c757d;
+            line-height: 1.2;
+        }
+
+        .pc-row b {
+            font-size: 14px;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .pc-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: 6px;
+            padding: 10px;
+            border: 1px solid #f1c0c4;
+            border-radius: 10px;
+            background: #fff5f5;
+            color: #dc3545;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .15s, color .15s;
+        }
+
+            .pc-logout:hover {
+                background: #dc3545;
+                color: #fff;
+                border-color: #dc3545;
+            }
+
+            .pc-logout svg {
+                width: 17px;
+                height: 17px;
+            }
+
+        @media (max-width: 480px) {
+            .profile-btn .p-name {
+                display: none;
+            }
+
+            .profile-btn {
+                padding-right: 8px;
+            }
+        }
     </style>
 </head>
 <body class="d-flex flex-column h-100">
@@ -71,22 +356,45 @@
         <a class="navbar-brand fw-bold" href="#" data-i18n="brand">Mison Iqtisodchi Kabineti</a>
 
         <div class="ms-auto d-flex align-items-center gap-3">
-            <select id="langSelect" class="form-select form-select-sm" style="width: 120px;" onchange="changeLanguage(this.value)">
-                <option value="uz">O'zbekcha</option>
-                <option value="ru">Русский</option>
-            </select>
+            <div class="lang-wrap" id="langWrap">
+                <button type="button" class="lang-btn" id="langBtn" aria-haspopup="true" aria-expanded="false" title="Til / Язык"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5" /><path d="M2.5 12h19" /><path d="M12 2.5c2.6 2.6 4 5.9 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-5.9-4-9.5s1.4-6.9 4-9.5z" /></svg></button>
+                <div class="lang-menu" id="langMenu">
+                    <button type="button" class="lang-item active" data-lang="uz">O'zbekcha</button>
+                    <button type="button" class="lang-item" data-lang="ru">Русский</button>
+                </div>
+            </div>
 
             <div class="balance-badge d-none d-sm-block">
                 <div style="font-size: 9px; font-weight: bold; color: #6c757d; letter-spacing: 0.5px;" data-i18n="balance_title">BALANS</div>
                 <div style="font-size: 14px; font-weight: bold; color: #198754;" id="navBalance">0 so'm</div>
             </div>
 
-            <div class="text-white text-end d-none d-md-block" style="line-height: 1.2;">
-                <div class="fw-bold small" id="navLoginText">admin</div>
-                <div class="text-light" style="font-size: 11px;" id="navIdText">ID: #1</div>
+            <div class="profile-wrap" id="profileWrap">
+                <button type="button" class="profile-btn" id="profileBtn" aria-haspopup="true" aria-expanded="false">
+                    <span class="p-avatar"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4.5" /><path d="M3.5 21c0-4.7 3.8-8 8.5-8s8.5 3.3 8.5 8z" /></svg></span>
+                    <span class="p-name" id="navLoginText">admin</span>
+                    <svg class="p-caret" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 3.5 5 7l3.5-3.5" /></svg>
+                </button>
+                <div class="profile-card" id="profileCard">
+                    <div class="pc-head">
+                        <div class="p-avatar"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4.5" /><path d="M3.5 21c0-4.7 3.8-8 8.5-8s8.5 3.3 8.5 8z" /></svg></div>
+                        <h5 id="pcShopName">Do'kon</h5>
+                        <span class="pc-status" id="pcStatus"><i></i><span id="pcStatusText">Faollashtirilgan</span></span>
+                    </div>
+                    <div class="pc-body">
+                        <div class="pc-row"><div class="pc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9" /><path d="M4 9v11h16V9" /><path d="M9 20v-6h6v6" /></svg></div><div><small data-i18n="pc_shop">Savdo do'koni</small><b id="pcShopName2">—</b></div></div>
+                        <div class="pc-row"><div class="pc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z" /></svg></div><div><small data-i18n="pc_phone">Telefon raqami</small><b id="pcPhone">—</b></div></div>
+                        <div class="pc-row"><div class="pc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" /></svg></div><div><small data-i18n="pc_login">Login</small><b id="pcLogin">—</b></div></div>
+                        <div class="pc-row"><div class="pc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg></div><div><small data-i18n="pc_region">Hudud</small><b id="pcRegion">—</b></div></div>
+                        <div class="pc-row"><div class="pc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /><path d="M7 15h4" /></svg></div><div><small>ID</small><b id="navIdText">1</b></div></div>
+                        <button type="button" class="pc-logout" onclick="logout()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></svg>
+                            <span data-i18n="logout">Chiqish</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <button class="btn btn-outline-light btn-sm" onclick="logout()" data-i18n="logout">Chiqish</button>
         </div>
     </nav>
 
@@ -693,6 +1001,10 @@
                 brand: "Mison Iqtisodchi Kabineti",
                 balance_title: "BALANS",
                 logout: "Chiqish",
+                pc_shop: "Savdo do'koni",
+                pc_phone: "Telefon raqami",
+                pc_login: "Login",
+                pc_region: "Hudud",
                 menu_analysis: "Iqtisodiy Tahlil",
                 tab_dashboard: "Boshqaruv Paneli",
                 tab_elements: "Elementlar",
@@ -765,6 +1077,10 @@
                 brand: "Кабинет Экономиста Mison",
                 balance_title: "БАЛАНС",
                 logout: "Выйти",
+                pc_shop: "Магазин",
+                pc_phone: "Телефон",
+                pc_login: "Логин",
+                pc_region: "Регион",
                 menu_analysis: "Экономический Анализ",
                 tab_dashboard: "Панель управления",
                 tab_elements: "Элементы",
@@ -877,8 +1193,11 @@
             }
 
             const currentLogin = localStorage.getItem("shopLogin") || "rahmatillo";
-            document.getElementById("navLoginText").textContent = "Login: " + currentLogin;
-            document.getElementById("navIdText").textContent = "ID: #" + (localStorage.getItem("currentShopId") || "23");
+            document.getElementById("navLoginText").textContent = currentLogin;
+            document.getElementById("pcLogin").textContent = currentLogin;
+            document.getElementById("pcShopName").textContent = localStorage.getItem("shopName") || "";
+            document.getElementById("pcShopName2").textContent = localStorage.getItem("shopName") || "—";
+            document.getElementById("navIdText").textContent = (localStorage.getItem("currentShopId") || "23");
             document.getElementById("navBalance").textContent = "0 so'm";
 
             const adminDisplay = document.getElementById("currentAdminLoginDisplay");
@@ -919,6 +1238,58 @@
             return Math.round(num || 0).toLocaleString('ru-RU').replace(/,/g, ' ');
         }
 
+
+        // Profil kartasini serverdan kelgan ma'lumot bilan to'ldirish
+        function fillProfile(d) {
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || "—"; };
+            set("pcShopName", d.name);
+            set("pcShopName2", d.name);
+            set("pcPhone", d.phone);
+            set("pcRegion", d.region);
+            if (d.username) { set("pcLogin", d.username); set("navLoginText", d.username); }
+            set("pcStatusText", d.status);
+            const st = document.getElementById("pcStatus");
+            if (st) st.classList.toggle("off", d.status === "Faol emas" || d.status === "Bloklangan");
+        }
+
+        // Globus orqali til tanlash
+        (function () {
+            const wrap = document.getElementById("langWrap");
+            const btn = document.getElementById("langBtn");
+            btn.addEventListener("click", e => {
+                e.stopPropagation();
+                document.getElementById("profileWrap").classList.remove("open");
+                const open = wrap.classList.toggle("open");
+                btn.setAttribute("aria-expanded", open);
+            });
+            wrap.querySelectorAll(".lang-item").forEach(item => {
+                item.addEventListener("click", () => {
+                    wrap.querySelectorAll(".lang-item").forEach(i => i.classList.toggle("active", i === item));
+                    changeLanguage(item.dataset.lang);
+                    wrap.classList.remove("open");
+                    btn.setAttribute("aria-expanded", "false");
+                });
+            });
+            document.addEventListener("click", e => { if (!wrap.contains(e.target)) wrap.classList.remove("open"); });
+            document.addEventListener("keydown", e => { if (e.key === "Escape") wrap.classList.remove("open"); });
+        })();
+
+        // Profil kartasini ochish / yopish
+        (function () {
+            const wrap = document.getElementById("profileWrap");
+            const btn = document.getElementById("profileBtn");
+            btn.addEventListener("click", e => {
+                e.stopPropagation();
+                document.getElementById("langWrap").classList.remove("open");
+                const open = wrap.classList.toggle("open");
+                btn.setAttribute("aria-expanded", open);
+            });
+            document.addEventListener("click", e => {
+                if (!wrap.contains(e.target)) { wrap.classList.remove("open"); btn.setAttribute("aria-expanded", "false"); }
+            });
+            document.addEventListener("keydown", e => { if (e.key === "Escape") wrap.classList.remove("open"); });
+        })();
+
         // Do'konning haqiqiy balansini bazadan olib, navbar'da ko'rsatadi
         async function fetchBalance() {
             const shopId = localStorage.getItem("currentShopId") || "18";
@@ -927,6 +1298,7 @@
                 if (!response.ok) return;
                 const data = await response.json();
                 document.getElementById("navBalance").textContent = formatSom(data.balance) + " so'm";
+                fillProfile(data);
             } catch (error) {
                 console.error("Balansni olishda xatolik:", error);
             }
@@ -1056,21 +1428,21 @@
                 const rowClass = isDropped ? "table-danger" : "";
                 const priceCell = isDropped
                     ? `<span class="fw-bold text-danger">${Number(s.salePrice).toLocaleString()} so'm</span>
-                               <div class="small text-danger">−${Number(listed - s.salePrice).toLocaleString()} so'm/dona</div>`
+                                   <div class="small text-danger">−${Number(listed - s.salePrice).toLocaleString()} so'm/dona</div>`
                     : `${Number(s.salePrice).toLocaleString()} so'm`;
                 tbody.innerHTML += `
-                                                                <tr class="${rowClass}">
-                                                                    <td>${idx + 1}</td>
-                                                                    <td>${dateFormatted}</td>
-                                                                    <td>${s.employeeName || "-"}</td>
-                                                                    <td>${s.productName}${isDropped ? ' <span class="badge bg-danger">narx pasaytirilgan</span>' : ''}</td>
-                                                                    <td>${s.quantity}</td>
-                                                                    <td>${listed ? Number(listed).toLocaleString() + " so'm" : "—"}</td>
-                                                                    <td>${priceCell}</td>
-                                                                    <td class="fw-bold">${Number(s.totalSum).toLocaleString()} so'm</td>
-                                                                    <td class="fw-bold text-success">${Number(s.profit).toLocaleString()} so'm</td>
-                                                                </tr>
-                                                            `;
+                                                                    <tr class="${rowClass}">
+                                                                        <td>${idx + 1}</td>
+                                                                        <td>${dateFormatted}</td>
+                                                                        <td>${s.employeeName || "-"}</td>
+                                                                        <td>${s.productName}${isDropped ? ' <span class="badge bg-danger">narx pasaytirilgan</span>' : ''}</td>
+                                                                        <td>${s.quantity}</td>
+                                                                        <td>${listed ? Number(listed).toLocaleString() + " so'm" : "—"}</td>
+                                                                        <td>${priceCell}</td>
+                                                                        <td class="fw-bold">${Number(s.totalSum).toLocaleString()} so'm</td>
+                                                                        <td class="fw-bold text-success">${Number(s.profit).toLocaleString()} so'm</td>
+                                                                    </tr>
+                                                                `;
                 totalSum += s.totalSum;
                 totalProfit += s.profit;
             });
@@ -1233,16 +1605,16 @@
                 const originalIdx = productsList.indexOf(p);
                 const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
                 tbody.innerHTML += `
-                                                                <tr style="cursor: pointer;" onclick="showProductDetails(${originalIdx})">
-                                                                    <td><strong>${i + 1}</strong></td>
-                                                                    <td>${p.name}</td>
-                                                                    <td>${p.quantity}</td>
-                                                                    <td><span class="badge bg-info text-dark">${p.unit}</span></td>
-                                                                    <td>${p.buyPrice} so'm</td>
-                                                                    <td>${p.sellPrice} so'm</td>
-                                                                    <td class="text-muted small">${dateFormatted}</td>
-                                                                </tr>
-                                                            `;
+                                                                    <tr style="cursor: pointer;" onclick="showProductDetails(${originalIdx})">
+                                                                        <td><strong>${i + 1}</strong></td>
+                                                                        <td>${p.name}</td>
+                                                                        <td>${p.quantity}</td>
+                                                                        <td><span class="badge bg-info text-dark">${p.unit}</span></td>
+                                                                        <td>${p.buyPrice} so'm</td>
+                                                                        <td>${p.sellPrice} so'm</td>
+                                                                        <td class="text-muted small">${dateFormatted}</td>
+                                                                    </tr>
+                                                                `;
             });
         }
 
@@ -1546,26 +1918,26 @@
                     ? `<img src="${el.imageUrl}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">`
                     : `<span class="text-muted">—</span>`;
                 tbody.innerHTML += `
-                                                                <tr>
-                                                                    <td><strong>${idx + 1}</strong></td>
-                                                                    <td>${imgCell}</td>
-                                                                    <td>${el.name}</td>
-                                                                    <td>${el.length}</td>
-                                                                    <td><span class="badge bg-info text-dark">${el.unit}</span></td>
-                                                                    <td>${Number(el.buyPrice || 0).toLocaleString()} so'm</td>
-                                                                    <td>${Number(el.sellPrice || 0).toLocaleString()} so'm</td>
-                                                                    <td class="text-muted small">${dateFormatted}</td>
-                                                                    <td class="text-center">
-                                                                        <div class="dropdown">
-                                                                            <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
-                                                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteElement(${el.id}); return false;">🗑️ ${translations[currentLang].btn_delete}</a></li>
-                                                                                <li><a class="dropdown-item" href="#" onclick="editElement(${el.id}); return false;">✏️ ${translations[currentLang].btn_edit}</a></li>
-                                                                            </ul>
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                            `;
+                                                                    <tr>
+                                                                        <td><strong>${idx + 1}</strong></td>
+                                                                        <td>${imgCell}</td>
+                                                                        <td>${el.name}</td>
+                                                                        <td>${el.length}</td>
+                                                                        <td><span class="badge bg-info text-dark">${el.unit}</span></td>
+                                                                        <td>${Number(el.buyPrice || 0).toLocaleString()} so'm</td>
+                                                                        <td>${Number(el.sellPrice || 0).toLocaleString()} so'm</td>
+                                                                        <td class="text-muted small">${dateFormatted}</td>
+                                                                        <td class="text-center">
+                                                                            <div class="dropdown">
+                                                                                <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
+                                                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteElement(${el.id}); return false;">🗑️ ${translations[currentLang].btn_delete}</a></li>
+                                                                                    <li><a class="dropdown-item" href="#" onclick="editElement(${el.id}); return false;">✏️ ${translations[currentLang].btn_edit}</a></li>
+                                                                                </ul>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                `;
             });
 
             renderElementsPagination();
@@ -1582,9 +1954,9 @@
 
             const addPageItem = (label, page, disabled, active) => {
                 paginationEl.innerHTML += `
-                                                                <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
-                                                                    <a class="page-link" href="#" onclick="goToElementsPage(${page}); return false;">${label}</a>
-                                                                </li>`;
+                                                                    <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
+                                                                        <a class="page-link" href="#" onclick="goToElementsPage(${page}); return false;">${label}</a>
+                                                                    </li>`;
             };
 
             addPageItem('«', currentElementsPage - 1, currentElementsPage === 1, false);
@@ -1648,10 +2020,10 @@
             toastEl.setAttribute("aria-live", "assertive");
             toastEl.setAttribute("aria-atomic", "true");
             toastEl.innerHTML = `
-                                                            <div class="d-flex">
-                                                                <div class="toast-body">${message}</div>
-                                                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                                                            </div>`;
+                                                                <div class="d-flex">
+                                                                    <div class="toast-body">${message}</div>
+                                                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                                                </div>`;
             container.appendChild(toastEl);
 
             const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
@@ -1721,14 +2093,14 @@
             listContainer.innerHTML = "";
             productsList.forEach((p, idx) => {
                 listContainer.innerHTML += `
-                                                                <li class="list-group-item d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="showProductDetails(${idx})">
-                                                                    <div>
-                                                                        <strong>${p.name}</strong><br>
-                                                                        <small class="text-muted">Miqdor: ${p.quantity} ${p.unit} | Narx: ${p.sellPrice} so'm</small>
-                                                                    </div>
-                                                                    <span class="badge bg-primary rounded-pill">#${idx + 1}</span>
-                                                                </li>
-                                                            `;
+                                                                    <li class="list-group-item d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="showProductDetails(${idx})">
+                                                                        <div>
+                                                                            <strong>${p.name}</strong><br>
+                                                                            <small class="text-muted">Miqdor: ${p.quantity} ${p.unit} | Narx: ${p.sellPrice} so'm</small>
+                                                                        </div>
+                                                                        <span class="badge bg-primary rounded-pill">#${idx + 1}</span>
+                                                                    </li>
+                                                                `;
             });
         }
 
@@ -1739,14 +2111,14 @@
             const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
 
             document.getElementById("productDetailsBody").innerHTML = `
-                                                            <table class="table table-borderless mb-0">
-                                                                <tr><td class="text-muted">Nomi</td><td class="text-end fw-bold">${p.name}</td></tr>
-                                                                <tr><td class="text-muted">Qabul qilingan miqdor</td><td class="text-end fw-bold">${p.quantity} ${p.unit}</td></tr>
-                                                                <tr><td class="text-muted">Kelish narxi</td><td class="text-end">${p.buyPrice} so'm</td></tr>
-                                                                <tr><td class="text-muted">Sotish narxi</td><td class="text-end">${p.sellPrice} so'm</td></tr>
-                                                                <tr><td class="text-muted">Qabul qilingan sana/vaqt</td><td class="text-end">${dateFormatted}</td></tr>
-                                                            </table>
-                                                        `;
+                                                                <table class="table table-borderless mb-0">
+                                                                    <tr><td class="text-muted">Nomi</td><td class="text-end fw-bold">${p.name}</td></tr>
+                                                                    <tr><td class="text-muted">Qabul qilingan miqdor</td><td class="text-end fw-bold">${p.quantity} ${p.unit}</td></tr>
+                                                                    <tr><td class="text-muted">Kelish narxi</td><td class="text-end">${p.buyPrice} so'm</td></tr>
+                                                                    <tr><td class="text-muted">Sotish narxi</td><td class="text-end">${p.sellPrice} so'm</td></tr>
+                                                                    <tr><td class="text-muted">Qabul qilingan sana/vaqt</td><td class="text-end">${dateFormatted}</td></tr>
+                                                                </table>
+                                                            `;
 
             const modalEl = document.getElementById('productDetailsModal');
             let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
@@ -1815,18 +2187,18 @@
             tbody.innerHTML = "";
             staffList.forEach((staff, idx) => {
                 tbody.innerHTML += `
-                                                                <tr>
-                                                                    <td><strong>${idx + 1}</strong></td>
-                                                                    <td>${staff.firstname} ${staff.lastname}</td>
-                                                                    <td>${staff.phone}</td>
-                                                                    <td>${staff.login}</td>
-                                                                    <td>${staff.salary.toLocaleString()} so'm</td>
-                                                                    <td class="text-center">
-                                                                        <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="requestStaffAction('edit', ${idx})">✏️</button>
-                                                                        <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="requestStaffAction('delete', ${idx})">🗑️</button>
-                                                                    </td>
-                                                                </tr>
-                                                            `;
+                                                                    <tr>
+                                                                        <td><strong>${idx + 1}</strong></td>
+                                                                        <td>${staff.firstname} ${staff.lastname}</td>
+                                                                        <td>${staff.phone}</td>
+                                                                        <td>${staff.login}</td>
+                                                                        <td>${staff.salary.toLocaleString()} so'm</td>
+                                                                        <td class="text-center">
+                                                                            <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="requestStaffAction('edit', ${idx})">✏️</button>
+                                                                            <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="requestStaffAction('delete', ${idx})">🗑️</button>
+                                                                        </td>
+                                                                    </tr>
+                                                                `;
             });
         }
 
@@ -1844,28 +2216,28 @@
                 const paid = staff.paid || 0;
                 const remaining = Math.max(staff.salary - paid, 0);
                 tbody.innerHTML += `
-                                                                <tr>
-                                                                    <td><strong>${idx + 1}</strong></td>
-                                                                    <td>${staff.firstname}</td>
-                                                                    <td>${staff.lastname}</td>
-                                                                    <td>${staff.phone}</td>
-                                                                    <td>${staff.login}</td>
-                                                                    <td class="fw-bold text-success">${staff.salary.toLocaleString()} so'm</td>
-                                                                    <td class="fw-bold text-primary" style="cursor:pointer; text-decoration:underline;" onclick="showPaymentHistory(${idx})" title="To'lovlar tarixini ko'rish">${paid.toLocaleString()} so'm</td>
-                                                                    <td class="fw-bold ${remaining > 0 ? 'text-danger' : 'text-success'}">${remaining.toLocaleString()} so'm</td>
-                                                                    <td class="text-center">
-                                                                        <div class="dropdown">
-                                                                            <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
-                                                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                                                <li><a class="dropdown-item py-2" href="#" onclick="executeAction('pay', ${idx}); return false;">💵 To'lov</a></li>
-                                                                                <li><a class="dropdown-item py-2" href="#" onclick="executeAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
-                                                                                <li><hr class="dropdown-divider"></li>
-                                                                                <li><a class="dropdown-item py-2 text-danger" href="#" onclick="executeAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
-                                                                            </ul>
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                            `;
+                                                                    <tr>
+                                                                        <td><strong>${idx + 1}</strong></td>
+                                                                        <td>${staff.firstname}</td>
+                                                                        <td>${staff.lastname}</td>
+                                                                        <td>${staff.phone}</td>
+                                                                        <td>${staff.login}</td>
+                                                                        <td class="fw-bold text-success">${staff.salary.toLocaleString()} so'm</td>
+                                                                        <td class="fw-bold text-primary" style="cursor:pointer; text-decoration:underline;" onclick="showPaymentHistory(${idx})" title="To'lovlar tarixini ko'rish">${paid.toLocaleString()} so'm</td>
+                                                                        <td class="fw-bold ${remaining > 0 ? 'text-danger' : 'text-success'}">${remaining.toLocaleString()} so'm</td>
+                                                                        <td class="text-center">
+                                                                            <div class="dropdown">
+                                                                                <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                                                    <li><a class="dropdown-item py-2" href="#" onclick="executeAction('pay', ${idx}); return false;">💵 To'lov</a></li>
+                                                                                    <li><a class="dropdown-item py-2" href="#" onclick="executeAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
+                                                                                    <li><hr class="dropdown-divider"></li>
+                                                                                    <li><a class="dropdown-item py-2 text-danger" href="#" onclick="executeAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
+                                                                                </ul>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                `;
             });
         }
 
@@ -2004,34 +2376,34 @@
                             ? `<div class="text-muted small mt-1">📝 ${p.note}</div>`
                             : "";
                         return `
-                                                                <tr>
-                                                                    <td>
-                                                                        <div>${dateFormatted}</div>
-                                                                        ${noteRow}
-                                                                    </td>
-                                                                    <td class="text-end fw-bold text-success">${p.amount.toLocaleString()} so'm</td>
-                                                                </tr>
-                                                            `;
+                                                                    <tr>
+                                                                        <td>
+                                                                            <div>${dateFormatted}</div>
+                                                                            ${noteRow}
+                                                                        </td>
+                                                                        <td class="text-end fw-bold text-success">${p.amount.toLocaleString()} so'm</td>
+                                                                    </tr>
+                                                                `;
                     })
                     .join("");
 
                 bodyEl.innerHTML = `
-                                                        <table class="table table-sm table-hover align-middle mb-0">
-                                                            <thead class="table-light">
-                                                                <tr>
-                                                                    <th>Sana</th>
-                                                                    <th class="text-end">Miqdor</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>${rows}</tbody>
-                                                            <tfoot>
-                                                                <tr class="table-light">
-                                                                    <td class="fw-bold">Jami to'langan</td>
-                                                                    <td class="text-end fw-bold text-success">${(staff.paid || 0).toLocaleString()} so'm</td>
-                                                                </tr>
-                                                            </tfoot>
-                                                        </table>
-                                                    `;
+                                                            <table class="table table-sm table-hover align-middle mb-0">
+                                                                <thead class="table-light">
+                                                                    <tr>
+                                                                        <th>Sana</th>
+                                                                        <th class="text-end">Miqdor</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>${rows}</tbody>
+                                                                <tfoot>
+                                                                    <tr class="table-light">
+                                                                        <td class="fw-bold">Jami to'langan</td>
+                                                                        <td class="text-end fw-bold text-success">${(staff.paid || 0).toLocaleString()} so'm</td>
+                                                                    </tr>
+                                                                </tfoot>
+                                                            </table>
+                                                        `;
             }
         }
 
