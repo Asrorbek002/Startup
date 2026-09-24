@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iqtisodchi Kabineti - Mison</title>
+    <title>MyHisob</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 96 96%22%3E%3Crect width=%2296%22 height=%2296%22 rx=%2224%22 fill=%22%230f9d76%22/%3E%3Crect x=%2224%22 y=%2228%22 width=%2213%22 height=%2244%22 rx=%223%22 fill=%22%23fff%22/%3E%3Crect x=%2259%22 y=%2220%22 width=%2213%22 height=%2252%22 rx=%223%22 fill=%22%23fff%22/%3E%3Crect x=%2224%22 y=%2244%22 width=%2248%22 height=%2212%22 rx=%223%22 fill=%22%23fff%22/%3E%3Cpolygon points=%2252%2C22 65.5%2C8 79%2C22%22 fill=%22%23fff%22/%3E%3C/svg%3E">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         html, body {
@@ -162,6 +163,64 @@
 
         @media (prefers-reduced-motion: reduce) {
             .brand-logo, .brand-text {
+                animation: none !important;
+            }
+        }
+        /* ===== MyHisob logotipi: H + o'sish o'qi (rangi o'zgaradi, aylanadi) ===== */
+        /* ===== MyHisob logotipi: faqat H harfi, o'z o'qida aylanadi ===== */
+        .brand-logo {
+            width: 36px;
+            height: 40px;
+            border-radius: 0;
+            display: grid;
+            place-items: center;
+            color: #ffffff;
+            background: none;
+            box-shadow: none;
+            animation: hSpin 4s linear infinite;
+        }
+
+            .brand-logo::before {
+                display: none;
+            }
+
+            .brand-logo svg {
+                width: 34px;
+                height: 34px;
+                filter: drop-shadow(0 2px 6px rgba(0,20,80,.45));
+            }
+
+        .brand-my:hover .brand-logo {
+            transform: none;
+            filter: brightness(1.15);
+        }
+
+        .hl-up {
+            animation: hlBob 1.6s ease-in-out infinite;
+        }
+
+        @keyframes hSpin {
+            from {
+                transform: perspective(260px) rotateY(0deg);
+            }
+
+            to {
+                transform: perspective(260px) rotateY(360deg);
+            }
+        }
+
+        @keyframes hlBob {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-1.3px);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .brand-logo, .hl-up {
                 animation: none !important;
             }
         }
@@ -830,7 +889,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary px-4 shadow-sm flex-shrink-0">
         <a class="navbar-brand brand-my" href="#" aria-label="MyHisob">
             <span class="brand-logo">
-                <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3.5" y="12" width="4" height="8.5" rx="1.2" /><rect x="10" y="7.5" width="4" height="13" rx="1.2" /><rect x="16.5" y="3" width="4" height="17.5" rx="1.2" /></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><g transform="translate(-.9 2)"><rect x="6" y="7" width="3.25" height="11" rx="1" /><rect x="6" y="11" width="12" height="3" rx="1" /><g class="hl-up"><rect x="14.75" y="5" width="3.25" height="13" rx="1" /><polygon points="13,5.6 16.4,2 19.8,5.6" /></g></g></svg>
             </span>
             <span class="brand-text">My<b>Hisob</b></span>
         </a>
