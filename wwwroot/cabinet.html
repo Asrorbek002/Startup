@@ -134,25 +134,25 @@
                     <div class="col-md-3">
                         <div class="card shadow-sm p-3 border-start border-primary border-4">
                             <span class="text-muted small" data-i18n="stat_sales">SAVDO</span>
-                            <h4 class="fw-bold text-dark mt-1">270 000 so'm</h4>
+                            <h4 class="fw-bold text-dark mt-1" id="statSales">0 so'm</h4>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card shadow-sm p-3 border-start border-success border-4">
                             <span class="text-muted small" data-i18n="stat_checks">CHEKLAR</span>
-                            <h4 class="fw-bold text-dark mt-1">2 ta</h4>
+                            <h4 class="fw-bold text-dark mt-1" id="statChecks">0 ta</h4>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card shadow-sm p-3 border-start border-warning border-4">
                             <span class="text-muted small" data-i18n="stat_avg_check">O'RTACHA CHEK</span>
-                            <h4 class="fw-bold text-dark mt-1">135 000 so'm</h4>
+                            <h4 class="fw-bold text-dark mt-1" id="statAvgCheck">0 so'm</h4>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card shadow-sm p-3 border-start border-info border-4">
                             <span class="text-muted small" data-i18n="stat_profit">YALPI DAROMAD</span>
-                            <h4 class="fw-bold text-dark mt-1">27 014 so'm</h4>
+                            <h4 class="fw-bold text-dark mt-1" id="statProfit">0 so'm</h4>
                         </div>
                     </div>
                 </div>
@@ -879,11 +879,12 @@
             const currentLogin = localStorage.getItem("shopLogin") || "rahmatillo";
             document.getElementById("navLoginText").textContent = "Login: " + currentLogin;
             document.getElementById("navIdText").textContent = "ID: #" + (localStorage.getItem("currentShopId") || "23");
-            document.getElementById("navBalance").textContent = "1 450 000 so'm";
+            document.getElementById("navBalance").textContent = "0 so'm";
 
             const adminDisplay = document.getElementById("currentAdminLoginDisplay");
             if (adminDisplay) adminDisplay.textContent = currentLogin;
 
+            await fetchBalance();
             await fetchEmployees();
             await fetchElements();
             await fetchProducts();
@@ -907,9 +908,47 @@
                 const sales = await response.json();
                 allSales = sales;
                 applySalesFilter();
+                updateDashboardStats();
             } catch (error) {
                 console.error("Savdolarni olishda xatolik:", error);
             }
+        }
+
+        // Raqamni "1 450 000" ko'rinishida formatlaydi
+        function formatSom(num) {
+            return Math.round(num || 0).toLocaleString('ru-RU').replace(/,/g, ' ');
+        }
+
+        // Do'konning haqiqiy balansini bazadan olib, navbar'da ko'rsatadi
+        async function fetchBalance() {
+            const shopId = localStorage.getItem("currentShopId") || "18";
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/summary`);
+                if (!response.ok) return;
+                const data = await response.json();
+                document.getElementById("navBalance").textContent = formatSom(data.balance) + " so'm";
+            } catch (error) {
+                console.error("Balansni olishda xatolik:", error);
+            }
+        }
+
+        // Dashboard'dagi 4 ta statistika kartochkasini (Savdo, Cheklar, O'rtacha chek, Yalpi daromad)
+        // haqiqiy savdolar (allSales) asosida hisoblab, ekranga chiqaradi
+        function updateDashboardStats() {
+            const totalSales = allSales.reduce((sum, s) => sum + (s.totalSum || 0), 0);
+            const checksCount = allSales.length;
+            const avgCheck = checksCount > 0 ? totalSales / checksCount : 0;
+            const totalProfit = allSales.reduce((sum, s) => sum + (s.profit || 0), 0);
+
+            const elSales = document.getElementById("statSales");
+            const elChecks = document.getElementById("statChecks");
+            const elAvg = document.getElementById("statAvgCheck");
+            const elProfit = document.getElementById("statProfit");
+
+            if (elSales) elSales.textContent = formatSom(totalSales) + " so'm";
+            if (elChecks) elChecks.textContent = checksCount + " ta";
+            if (elAvg) elAvg.textContent = formatSom(avgCheck) + " so'm";
+            if (elProfit) elProfit.textContent = formatSom(totalProfit) + " so'm";
         }
 
         // --- "DAVR" (dan - gacha) FILTRI: hozir amalda bo'lgan sanalar ---
@@ -1017,21 +1056,21 @@
                 const rowClass = isDropped ? "table-danger" : "";
                 const priceCell = isDropped
                     ? `<span class="fw-bold text-danger">${Number(s.salePrice).toLocaleString()} so'm</span>
-                           <div class="small text-danger">−${Number(listed - s.salePrice).toLocaleString()} so'm/dona</div>`
+                               <div class="small text-danger">−${Number(listed - s.salePrice).toLocaleString()} so'm/dona</div>`
                     : `${Number(s.salePrice).toLocaleString()} so'm`;
                 tbody.innerHTML += `
-                                                            <tr class="${rowClass}">
-                                                                <td>${idx + 1}</td>
-                                                                <td>${dateFormatted}</td>
-                                                                <td>${s.employeeName || "-"}</td>
-                                                                <td>${s.productName}${isDropped ? ' <span class="badge bg-danger">narx pasaytirilgan</span>' : ''}</td>
-                                                                <td>${s.quantity}</td>
-                                                                <td>${listed ? Number(listed).toLocaleString() + " so'm" : "—"}</td>
-                                                                <td>${priceCell}</td>
-                                                                <td class="fw-bold">${Number(s.totalSum).toLocaleString()} so'm</td>
-                                                                <td class="fw-bold text-success">${Number(s.profit).toLocaleString()} so'm</td>
-                                                            </tr>
-                                                        `;
+                                                                <tr class="${rowClass}">
+                                                                    <td>${idx + 1}</td>
+                                                                    <td>${dateFormatted}</td>
+                                                                    <td>${s.employeeName || "-"}</td>
+                                                                    <td>${s.productName}${isDropped ? ' <span class="badge bg-danger">narx pasaytirilgan</span>' : ''}</td>
+                                                                    <td>${s.quantity}</td>
+                                                                    <td>${listed ? Number(listed).toLocaleString() + " so'm" : "—"}</td>
+                                                                    <td>${priceCell}</td>
+                                                                    <td class="fw-bold">${Number(s.totalSum).toLocaleString()} so'm</td>
+                                                                    <td class="fw-bold text-success">${Number(s.profit).toLocaleString()} so'm</td>
+                                                                </tr>
+                                                            `;
                 totalSum += s.totalSum;
                 totalProfit += s.profit;
             });
@@ -1194,16 +1233,16 @@
                 const originalIdx = productsList.indexOf(p);
                 const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
                 tbody.innerHTML += `
-                                                            <tr style="cursor: pointer;" onclick="showProductDetails(${originalIdx})">
-                                                                <td><strong>${i + 1}</strong></td>
-                                                                <td>${p.name}</td>
-                                                                <td>${p.quantity}</td>
-                                                                <td><span class="badge bg-info text-dark">${p.unit}</span></td>
-                                                                <td>${p.buyPrice} so'm</td>
-                                                                <td>${p.sellPrice} so'm</td>
-                                                                <td class="text-muted small">${dateFormatted}</td>
-                                                            </tr>
-                                                        `;
+                                                                <tr style="cursor: pointer;" onclick="showProductDetails(${originalIdx})">
+                                                                    <td><strong>${i + 1}</strong></td>
+                                                                    <td>${p.name}</td>
+                                                                    <td>${p.quantity}</td>
+                                                                    <td><span class="badge bg-info text-dark">${p.unit}</span></td>
+                                                                    <td>${p.buyPrice} so'm</td>
+                                                                    <td>${p.sellPrice} so'm</td>
+                                                                    <td class="text-muted small">${dateFormatted}</td>
+                                                                </tr>
+                                                            `;
             });
         }
 
@@ -1507,26 +1546,26 @@
                     ? `<img src="${el.imageUrl}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">`
                     : `<span class="text-muted">—</span>`;
                 tbody.innerHTML += `
-                                                            <tr>
-                                                                <td><strong>${idx + 1}</strong></td>
-                                                                <td>${imgCell}</td>
-                                                                <td>${el.name}</td>
-                                                                <td>${el.length}</td>
-                                                                <td><span class="badge bg-info text-dark">${el.unit}</span></td>
-                                                                <td>${Number(el.buyPrice || 0).toLocaleString()} so'm</td>
-                                                                <td>${Number(el.sellPrice || 0).toLocaleString()} so'm</td>
-                                                                <td class="text-muted small">${dateFormatted}</td>
-                                                                <td class="text-center">
-                                                                    <div class="dropdown">
-                                                                        <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
-                                                                        <ul class="dropdown-menu dropdown-menu-end">
-                                                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteElement(${el.id}); return false;">🗑️ ${translations[currentLang].btn_delete}</a></li>
-                                                                            <li><a class="dropdown-item" href="#" onclick="editElement(${el.id}); return false;">✏️ ${translations[currentLang].btn_edit}</a></li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        `;
+                                                                <tr>
+                                                                    <td><strong>${idx + 1}</strong></td>
+                                                                    <td>${imgCell}</td>
+                                                                    <td>${el.name}</td>
+                                                                    <td>${el.length}</td>
+                                                                    <td><span class="badge bg-info text-dark">${el.unit}</span></td>
+                                                                    <td>${Number(el.buyPrice || 0).toLocaleString()} so'm</td>
+                                                                    <td>${Number(el.sellPrice || 0).toLocaleString()} so'm</td>
+                                                                    <td class="text-muted small">${dateFormatted}</td>
+                                                                    <td class="text-center">
+                                                                        <div class="dropdown">
+                                                                            <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
+                                                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteElement(${el.id}); return false;">🗑️ ${translations[currentLang].btn_delete}</a></li>
+                                                                                <li><a class="dropdown-item" href="#" onclick="editElement(${el.id}); return false;">✏️ ${translations[currentLang].btn_edit}</a></li>
+                                                                            </ul>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            `;
             });
 
             renderElementsPagination();
@@ -1543,9 +1582,9 @@
 
             const addPageItem = (label, page, disabled, active) => {
                 paginationEl.innerHTML += `
-                                                            <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
-                                                                <a class="page-link" href="#" onclick="goToElementsPage(${page}); return false;">${label}</a>
-                                                            </li>`;
+                                                                <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
+                                                                    <a class="page-link" href="#" onclick="goToElementsPage(${page}); return false;">${label}</a>
+                                                                </li>`;
             };
 
             addPageItem('«', currentElementsPage - 1, currentElementsPage === 1, false);
@@ -1609,10 +1648,10 @@
             toastEl.setAttribute("aria-live", "assertive");
             toastEl.setAttribute("aria-atomic", "true");
             toastEl.innerHTML = `
-                                                        <div class="d-flex">
-                                                            <div class="toast-body">${message}</div>
-                                                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                                                        </div>`;
+                                                            <div class="d-flex">
+                                                                <div class="toast-body">${message}</div>
+                                                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                                            </div>`;
             container.appendChild(toastEl);
 
             const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
@@ -1682,14 +1721,14 @@
             listContainer.innerHTML = "";
             productsList.forEach((p, idx) => {
                 listContainer.innerHTML += `
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="showProductDetails(${idx})">
-                                                                <div>
-                                                                    <strong>${p.name}</strong><br>
-                                                                    <small class="text-muted">Miqdor: ${p.quantity} ${p.unit} | Narx: ${p.sellPrice} so'm</small>
-                                                                </div>
-                                                                <span class="badge bg-primary rounded-pill">#${idx + 1}</span>
-                                                            </li>
-                                                        `;
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="showProductDetails(${idx})">
+                                                                    <div>
+                                                                        <strong>${p.name}</strong><br>
+                                                                        <small class="text-muted">Miqdor: ${p.quantity} ${p.unit} | Narx: ${p.sellPrice} so'm</small>
+                                                                    </div>
+                                                                    <span class="badge bg-primary rounded-pill">#${idx + 1}</span>
+                                                                </li>
+                                                            `;
             });
         }
 
@@ -1700,14 +1739,14 @@
             const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
 
             document.getElementById("productDetailsBody").innerHTML = `
-                                                        <table class="table table-borderless mb-0">
-                                                            <tr><td class="text-muted">Nomi</td><td class="text-end fw-bold">${p.name}</td></tr>
-                                                            <tr><td class="text-muted">Qabul qilingan miqdor</td><td class="text-end fw-bold">${p.quantity} ${p.unit}</td></tr>
-                                                            <tr><td class="text-muted">Kelish narxi</td><td class="text-end">${p.buyPrice} so'm</td></tr>
-                                                            <tr><td class="text-muted">Sotish narxi</td><td class="text-end">${p.sellPrice} so'm</td></tr>
-                                                            <tr><td class="text-muted">Qabul qilingan sana/vaqt</td><td class="text-end">${dateFormatted}</td></tr>
-                                                        </table>
-                                                    `;
+                                                            <table class="table table-borderless mb-0">
+                                                                <tr><td class="text-muted">Nomi</td><td class="text-end fw-bold">${p.name}</td></tr>
+                                                                <tr><td class="text-muted">Qabul qilingan miqdor</td><td class="text-end fw-bold">${p.quantity} ${p.unit}</td></tr>
+                                                                <tr><td class="text-muted">Kelish narxi</td><td class="text-end">${p.buyPrice} so'm</td></tr>
+                                                                <tr><td class="text-muted">Sotish narxi</td><td class="text-end">${p.sellPrice} so'm</td></tr>
+                                                                <tr><td class="text-muted">Qabul qilingan sana/vaqt</td><td class="text-end">${dateFormatted}</td></tr>
+                                                            </table>
+                                                        `;
 
             const modalEl = document.getElementById('productDetailsModal');
             let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
@@ -1776,18 +1815,18 @@
             tbody.innerHTML = "";
             staffList.forEach((staff, idx) => {
                 tbody.innerHTML += `
-                                                            <tr>
-                                                                <td><strong>${idx + 1}</strong></td>
-                                                                <td>${staff.firstname} ${staff.lastname}</td>
-                                                                <td>${staff.phone}</td>
-                                                                <td>${staff.login}</td>
-                                                                <td>${staff.salary.toLocaleString()} so'm</td>
-                                                                <td class="text-center">
-                                                                    <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="requestStaffAction('edit', ${idx})">✏️</button>
-                                                                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="requestStaffAction('delete', ${idx})">🗑️</button>
-                                                                </td>
-                                                            </tr>
-                                                        `;
+                                                                <tr>
+                                                                    <td><strong>${idx + 1}</strong></td>
+                                                                    <td>${staff.firstname} ${staff.lastname}</td>
+                                                                    <td>${staff.phone}</td>
+                                                                    <td>${staff.login}</td>
+                                                                    <td>${staff.salary.toLocaleString()} so'm</td>
+                                                                    <td class="text-center">
+                                                                        <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="requestStaffAction('edit', ${idx})">✏️</button>
+                                                                        <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="requestStaffAction('delete', ${idx})">🗑️</button>
+                                                                    </td>
+                                                                </tr>
+                                                            `;
             });
         }
 
@@ -1805,28 +1844,28 @@
                 const paid = staff.paid || 0;
                 const remaining = Math.max(staff.salary - paid, 0);
                 tbody.innerHTML += `
-                                                            <tr>
-                                                                <td><strong>${idx + 1}</strong></td>
-                                                                <td>${staff.firstname}</td>
-                                                                <td>${staff.lastname}</td>
-                                                                <td>${staff.phone}</td>
-                                                                <td>${staff.login}</td>
-                                                                <td class="fw-bold text-success">${staff.salary.toLocaleString()} so'm</td>
-                                                                <td class="fw-bold text-primary" style="cursor:pointer; text-decoration:underline;" onclick="showPaymentHistory(${idx})" title="To'lovlar tarixini ko'rish">${paid.toLocaleString()} so'm</td>
-                                                                <td class="fw-bold ${remaining > 0 ? 'text-danger' : 'text-success'}">${remaining.toLocaleString()} so'm</td>
-                                                                <td class="text-center">
-                                                                    <div class="dropdown">
-                                                                        <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
-                                                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                                            <li><a class="dropdown-item py-2" href="#" onclick="executeAction('pay', ${idx}); return false;">💵 To'lov</a></li>
-                                                                            <li><a class="dropdown-item py-2" href="#" onclick="executeAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
-                                                                            <li><hr class="dropdown-divider"></li>
-                                                                            <li><a class="dropdown-item py-2 text-danger" href="#" onclick="executeAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        `;
+                                                                <tr>
+                                                                    <td><strong>${idx + 1}</strong></td>
+                                                                    <td>${staff.firstname}</td>
+                                                                    <td>${staff.lastname}</td>
+                                                                    <td>${staff.phone}</td>
+                                                                    <td>${staff.login}</td>
+                                                                    <td class="fw-bold text-success">${staff.salary.toLocaleString()} so'm</td>
+                                                                    <td class="fw-bold text-primary" style="cursor:pointer; text-decoration:underline;" onclick="showPaymentHistory(${idx})" title="To'lovlar tarixini ko'rish">${paid.toLocaleString()} so'm</td>
+                                                                    <td class="fw-bold ${remaining > 0 ? 'text-danger' : 'text-success'}">${remaining.toLocaleString()} so'm</td>
+                                                                    <td class="text-center">
+                                                                        <div class="dropdown">
+                                                                            <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                                                <li><a class="dropdown-item py-2" href="#" onclick="executeAction('pay', ${idx}); return false;">💵 To'lov</a></li>
+                                                                                <li><a class="dropdown-item py-2" href="#" onclick="executeAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
+                                                                                <li><hr class="dropdown-divider"></li>
+                                                                                <li><a class="dropdown-item py-2 text-danger" href="#" onclick="executeAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
+                                                                            </ul>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            `;
             });
         }
 
@@ -1965,34 +2004,34 @@
                             ? `<div class="text-muted small mt-1">📝 ${p.note}</div>`
                             : "";
                         return `
-                                                            <tr>
-                                                                <td>
-                                                                    <div>${dateFormatted}</div>
-                                                                    ${noteRow}
-                                                                </td>
-                                                                <td class="text-end fw-bold text-success">${p.amount.toLocaleString()} so'm</td>
-                                                            </tr>
-                                                        `;
+                                                                <tr>
+                                                                    <td>
+                                                                        <div>${dateFormatted}</div>
+                                                                        ${noteRow}
+                                                                    </td>
+                                                                    <td class="text-end fw-bold text-success">${p.amount.toLocaleString()} so'm</td>
+                                                                </tr>
+                                                            `;
                     })
                     .join("");
 
                 bodyEl.innerHTML = `
-                                                    <table class="table table-sm table-hover align-middle mb-0">
-                                                        <thead class="table-light">
-                                                            <tr>
-                                                                <th>Sana</th>
-                                                                <th class="text-end">Miqdor</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>${rows}</tbody>
-                                                        <tfoot>
-                                                            <tr class="table-light">
-                                                                <td class="fw-bold">Jami to'langan</td>
-                                                                <td class="text-end fw-bold text-success">${(staff.paid || 0).toLocaleString()} so'm</td>
-                                                            </tr>
-                                                        </tfoot>
-                                                    </table>
-                                                `;
+                                                        <table class="table table-sm table-hover align-middle mb-0">
+                                                            <thead class="table-light">
+                                                                <tr>
+                                                                    <th>Sana</th>
+                                                                    <th class="text-end">Miqdor</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>${rows}</tbody>
+                                                            <tfoot>
+                                                                <tr class="table-light">
+                                                                    <td class="fw-bold">Jami to'langan</td>
+                                                                    <td class="text-end fw-bold text-success">${(staff.paid || 0).toLocaleString()} so'm</td>
+                                                                </tr>
+                                                            </tfoot>
+                                                        </table>
+                                                    `;
             }
         }
 

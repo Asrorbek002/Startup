@@ -113,6 +113,26 @@ public class SuperAdminController : ControllerBase
 
         return Ok(new { message = "Do'kon butunlay o'chirib tashlandi!" });
     }
+
+    // Do'kon balansiga pul qo'shish (to'ldirish)
+    [HttpPost("shops/{id}/deposit")]
+    public async Task<IActionResult> DepositToShop([FromHeader(Name = "Secret-Key")] string secretKey, int id, [FromBody] DepositDto dto)
+    {
+        if (secretKey != "MY_SUPER_SECRET_ADMIN_KEY_2026")
+            return Unauthorized(new { message = "Ruxsat etilmagan kalit!" });
+
+        var shop = await _context.Shops.FindAsync(id);
+        if (shop == null)
+            return NotFound(new { message = "Do'kon topilmadi!" });
+
+        if (dto.Amount <= 0)
+            return BadRequest(new { message = "Miqdor noto'g'ri!" });
+
+        shop.Balance += dto.Amount;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Balans muvaffaqiyatli to'ldirildi!", newBalance = shop.Balance });
+    }
 }
 
 public class ShopCreateDto
@@ -123,4 +143,9 @@ public class ShopCreateDto
     public string Username { get; set; } = string.Empty;
     public decimal Tariff { get; set; } = 200000;
     public string Password { get; set; } = string.Empty;
+}
+
+public class DepositDto
+{
+    public decimal Amount { get; set; }
 }

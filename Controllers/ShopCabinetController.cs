@@ -50,6 +50,25 @@ public class ShopCabinetController : ControllerBase
         });
     }
 
+    // Do'kon haqida umumiy ma'lumot (balans va h.k.) — kabinet paneli uchun
+    [HttpGet("{shopId}/summary")]
+    public async Task<IActionResult> GetShopSummary(int shopId)
+    {
+        var shop = await _context.Shops.FindAsync(shopId);
+        if (shop == null)
+        {
+            return NotFound(new { message = "Do'kon topilmadi!" });
+        }
+
+        return Ok(new
+        {
+            shop.Id,
+            shop.Name,
+            shop.Balance,
+            shop.Status
+        });
+    }
+
     // Xodim (sotuvchi) tizimga kirishi uchun login API
     [HttpPost("employee-login")]
     public async Task<IActionResult> EmployeeLogin([FromBody] ShopLoginModel dto)
