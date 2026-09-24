@@ -161,7 +161,7 @@
             .profile-btn .p-name {
                 font-size: 13px;
                 font-weight: 600;
-                max-width: 110px;
+                max-width: 170px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -1193,7 +1193,7 @@
             }
 
             const currentLogin = localStorage.getItem("shopLogin") || "rahmatillo";
-            document.getElementById("navLoginText").textContent = currentLogin;
+            document.getElementById("navLoginText").textContent = localStorage.getItem("shopName") || currentLogin;
             document.getElementById("pcLogin").textContent = currentLogin;
             document.getElementById("pcShopName").textContent = localStorage.getItem("shopName") || "";
             document.getElementById("pcShopName2").textContent = localStorage.getItem("shopName") || "—";
@@ -1246,7 +1246,8 @@
             set("pcShopName2", d.name);
             set("pcPhone", d.phone);
             set("pcRegion", d.region);
-            if (d.username) { set("pcLogin", d.username); set("navLoginText", d.username); }
+            if (d.username) set("pcLogin", d.username);
+            if (d.name) set("navLoginText", d.name);
             set("pcStatusText", d.status);
             const st = document.getElementById("pcStatus");
             if (st) st.classList.toggle("off", d.status === "Faol emas" || d.status === "Bloklangan");
