@@ -224,6 +224,339 @@
                 animation: none !important;
             }
         }
+        /* ===== Yordam oynasi ===== */
+        .help-btn {
+            font-weight: 700;
+        }
+
+        .hlp-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(10,25,60,.55);
+            backdrop-filter: blur(3px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .2s, visibility .2s;
+        }
+
+            .hlp-overlay.open {
+                opacity: 1;
+                visibility: visible;
+            }
+
+        .hlp-modal {
+            width: 100%;
+            max-width: 900px;
+            height: min(620px, 92vh);
+            background: #fff;
+            border-radius: 18px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 80px rgba(5,20,60,.45);
+            transform: translateY(16px) scale(.97);
+            transition: transform .3s cubic-bezier(.2,.9,.3,1.15);
+        }
+
+        .hlp-overlay.open .hlp-modal {
+            transform: none;
+        }
+
+        .hlp-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 18px 22px;
+            color: #fff;
+            flex-shrink: 0;
+            background: linear-gradient(120deg, #0a58ca, #3d8bfd, #6f42c1, #0a58ca);
+            background-size: 300% 300%;
+            animation: pcFlow 12s ease-in-out infinite;
+        }
+
+            .hlp-head h2 {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 700;
+            }
+
+            .hlp-head p {
+                margin: 2px 0 0;
+                font-size: 13px;
+                opacity: .88;
+            }
+
+        .hlp-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,.45);
+            background: rgba(255,255,255,.16);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background .15s, transform .2s;
+        }
+
+            .hlp-close:hover, .hlp-close:focus-visible {
+                background: rgba(255,255,255,.3);
+                transform: rotate(90deg);
+                outline: none;
+            }
+
+            .hlp-close svg {
+                width: 18px;
+                height: 18px;
+            }
+
+        .hlp-body {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .hlp-nav {
+            width: 230px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            padding: 12px 10px;
+            background: #f5f8ff;
+            border-right: 1px solid #e3e9f4;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hlp-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            text-align: left;
+            border: 0;
+            background: transparent;
+            color: #33415c;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background .15s, color .15s, transform .15s;
+        }
+
+            .hlp-nav-item span {
+                font-size: 17px;
+                width: 24px;
+                text-align: center;
+            }
+
+            .hlp-nav-item:hover {
+                background: #e7f0ff;
+                transform: translateX(2px);
+            }
+
+            .hlp-nav-item.active {
+                background: #0d6efd;
+                color: #fff;
+                font-weight: 600;
+                box-shadow: 0 6px 16px rgba(13,110,253,.35);
+            }
+
+        .hlp-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hlp-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 28px;
+        }
+
+        .hlp-in {
+            animation: pcRise .35s ease both;
+        }
+
+        .hlp-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            font-size: 28px;
+            background: #e7f1ff;
+            margin-bottom: 12px;
+            box-shadow: 0 8px 20px rgba(13,110,253,.18);
+        }
+
+        .hlp-in h3 {
+            margin: 0 0 6px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1b2a4e;
+        }
+
+        .hlp-lead {
+            margin: 0 0 18px;
+            color: #5b6478;
+            font-size: 15px;
+            line-height: 1.55;
+        }
+
+        .hlp-steps {
+            list-style: none;
+            counter-reset: st;
+            margin: 0 0 18px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+            .hlp-steps li {
+                counter-increment: st;
+                position: relative;
+                padding: 12px 14px 12px 54px;
+                background: #f8faff;
+                border: 1px solid #e6ecf7;
+                border-radius: 12px;
+                font-size: 14.5px;
+                line-height: 1.5;
+                color: #27324d;
+                transition: transform .15s, box-shadow .15s, border-color .15s;
+            }
+
+                .hlp-steps li:hover {
+                    transform: translateX(3px);
+                    box-shadow: 0 6px 16px rgba(13,42,90,.08);
+                    border-color: #c9dcff;
+                }
+
+                .hlp-steps li::before {
+                    content: counter(st);
+                    position: absolute;
+                    left: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    display: grid;
+                    place-items: center;
+                    background: linear-gradient(135deg, #0d6efd, #6f42c1);
+                    color: #fff;
+                    font-weight: 700;
+                    font-size: 14px;
+                }
+
+        .hlp-tip {
+            display: flex;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #fff8e1;
+            border: 1px solid #ffe69c;
+            color: #664d03;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+            .hlp-tip b {
+                flex-shrink: 0;
+            }
+
+        .hlp-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 22px;
+            border-top: 1px solid #e9eef8;
+            flex-shrink: 0;
+        }
+
+        .hlp-count {
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .hlp-btn {
+            border: 1px solid #cfd8ea;
+            background: #fff;
+            color: #33415c;
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background .15s, transform .15s, box-shadow .15s;
+        }
+
+            .hlp-btn:hover:not(:disabled) {
+                background: #f1f5ff;
+                transform: translateY(-1px);
+            }
+
+            .hlp-btn.primary {
+                background: #0d6efd;
+                border-color: #0d6efd;
+                color: #fff;
+            }
+
+                .hlp-btn.primary:hover:not(:disabled) {
+                    background: #0a58ca;
+                    box-shadow: 0 6px 16px rgba(13,110,253,.35);
+                }
+
+            .hlp-btn:disabled {
+                opacity: .45;
+                cursor: default;
+            }
+
+        @media (max-width: 720px) {
+            .hlp-body {
+                flex-direction: column;
+            }
+
+            .hlp-nav {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                border-right: 0;
+                border-bottom: 1px solid #e3e9f4;
+                padding: 8px;
+            }
+
+            .hlp-nav-item {
+                width: auto;
+                white-space: nowrap;
+                flex-shrink: 0;
+                padding: 8px 12px;
+            }
+
+            .hlp-content {
+                padding: 18px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hlp-head, .hlp-in {
+                animation: none !important;
+            }
+
+            .hlp-modal, .hlp-overlay {
+                transition: none !important;
+            }
+        }
         /* ===== Kirim / chiqim grafigi ===== */
         .dc-card {
             border: 0;
@@ -895,6 +1228,8 @@
         </a>
 
         <div class="ms-auto d-flex align-items-center gap-3">
+            <button type="button" class="lang-btn help-btn" id="helpBtn" title="Yordam / Помощь" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5" /><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4" /><circle cx="12" cy="17.6" r=".6" fill="currentColor" /></svg></button>
+
             <div class="lang-wrap" id="langWrap">
                 <button type="button" class="lang-btn" id="langBtn" aria-haspopup="true" aria-expanded="false" title="Til / Язык"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5" /><path d="M2.5 12h19" /><path d="M12 2.5c2.6 2.6 4 5.9 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-5.9-4-9.5s1.4-6.9 4-9.5z" /></svg></button>
                 <div class="lang-menu" id="langMenu">
@@ -1728,6 +2063,7 @@
                 }
             });
             renderDashChart();
+            if (document.getElementById("helpOverlay").classList.contains("open")) renderHelp();
             renderElements();
             renderProducts();
             applyHistoryFilter();
@@ -1819,6 +2155,170 @@
             const st = document.getElementById("pcStatus");
             if (st) st.classList.toggle("off", d.status === "Faol emas" || d.status === "Bloklangan");
         }
+
+        // ===== YORDAM OYNASI (qo'llanma) =====
+        const HELP = {
+            uz: {
+                title: "Yordam markazi", sub: "MyHisob dasturidan qanday foydalanish", tip: "Maslahat:", prev: "Oldingisi", next: "Keyingisi", close: "Yopish",
+                topics: [
+                    {
+                        icon: "🚀", name: "Boshlash", lead: "MyHisob — do'koningizdagi ombor, savdo va xodimlarni bir joyda yuritadigan dastur. Boshlash uchun shu tartibda ishlang:",
+                        steps: ["Elementlar bo'limida sotadigan mahsulot turlarini yarating (nomi, o'lchov birligi, narxlari).", "Tovar Qabul qilish bo'limida elementni tanlab, omborga tovar kiriting.", "Xodimlar Nazorati bo'limida sotuvchilarni qo'shing. Ular o'z kabinetidan savdo qiladi.", "Boshqaruv Paneli va Savdolar bo'limlarida savdo va foydani kuzating."],
+                        tip: "Chap tomondagi menyu orqali bo'limlar orasida o'tasiz. Tilni yuqoridagi globus tugmasi bilan almashtirasiz."
+                    },
+                    {
+                        icon: "📊", name: "Boshqaruv paneli", lead: "Do'koningiz holati bir qarashda ko'rinadi.",
+                        steps: ["Tepadagi 4 ta kartochka: Savdo (jami tushum), Cheklar (soni), O'rtacha chek va Yalpi daromad (foyda).", "Kirim va chiqim grafigi: yashil ustun tushum, qizil ustun sotilgan tovar tannarxi, ko'k chiziq foyda.", "7 kun, 30 kun yoki 12 oy tugmalari bilan davrni almashtiring.", "Balans yuqori panelda doim ko'rinib turadi."],
+                        tip: "Xodimlar savdo qilganda ma'lumotlar o'zi yangilanadi, sahifani qayta yuklash shart emas."
+                    },
+                    {
+                        icon: "📋", name: "Elementlar", lead: "Element bu sizning mahsulot turingiz: nomi, o'lchami va narxlari bir joyda saqlanadi.",
+                        steps: ["«＋ Yaratish» tugmasini bosing.", "Nomi, uzunligi yoki miqdori, o'lchov birligi, tan narx va sotish narxini kiriting. Xohlasangiz surat qo'shing.", "Saqlang. Element jadvalda paydo bo'ladi.", "Amallar ustunidan elementni tahrirlash yoki o'chirish mumkin. O'chirish uchun parol so'raladi."],
+                        tip: "Narxlarni to'g'ri kiriting: foyda shu narxlar asosida hisoblanadi."
+                    },
+                    {
+                        icon: "📦", name: "Tovar qabul qilish", lead: "Omborga yangi tovar kirimini shu yerda yozasiz.",
+                        steps: ["«Mahsulot nomi» ro'yxatidan elementni tanlang. O'lchov birligi o'zi to'ladi.", "Miqdorini kiriting (masalan, 1.5 yoki 50).", "Kelish narxi (tan narx) va sotish narxini so'mda yozing.", "«Tovarni omborga qabul qilish» tugmasini bosing.", "O'ng tomondagi ro'yxatda qabul qilingan tovarlar ko'rinadi."],
+                        tip: "Element ro'yxatda bo'lmasa, avval Elementlar bo'limida uni yarating."
+                    },
+                    {
+                        icon: "🕒", name: "Tarix", lead: "Oxirgi 1 yilda qabul qilingan barcha tovarlar ro'yxati.",
+                        steps: ["Jadvalda nomi, miqdori, kelish va sotish narxi hamda qabul sanasi ko'rinadi.", "«Filtrlash» tugmasini bosib, boshlanish va tugash sanasini tanlang.", "«Saqlash» bilan filtrni qo'llang, «Tozalash» bilan bekor qiling."],
+                        tip: "Tepadagi kulrang raqam ko'rsatilayotgan yozuvlar sonini bildiradi."
+                    },
+                    {
+                        icon: "📈", name: "Moliyaviy hisobotlar", lead: "Xodimlar oyliklari bo'yicha hisobot.",
+                        steps: ["Jadvalda har bir xodimning oyligi, to'langan summasi va qoldig'i ko'rinadi.", "Hisobotni Excelga chiqarish uchun «Excelga Export qilish» tugmasidan foydalaning."],
+                        tip: "Xodim ma'lumotlarini Xodimlar Nazorati bo'limida o'zgartirasiz."
+                    },
+                    {
+                        icon: "👥", name: "Xodimlar nazorati", lead: "Sotuvchilarni qo'shish va boshqarish.",
+                        steps: ["Formaga ism, familiya, telefon, login, parol va oylikni kiriting.", "Saqlang. Xodim o'z login va paroli bilan xodim kabinetiga kirib savdo qiladi.", "Ro'yxatdan xodimni tahrirlash yoki o'chirish uchun o'zingizning (do'kon egasi) parolingizni tasdiqlaysiz."],
+                        tip: "Login butun tizimda yagona bo'lishi kerak. Band login qabul qilinmaydi."
+                    },
+                    {
+                        icon: "🧾", name: "Savdolar", lead: "Xodimlar qilgan barcha savdolar ro'yxati.",
+                        steps: ["Har bir savdo uchun sana, xodim, mahsulot, miqdor, narx, jami summa va foyda ko'rinadi.", "Narxi pasaytirib sotilgan savdolar «narx pasaytirilgan» belgisi bilan ajralib turadi.", "«Filtrlash» orqali sana oralig'ini tanlang.", "«Excel'ga eksport» tugmasi ro'yxatni fayl qilib yuklaydi."],
+                        tip: "Ro'yxat har 15 soniyada o'zi yangilanadi."
+                    },
+                    {
+                        icon: "👤", name: "Profil va til", lead: "Yuqori o'ng burchakdagi tugmalar.",
+                        steps: ["Profil tugmasini bosing: do'kon nomi, telefon, login, hudud va ID ko'rinadi.", "Qalamcha tugmasi bilan profil rasmini almashtiring.", "Globus tugmasi tilni o'zgartiradi (O'zbekcha yoki Русский).", "«Chiqish» tugmasi tizimdan chiqaradi."],
+                        tip: "Profil rasmi shu brauzerda saqlanadi."
+                    }
+                ]
+            },
+            ru: {
+                title: "Центр помощи", sub: "Как пользоваться программой MyHisob", tip: "Совет:", prev: "Назад", next: "Далее", close: "Закрыть",
+                topics: [
+                    {
+                        icon: "🚀", name: "Начало работы", lead: "MyHisob — программа для ведения склада, продаж и сотрудников магазина в одном месте. Начните в таком порядке:",
+                        steps: ["В разделе «Элементы» создайте виды товаров (название, единица измерения, цены).", "В разделе «Приём товара» выберите элемент и оприходуйте товар на склад.", "В разделе «Контроль сотрудников» добавьте продавцов. Они продают из своего кабинета.", "Следите за продажами и прибылью в разделах «Панель управления» и «Продажи»."],
+                        tip: "Между разделами переключайтесь через меню слева. Язык меняется кнопкой с глобусом сверху."
+                    },
+                    {
+                        icon: "📊", name: "Панель управления", lead: "Состояние магазина видно с первого взгляда.",
+                        steps: ["Четыре карточки сверху: Продажи (общая выручка), Чеки (количество), Средний чек и Валовая прибыль.", "График прихода и расхода: зелёный столбец — выручка, красный — себестоимость проданного товара, синяя линия — прибыль.", "Кнопками «7 дней», «30 дней», «12 мес.» меняйте период.", "Баланс всегда виден в верхней панели."],
+                        tip: "Когда сотрудники продают, данные обновляются сами. Перезагружать страницу не нужно."
+                    },
+                    {
+                        icon: "📋", name: "Элементы", lead: "Элемент — это вид вашего товара: название, размер и цены хранятся вместе.",
+                        steps: ["Нажмите кнопку «＋ Создать».", "Введите название, длину или количество, единицу измерения, закупочную и продажную цену. При желании добавьте фото.", "Сохраните. Элемент появится в таблице.", "В столбце «Действия» элемент можно изменить или удалить. Для удаления запросится пароль."],
+                        tip: "Вводите цены верно: прибыль считается по этим ценам."
+                    },
+                    {
+                        icon: "📦", name: "Приём товара", lead: "Здесь фиксируется поступление нового товара на склад.",
+                        steps: ["Выберите элемент в списке «Название продукта». Единица измерения заполнится сама.", "Введите количество (например, 1.5 или 50).", "Укажите закупочную и продажную цену в сумах.", "Нажмите «Принять товар на склад».", "Справа появится список принятых товаров."],
+                        tip: "Если элемента нет в списке, сначала создайте его в разделе «Элементы»."
+                    },
+                    {
+                        icon: "🕒", name: "История", lead: "Список всех товаров, принятых за последний год.",
+                        steps: ["В таблице видны название, количество, закупочная и продажная цена и дата приёма.", "Нажмите «Фильтр» и выберите даты начала и окончания.", "«Сохранить» применяет фильтр, «Очистить» сбрасывает его."],
+                        tip: "Серое число сверху показывает количество отображаемых записей."
+                    },
+                    {
+                        icon: "📈", name: "Финансовые отчёты", lead: "Отчёт по зарплатам сотрудников.",
+                        steps: ["В таблице видны зарплата каждого сотрудника, выплаченная сумма и остаток.", "Чтобы выгрузить отчёт в Excel, используйте кнопку «Экспорт в Excel»."],
+                        tip: "Данные сотрудников меняются в разделе «Контроль сотрудников»."
+                    },
+                    {
+                        icon: "👥", name: "Контроль сотрудников", lead: "Добавление и управление продавцами.",
+                        steps: ["Введите в форму имя, фамилию, телефон, логин, пароль и зарплату.", "Сохраните. Сотрудник входит в свой кабинет со своим логином и паролем и продаёт.", "Чтобы изменить или удалить сотрудника, подтвердите свой пароль (владельца магазина)."],
+                        tip: "Логин должен быть уникальным во всей системе. Занятый логин не принимается."
+                    },
+                    {
+                        icon: "🧾", name: "Продажи", lead: "Список всех продаж сотрудников.",
+                        steps: ["Для каждой продажи видны дата, сотрудник, товар, количество, цена, сумма и прибыль.", "Продажи со сниженной ценой выделяются пометкой «цена снижена».", "Через «Фильтр» выберите период дат.", "Кнопка «Экспорт в Excel» выгружает список в файл."],
+                        tip: "Список обновляется сам каждые 15 секунд."
+                    },
+                    {
+                        icon: "👤", name: "Профиль и язык", lead: "Кнопки в правом верхнем углу.",
+                        steps: ["Нажмите кнопку профиля: видны название магазина, телефон, логин, регион и ID.", "Кнопкой с карандашом смените фото профиля.", "Кнопка с глобусом меняет язык (O'zbekcha или Русский).", "Кнопка «Выйти» завершает сеанс."],
+                        tip: "Фото профиля хранится в этом браузере."
+                    }
+                ]
+            }
+        };
+        let helpIdx = 0;
+
+        function renderHelp() {
+            const L = HELP[currentLang] || HELP.uz;
+            const T = L.topics[helpIdx];
+            document.getElementById("hlpTitle").textContent = L.title;
+            document.getElementById("hlpSub").textContent = L.sub;
+            document.getElementById("helpClose").setAttribute("aria-label", L.close);
+            document.getElementById("hlpNav").innerHTML = L.topics.map((t, i) =>
+                '<button type="button" class="hlp-nav-item' + (i === helpIdx ? ' active' : '') + '" data-i="' + i + '"><span>' + t.icon + '</span>' + t.name + '</button>').join("");
+            document.getElementById("hlpContent").innerHTML =
+                '<div class="hlp-in"><div class="hlp-icon">' + T.icon + '</div><h3>' + T.name + '</h3><p class="hlp-lead">' + T.lead + '</p>' +
+                '<ol class="hlp-steps">' + T.steps.map(x => '<li>' + x + '</li>').join("") + '</ol>' +
+                '<div class="hlp-tip"><b>💡 ' + L.tip + '</b><span>' + T.tip + '</span></div></div>';
+            const prev = document.getElementById("hlpPrev"), next = document.getElementById("hlpNext");
+            prev.textContent = "← " + L.prev; next.textContent = L.next + " →";
+            prev.disabled = helpIdx === 0; next.disabled = helpIdx === L.topics.length - 1;
+            document.getElementById("hlpCount").textContent = (helpIdx + 1) + " / " + L.topics.length;
+            const active = document.querySelector("#hlpNav .active");
+            if (active) active.scrollIntoView({ block: "nearest", inline: "nearest" });
+            document.getElementById("hlpContent").scrollTop = 0;
+        }
+
+        (function () {
+            const overlay = document.getElementById("helpOverlay");
+            const openBtn = document.getElementById("helpBtn");
+            function openHelp() {
+                document.getElementById("profileWrap").classList.remove("open");
+                document.getElementById("langWrap").classList.remove("open");
+                renderHelp();
+                overlay.classList.add("open");
+                overlay.setAttribute("aria-hidden", "false");
+                document.body.style.overflow = "hidden";
+                document.getElementById("helpClose").focus();
+            }
+            function closeHelp() {
+                overlay.classList.remove("open");
+                overlay.setAttribute("aria-hidden", "true");
+                document.body.style.overflow = "";
+                openBtn.focus();
+            }
+            openBtn.addEventListener("click", e => { e.stopPropagation(); openHelp(); });
+            document.getElementById("helpClose").addEventListener("click", closeHelp);
+            overlay.addEventListener("click", e => { if (e.target === overlay) closeHelp(); });
+            document.addEventListener("keydown", e => {
+                if (!overlay.classList.contains("open")) return;
+                const n = (HELP[currentLang] || HELP.uz).topics.length;
+                if (e.key === "Escape") closeHelp();
+                else if (e.key === "ArrowRight" && helpIdx < n - 1) { helpIdx++; renderHelp(); }
+                else if (e.key === "ArrowLeft" && helpIdx > 0) { helpIdx--; renderHelp(); }
+            });
+            document.getElementById("hlpNav").addEventListener("click", e => {
+                const b = e.target.closest(".hlp-nav-item");
+                if (b) { helpIdx = Number(b.dataset.i); renderHelp(); }
+            });
+            document.getElementById("hlpPrev").addEventListener("click", () => { if (helpIdx > 0) { helpIdx--; renderHelp(); } });
+            document.getElementById("hlpNext").addEventListener("click", () => {
+                if (helpIdx < (HELP[currentLang] || HELP.uz).topics.length - 1) { helpIdx++; renderHelp(); }
+            });
+        })();
 
         // Globus orqali til tanlash
         (function () {
@@ -3241,5 +3741,31 @@
             window.location.href = "index.html";
         }
     </script>
+    <!-- MyHisob: yordam oynasi -->
+    <div class="hlp-overlay" id="helpOverlay" aria-hidden="true">
+        <div class="hlp-modal" role="dialog" aria-modal="true" aria-labelledby="hlpTitle">
+            <div class="hlp-head">
+                <div>
+                    <h2 id="hlpTitle">Yordam markazi</h2>
+                    <p id="hlpSub">MyHisob dasturidan qanday foydalanish</p>
+                </div>
+                <button type="button" class="hlp-close" id="helpClose" aria-label="Yopish">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                </button>
+            </div>
+            <div class="hlp-body">
+                <nav class="hlp-nav" id="hlpNav"></nav>
+                <div class="hlp-main">
+                    <div class="hlp-content" id="hlpContent"></div>
+                    <div class="hlp-foot">
+                        <button type="button" class="hlp-btn" id="hlpPrev"></button>
+                        <span class="hlp-count" id="hlpCount"></span>
+                        <button type="button" class="hlp-btn primary" id="hlpNext"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
