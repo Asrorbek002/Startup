@@ -12,12 +12,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     if (!string.IsNullOrEmpty(databaseUrl))
     {
         // Render odatda "postgres://user:pass@host:port/dbname" formatida beradi.
-        // Npgsql tushunadigan formatga o'giramiz.
+        // Ba'zan port yozilmagan bo'ladi — shu holda standart 5432 ishlatiladi.
         var uri = new Uri(databaseUrl);
-        var userInfo = uri.UserInfo.Split(':');
+        var userInfo = uri.UserInfo.Split(':', 2); // parolda ':' bo'lsa ham to'g'ri ajratish uchun
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var username = Uri.UnescapeDataString(userInfo[0]);
+        var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+        var database = uri.AbsolutePath.TrimStart('/');
+
         var npgsqlConnString =
-            $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};" +
-            $"Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+            $"Host={uri.Host};Port={port};Database={database};" +
+            $"Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 
         options.UseNpgsql(npgsqlConnString);
     }
