@@ -910,11 +910,11 @@ public class ShopCabinetController : ControllerBase
             return BadRequest(new { success = false, message = "Fayl tanlanmagan!" });
         }
 
-        var allowedExt = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        var allowedExt = new[] { ".jpg", ".jpeg", ".png", ".webp", ".avif" };
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!allowedExt.Contains(ext))
         {
-            return BadRequest(new { success = false, message = "Faqat rasm fayllari qabul qilinadi (jpg, png, webp)!" });
+            return BadRequest(new { success = false, message = "Faqat rasm fayllari qabul qilinadi (jpg, png, webp, avif)!" });
         }
 
         try
