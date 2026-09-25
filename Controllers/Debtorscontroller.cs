@@ -51,7 +51,7 @@ public class DebtorsController : ControllerBase
             Phone = dto.Phone.Trim(),
             Amount = dto.Amount,
             PaidAmount = 0,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         _context.Debtors.Add(debtor);

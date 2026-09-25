@@ -8,5 +8,5 @@ public class Debtor
     public string Phone { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public decimal PaidAmount { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
