@@ -381,6 +381,30 @@
             overflow-x: auto;
         }
 
+        .status-pill {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+            .status-pill.debt {
+                background: var(--bad-soft);
+                color: var(--bad);
+            }
+
+            .status-pill.partial {
+                background: #FFF3D9;
+                color: #9A6300;
+            }
+
+            .status-pill.paid {
+                background: var(--good-soft);
+                color: var(--good);
+            }
+
         /* row action menu (⋮) */
         .row-menu {
             position: relative;
@@ -1039,6 +1063,9 @@
                 <button class="nav-btn" id="navHistory" onclick="setView('history')">
                     <span class="ic">🧾</span> Savdo tarixi
                 </button>
+                <button class="nav-btn" id="navDebtors" onclick="setView('debtors')">
+                    <span class="ic">💳</span> Qarzdorlar
+                </button>
             </div>
 
             <div class="sidebar-bottom">
@@ -1081,6 +1108,32 @@
                             <tr><td colspan="8" class="muted">Hozircha savdolar mavjud emas</td></tr>
                         </tbody>
                         <tfoot id="salesFoot"></tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel wide" id="view-debtors" style="display:none;">
+                <div class="panel-head">💳 Qarzdorlar</div>
+                <div class="history-toolbar">
+                    <input type="text" id="debtorsSearch" placeholder="Ism yoki telefon bo'yicha izlash..." oninput="renderEmployeeDebtorsTable()">
+                </div>
+                <div class="table-scroll">
+                    <table class="sales-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Ism</th>
+                                <th>Telefon</th>
+                                <th class="num">Qarz summasi</th>
+                                <th class="num">To'langan</th>
+                                <th class="num">Qoldiq</th>
+                                <th>Holat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeDebtorsTableBody">
+                            <tr><td colspan="7" class="muted">Hozircha qarzdorlar mavjud emas</td></tr>
+                        </tbody>
+                        <tfoot id="employeeDebtorsFoot"></tfoot>
                     </table>
                 </div>
             </div>
@@ -1190,8 +1243,13 @@
         function setView(view) {
             document.getElementById("view-sell").style.display = view === "sell" ? "" : "none";
             document.getElementById("view-history").style.display = view === "history" ? "" : "none";
+            document.getElementById("view-debtors").style.display = view === "debtors" ? "" : "none";
             document.getElementById("navSell").classList.toggle("active", view === "sell");
             document.getElementById("navHistory").classList.toggle("active", view === "history");
+            document.getElementById("navDebtors").classList.toggle("active", view === "debtors");
+            if (view === "debtors") {
+                fetchDebtors().then(renderEmployeeDebtorsTable);
+            }
         }
 
         /* ---------------- user popover (login / phone) ---------------- */
@@ -1338,6 +1396,49 @@
             } catch (error) {
                 console.error("Qarzdorlarni olishda xatolik:", error);
             }
+        }
+
+        function renderEmployeeDebtorsTable() {
+            const tbody = document.getElementById("employeeDebtorsTableBody");
+            const foot = document.getElementById("employeeDebtorsFoot");
+            if (!tbody) return;
+
+            const query = (document.getElementById("debtorsSearch")?.value || "").trim().toLowerCase();
+            const filtered = debtorsList.filter(d =>
+                !query || d.name.toLowerCase().includes(query) || (d.phone || "").toLowerCase().includes(query)
+            );
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="muted">Hozircha qarzdorlar mavjud emas</td></tr>`;
+                foot.innerHTML = "";
+                return;
+            }
+
+            let totalRemaining = 0;
+            tbody.innerHTML = filtered.map((d, i) => {
+                const remaining = d.amount - d.paidAmount;
+                totalRemaining += remaining;
+                let pillClass = "debt", pillText = "Qarzda";
+                if (remaining <= 0) { pillClass = "paid"; pillText = "To'langan"; }
+                else if (d.paidAmount > 0) { pillClass = "partial"; pillText = "Qisman"; }
+                return `
+                        <tr>
+                            <td class="idx-cell">${i + 1}</td>
+                            <td>${d.name}</td>
+                            <td><a href="tel:${(d.phone || "").replace(/\s/g, "")}" style="color:var(--steel);text-decoration:none;">${d.phone || "—"}</a></td>
+                            <td class="num">${Number(d.amount).toLocaleString()} so'm</td>
+                            <td class="num">${Number(d.paidAmount).toLocaleString()} so'm</td>
+                            <td class="num" style="font-weight:700;color:${remaining > 0 ? 'var(--bad)' : 'var(--good)'};">${Number(remaining).toLocaleString()} so'm</td>
+                            <td><span class="status-pill ${pillClass}">${pillText}</span></td>
+                        </tr>`;
+            }).join("");
+
+            foot.innerHTML = `
+                    <tr>
+                        <td colspan="5">Jami: ${filtered.length} ta qarzdor</td>
+                        <td class="num">${Number(totalRemaining).toLocaleString()} so'm</td>
+                        <td></td>
+                    </tr>`;
         }
 
         function setPaymentType(type) {
@@ -1595,7 +1696,10 @@
 
             await fetchProducts();
             await fetchMySales();
-            if (isCredit) await fetchDebtors();
+            if (isCredit) {
+                await fetchDebtors();
+                renderEmployeeDebtorsTable();
+            }
         }
 
         function showMessage(el, type, text) {
