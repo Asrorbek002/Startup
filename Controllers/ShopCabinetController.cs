@@ -394,6 +394,131 @@ public class ShopCabinetController : ControllerBase
         return Ok(new { success = true, message = "Savdo muvaffaqiyatli qayd etildi!" });
     }
 
+    // 2.2 Xodim tomonidan QARZGA sotish — mahsulot ombordan kamayadi, savdo yoziladi,
+    // va tanlangan/berilgan ism bo'yicha qarzdor topiladi (yoki topilmasa yangi yaratiladi)
+    // hamda uning qarz summasiga shu savdo summasi qo'shiladi. Boshliq kabinetidagi
+    // "Qarzdorlar" bo'limi xuddi shu Debtors jadvalidan o'qiganligi uchun avtomatik ko'rinadi.
+    [HttpPost("{shopId}/employees/{employeeId}/make-sale-on-credit")]
+    public async Task<IActionResult> EmployeeMakeSaleOnCredit(int shopId, int employeeId, [FromBody] EmployeeCreditSaleRequest request)
+    {
+        var statusError = await CheckShopStatusAsync(shopId);
+        if (statusError != null) return statusError;
+
+        var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Id == employeeId && e.ShopId == shopId);
+        if (employee == null)
+        {
+            return NotFound(new { success = false, message = "Xodim topilmadi!" });
+        }
+
+        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == request.ProductId && p.ShopId == shopId);
+        if (product == null)
+        {
+            return NotFound(new { success = false, message = "Mahsulot topilmadi!" });
+        }
+
+        var element = await _context.Elements.FirstOrDefaultAsync(e => e.ShopId == shopId && e.Name == product.Name);
+        if (element == null)
+        {
+            return BadRequest(new { success = false, message = "Ushbu mahsulotga mos element topilmadi!" });
+        }
+
+        if (request.Quantity <= 0)
+        {
+            return BadRequest(new { success = false, message = "Miqdor noto'g'ri!" });
+        }
+
+        if (request.Quantity > element.Length)
+        {
+            return BadRequest(new { success = false, message = $"Omborda yetarli mahsulot yo'q! Mavjud: {element.Length} {element.Unit}" });
+        }
+
+        decimal salePrice = request.SalePrice ?? element.SellPrice;
+        if (salePrice < 0)
+        {
+            return BadRequest(new { success = false, message = "Narx noto'g'ri!" });
+        }
+
+        var saleTotal = request.Quantity * salePrice;
+
+        // ---- Qarzdorni aniqlash: avval Id bo'yicha, bo'lmasa ism bo'yicha, bo'lmasa yangi yaratamiz ----
+        Debtor? debtor = null;
+
+        if (request.DebtorId.HasValue && request.DebtorId.Value > 0)
+        {
+            debtor = await _context.Debtors.FirstOrDefaultAsync(d => d.Id == request.DebtorId.Value && d.ShopId == shopId);
+            if (debtor == null)
+                return NotFound(new { success = false, message = "Tanlangan qarzdor topilmadi!" });
+        }
+        else
+        {
+            var name = (request.DebtorName ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(name))
+                return BadRequest(new { success = false, message = "Qarzdor ismini kiriting!" });
+
+            // Ro'yxatda shu ism bilan qarzdor bor-yo'qligini tekshiramiz (katta-kichik harflarga sezmasdan)
+            debtor = await _context.Debtors.FirstOrDefaultAsync(d => d.ShopId == shopId && d.Name.ToLower() == name.ToLower());
+
+            if (debtor == null)
+            {
+                // Ro'yxatda yo'q — xodim yangi qarzdor yaratish huquqiga ega
+                debtor = new Debtor
+                {
+                    ShopId = shopId,
+                    Name = name,
+                    Phone = (request.DebtorPhone ?? string.Empty).Trim(),
+                    Amount = 0,
+                    PaidAmount = 0,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.Debtors.Add(debtor);
+            }
+            else if (!string.IsNullOrWhiteSpace(request.DebtorPhone) && string.IsNullOrWhiteSpace(debtor.Phone))
+            {
+                // Mavjud qarzdorda telefon bo'sh bo'lsa, xodim kiritgan raqamni yozib qo'yamiz
+                debtor.Phone = request.DebtorPhone.Trim();
+            }
+        }
+
+        // Qarzdorning umumiy qarz summasiga shu savdoni qo'shamiz
+        debtor.Amount += saleTotal;
+
+        var sale = new Sale
+        {
+            ShopId = shopId,
+            EmployeeId = employeeId,
+            EmployeeName = employee.FullName,
+            MenuCategory = "Umumiy",
+            ProductId = product.Id,
+            ProductName = product.Name,
+            Quantity = request.Quantity,
+            CostPrice = element.BuyPrice,
+            SalePrice = salePrice,
+            ListedPrice = element.SellPrice,
+            SoldAt = DateTime.UtcNow,
+            IsCredit = true,
+            DebtorName = debtor.Name
+        };
+
+        element.Length -= request.Quantity;
+
+        _context.Sales.Add(sale);
+        await _context.SaveChangesAsync();
+
+        // Sale.DebtorId ni saqlashdan oldin debtor.Id kerak edi — u yuqoridagi SaveChangesAsync
+        // paytida (yangi qarzdor bo'lsa) generatsiya qilinadi, shu sabab shu yerda yozib, yana saqlaymiz.
+        sale.DebtorId = debtor.Id;
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            success = true,
+            message = "Qarzga savdo muvaffaqiyatli qayd etildi!",
+            debtorId = debtor.Id,
+            debtorName = debtor.Name,
+            debtorRemaining = debtor.Amount - debtor.PaidAmount
+        });
+    }
+
     // Barcha savdolarni olish (boshliq kabineti — "Savdolar" bo'limi uchun)
     [HttpGet("{shopId}/sales")]
     public async Task<IActionResult> GetSales(int shopId)
@@ -953,6 +1078,19 @@ public class EmployeeSaleRequest
     public int ProductId { get; set; }
     public int Quantity { get; set; }
     public decimal? SalePrice { get; set; }   // Xodim tanlagan sotish narxi (bo'sh bo'lsa — belgilangan narx ishlatiladi)
+}
+
+public class EmployeeCreditSaleRequest
+{
+    public int ProductId { get; set; }
+    public int Quantity { get; set; }
+    public decimal? SalePrice { get; set; }
+
+    // Qarzdorni aniqlash uchun: mavjud qarzdor tanlangan bo'lsa DebtorId yuboriladi,
+    // aks holda DebtorName (majburiy) va DebtorPhone (ixtiyoriy) bilan yangi/ mos qarzdor topiladi.
+    public int? DebtorId { get; set; }
+    public string? DebtorName { get; set; }
+    public string? DebtorPhone { get; set; }
 }
 
 public class VerifyPasswordRequest

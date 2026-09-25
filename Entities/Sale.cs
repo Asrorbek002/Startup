@@ -18,4 +18,9 @@ public class Sale
     // Belgilangan narxdan pastga sotilgan bo'lsa — shu farq (zarar), aks holda 0
     public decimal PriceDrop => ListedPrice > SalePrice ? (ListedPrice - SalePrice) * Quantity : 0;
     public DateTime SoldAt { get; set; } = DateTime.UtcNow;  // Sotilgan vaqti (Sana va vaqt filtrlari uchun)
+
+    // ---- Qarzga sotish uchun qo'shimcha maydonlar ----
+    public bool IsCredit { get; set; } = false;   // true bo'lsa — bu savdo naqd emas, qarzga sotilgan
+    public int? DebtorId { get; set; }            // Qaysi qarzdorga bog'langan (IsCredit=true bo'lsa to'ldiriladi)
+    public string? DebtorName { get; set; }       // Qarzdor ismi (tezkor ko'rsatish uchun, tarix o'zgarmasin deb saqlanadi)
 }

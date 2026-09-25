@@ -716,6 +716,65 @@
                 background: #F3F7F9;
             }
 
+        /* ---------- to'lov turi (Naqd / Qarzga) va qarzdor bo'limi ---------- */
+        .pay-type-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 4px 0 14px;
+        }
+
+        .pay-type-btn {
+            border: 1.5px solid var(--line);
+            background: var(--base);
+            color: var(--ink-soft);
+            font: inherit;
+            font-weight: 700;
+            font-size: 13.5px;
+            padding: 10px 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: border-color .15s, background .15s, color .15s;
+        }
+
+            .pay-type-btn:hover {
+                border-color: var(--steel);
+            }
+
+            .pay-type-btn.active {
+                border-color: var(--accent);
+                background: var(--accent);
+                color: #fff;
+            }
+
+                .pay-type-btn.active.credit {
+                    border-color: #E08A00;
+                    background: #E08A00;
+                }
+
+        .credit-box {
+            border: 1.5px dashed #E08A00;
+            background: #FFF8EC;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+
+            .credit-box .field-label {
+                color: #9A6300;
+            }
+
+            .credit-box input, .credit-box select {
+                background: #fff;
+            }
+
+        .credit-existing-info {
+            margin-top: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #9A6300;
+        }
+
         .cart-summary {
             display: flex;
             align-items: center;
@@ -1069,6 +1128,27 @@
                 <option value="">+ Yana mahsulot qo'shish</option>
             </select>
             <div id="cartRows" style="margin-top:14px;"></div>
+
+            <label class="field-label" style="margin-top:4px;">To'lov turi</label>
+            <div class="pay-type-toggle">
+                <button type="button" class="pay-type-btn active" id="payTypeCashBtn" onclick="setPaymentType('cash')">💵 Naqd</button>
+                <button type="button" class="pay-type-btn credit" id="payTypeCreditBtn" onclick="setPaymentType('credit')">🧾 Qarzga</button>
+            </div>
+
+            <div class="credit-box" id="creditBox" style="display:none;">
+                <label class="field-label">Qarzdor</label>
+                <select id="creditDebtorSelect" onchange="onCreditDebtorChange()">
+                    <option value="">+ Yangi qarzdor</option>
+                </select>
+                <div id="creditNewFields" style="margin-top:10px;">
+                    <label class="field-label">Qarzdor ismi</label>
+                    <input type="text" id="creditDebtorName" placeholder="Masalan: Aziz Karimov">
+                    <label class="field-label" style="margin-top:10px;">Telefon raqami</label>
+                    <input type="text" id="creditDebtorPhone" placeholder="+998 90 123 45 67">
+                </div>
+                <div class="credit-existing-info" id="creditExistingInfo" style="display:none;"></div>
+            </div>
+
             <div class="cart-summary">
                 <span class="label">Umumiy summa</span>
                 <span class="amount" id="cartModalTotal">0 so'm</span>
@@ -1099,6 +1179,7 @@
 
             await fetchProducts();
             await fetchMySales();
+            await fetchDebtors();
 
             // Mahsulotlar ro'yxati va qoldiqlarni har 20 soniyada avtomatik yangilab turish
             // (boshliq tomonda element o'chirilsa/o'zgarsa, xodim sahifani yangilamasdan ham ko'radi).
@@ -1231,18 +1312,68 @@
                     : `<span class="ph">📦</span>`;
                 const low = p.availableStock <= 0 ? "low" : "";
                 return `
-                          <div class="product-card" data-product-id="${p.id}">
-                            <div class="thumb">${thumb}</div>
-                            <div class="body">
-                              <div class="pname">${p.name}</div>
-                              <div class="pstock ${low}">Omborda: ${p.availableStock} ${p.unit}</div>
-                              <div class="pstock" style="color:var(--ink);font-weight:700;font-size:14px;">${Number(p.elementSellPrice).toLocaleString()} so'm</div>
-                              <button type="button" class="btn-card-sell" ${p.availableStock <= 0 ? "disabled" : ""}
-                                      onclick="openCartModal(${p.id})">🛒 Sotish</button>
-                            </div>
-                          </div>
-                        `;
+                              <div class="product-card" data-product-id="${p.id}">
+                                <div class="thumb">${thumb}</div>
+                                <div class="body">
+                                  <div class="pname">${p.name}</div>
+                                  <div class="pstock ${low}">Omborda: ${p.availableStock} ${p.unit}</div>
+                                  <div class="pstock" style="color:var(--ink);font-weight:700;font-size:14px;">${Number(p.elementSellPrice).toLocaleString()} so'm</div>
+                                  <button type="button" class="btn-card-sell" ${p.availableStock <= 0 ? "disabled" : ""}
+                                          onclick="openCartModal(${p.id})">🛒 Sotish</button>
+                                </div>
+                              </div>
+                            `;
             }).join("");
+        }
+
+        /* ---------------- qarzdorlar (qarzga sotish uchun) ---------------- */
+        let debtorsList = [];
+        let paymentType = "cash";   // "cash" | "credit"
+
+        async function fetchDebtors() {
+            const shopId = localStorage.getItem("currentShopId");
+            try {
+                const response = await fetch(`/api/shop-cabinet/${shopId}/debtors`);
+                if (response.ok) debtorsList = await response.json();
+            } catch (error) {
+                console.error("Qarzdorlarni olishda xatolik:", error);
+            }
+        }
+
+        function setPaymentType(type) {
+            paymentType = type;
+            document.getElementById("payTypeCashBtn").classList.toggle("active", type === "cash");
+            document.getElementById("payTypeCreditBtn").classList.toggle("active", type === "credit");
+            document.getElementById("creditBox").style.display = type === "credit" ? "" : "none";
+            document.getElementById("cartSubmitBtn").textContent = type === "credit" ? "🧾 Qarzga sotish" : "💵 Sotish";
+            if (type === "credit") onCreditDebtorChange();
+        }
+
+        function populateCreditDebtorSelect() {
+            const select = document.getElementById("creditDebtorSelect");
+            select.innerHTML = `<option value="">+ Yangi qarzdor</option>` +
+                debtorsList.map(d => `<option value="${d.id}">${d.name} — ${d.phone}</option>`).join("");
+            select.value = "";
+            onCreditDebtorChange();
+        }
+
+        function onCreditDebtorChange() {
+            const select = document.getElementById("creditDebtorSelect");
+            const newFields = document.getElementById("creditNewFields");
+            const infoBox = document.getElementById("creditExistingInfo");
+            const isNew = !select.value;
+
+            newFields.style.display = isNew ? "" : "none";
+            if (isNew) {
+                infoBox.style.display = "none";
+            } else {
+                const d = debtorsList.find(x => x.id === parseInt(select.value));
+                if (d) {
+                    const remaining = d.amount - d.paidAmount;
+                    infoBox.textContent = `Hozirgi qarzi: ${Number(remaining).toLocaleString()} so'm. Bu savdo shu qarzga qo'shiladi.`;
+                    infoBox.style.display = "";
+                }
+            }
         }
 
         /* ---------------- cart modal (bir nechta mahsulotni bitta savdo sifatida yig'ish) ---------------- */
@@ -1255,6 +1386,8 @@
             document.getElementById("cartError").textContent = "";
             populateCartAddSelect();
             renderCartRows();
+            setPaymentType("cash");
+            populateCreditDebtorSelect();
             document.getElementById("cartModalOverlay").classList.add("show");
         }
 
@@ -1335,30 +1468,30 @@
                 total += lineTotal;
 
                 return `
-                          <div class="sale-row" data-cart-id="${item.cartId}">
-                            <button type="button" class="row-remove" onclick="removeFromCart(${item.cartId})" title="O'chirish">−</button>
-                            <div class="row-top">
-                              <div>
-                                <label class="field-label">${product.name}</label>
-                                <div style="font-size:11.5px;color:var(--ink-soft);">Omborda: ${available} ${product.unit}</div>
+                              <div class="sale-row" data-cart-id="${item.cartId}">
+                                <button type="button" class="row-remove" onclick="removeFromCart(${item.cartId})" title="O'chirish">−</button>
+                                <div class="row-top">
+                                  <div>
+                                    <label class="field-label">${product.name}</label>
+                                    <div style="font-size:11.5px;color:var(--ink-soft);">Omborda: ${available} ${product.unit}</div>
+                                  </div>
+                                  <div>
+                                    <label class="field-label">Miqdori</label>
+                                    <input type="number" min="1" step="1" value="${item.qty}" oninput="onCartQtyChange(${item.cartId}, this.value)">
+                                  </div>
+                                </div>
+                                <div class="row-top" style="margin-top:8px;">
+                                  <div>
+                                    <label class="field-label">Narxi (so'm)</label>
+                                    <input type="number" min="0" step="1" value="${item.price}" oninput="onCartPriceChange(${item.cartId}, this.value)">
+                                  </div>
+                                  <div></div>
+                                </div>
+                                ${isOver ? `<div class="row-hint low">Miqdor noto'g'ri yoki omborda yetarli emas!</div>` : ""}
+                                ${isPriceLow ? `<div class="row-hint low">⚠️ Belgilangan narxdan past (${Number(product.elementSellPrice).toLocaleString()} so'm) — boshliqqa qayd etiladi</div>` : ""}
+                                <div class="row-linetotal"><span>Jami</span><b>${Number(lineTotal).toLocaleString()} so'm</b></div>
                               </div>
-                              <div>
-                                <label class="field-label">Miqdori</label>
-                                <input type="number" min="1" step="1" value="${item.qty}" oninput="onCartQtyChange(${item.cartId}, this.value)">
-                              </div>
-                            </div>
-                            <div class="row-top" style="margin-top:8px;">
-                              <div>
-                                <label class="field-label">Narxi (so'm)</label>
-                                <input type="number" min="0" step="1" value="${item.price}" oninput="onCartPriceChange(${item.cartId}, this.value)">
-                              </div>
-                              <div></div>
-                            </div>
-                            ${isOver ? `<div class="row-hint low">Miqdor noto'g'ri yoki omborda yetarli emas!</div>` : ""}
-                            ${isPriceLow ? `<div class="row-hint low">⚠️ Belgilangan narxdan past (${Number(product.elementSellPrice).toLocaleString()} so'm) — boshliqqa qayd etiladi</div>` : ""}
-                            <div class="row-linetotal"><span>Jami</span><b>${Number(lineTotal).toLocaleString()} so'm</b></div>
-                          </div>
-                        `;
+                            `;
             }).join("");
 
             document.getElementById("cartModalTotal").textContent = Number(total).toLocaleString() + " so'm";
@@ -1377,6 +1510,24 @@
                 return;
             }
 
+            // Qarzga sotish tanlangan bo'lsa — qarzdor ma'lumotlarini tekshiramiz
+            let creditDebtorId = null;
+            let creditDebtorName = "";
+            let creditDebtorPhone = "";
+            if (paymentType === "credit") {
+                const select = document.getElementById("creditDebtorSelect");
+                if (select.value) {
+                    creditDebtorId = parseInt(select.value);
+                } else {
+                    creditDebtorName = document.getElementById("creditDebtorName").value.trim();
+                    creditDebtorPhone = document.getElementById("creditDebtorPhone").value.trim();
+                    if (!creditDebtorName) {
+                        errEl.textContent = "Qarzdor ismini kiriting yoki ro'yxatdan tanlang!";
+                        return;
+                    }
+                }
+            }
+
             btn.disabled = true;
             btn.textContent = "Yuklanmoqda...";
             errEl.textContent = "";
@@ -1384,17 +1535,37 @@
             let successCount = 0;
             let failCount = 0;
             let lastError = "";
+            const isCredit = paymentType === "credit";
+            const endpoint = isCredit
+                ? `/api/shop-cabinet/${shopId}/employees/${employeeId}/make-sale-on-credit`
+                : `/api/shop-cabinet/${shopId}/employees/${employeeId}/make-sale`;
 
             for (const item of validItems) {
+                const body = isCredit
+                    ? {
+                        productId: item.productId,
+                        quantity: item.qty,
+                        salePrice: item.price,
+                        debtorId: creditDebtorId,
+                        debtorName: creditDebtorName,
+                        debtorPhone: creditDebtorPhone
+                    }
+                    : { productId: item.productId, quantity: item.qty, salePrice: item.price };
+
                 try {
-                    const response = await fetch(`/api/shop-cabinet/${shopId}/employees/${employeeId}/make-sale`, {
+                    const response = await fetch(endpoint, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ productId: item.productId, quantity: item.qty, salePrice: item.price })
+                        body: JSON.stringify(body)
                     });
                     const data = await response.json().catch(() => ({}));
                     if (response.ok && data.success) {
                         successCount++;
+                        // Bir nechta mahsulot bitta yangi qarzdorga bog'lansa — birinchi savdodan
+                        // qaytgan debtorId'ni keyingi savdolarga ham berib, dublikat qarzdor yaratilishining oldini olamiz.
+                        if (isCredit && !creditDebtorId && data.debtorId) {
+                            creditDebtorId = data.debtorId;
+                        }
                     } else {
                         failCount++;
                         lastError = data.message || "Xatolik yuz berdi!";
@@ -1406,12 +1577,14 @@
                 }
             }
 
-            btn.textContent = "💵 Sotish";
+            btn.textContent = isCredit ? "🧾 Qarzga sotish" : "💵 Sotish";
             btn.disabled = false;
 
             const msgEl = document.getElementById("saleMessage");
             if (successCount > 0 && failCount === 0) {
-                showMessage(msgEl, "ok", `✅ ${successCount} turdagi mahsulot sotildi`);
+                showMessage(msgEl, "ok", isCredit
+                    ? `✅ ${successCount} turdagi mahsulot qarzga sotildi`
+                    : `✅ ${successCount} turdagi mahsulot sotildi`);
                 closeCartModal();
             } else if (successCount > 0 && failCount > 0) {
                 showMessage(msgEl, "err", `${successCount} ta sotildi, ${failCount} ta amalga oshmadi: ${lastError}`);
@@ -1422,6 +1595,7 @@
 
             await fetchProducts();
             await fetchMySales();
+            if (isCredit) await fetchDebtors();
         }
 
         function showMessage(el, type, text) {
@@ -1481,35 +1655,35 @@
                     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
                 const menu = s.id != null ? `
-                          <div class="row-menu">
-                            <button class="kebab-btn" onclick="toggleRowMenu('${s.id}', event)">⋮</button>
-                            <div class="row-menu-dropdown" id="menu-${s.id}">
-                              <button onclick="openEditFlow('${s.id}')">✏️ Tahrirlash</button>
-                            </div>
-                          </div>` : "";
+                              <div class="row-menu">
+                                <button class="kebab-btn" onclick="toggleRowMenu('${s.id}', event)">⋮</button>
+                                <div class="row-menu-dropdown" id="menu-${s.id}">
+                                  <button onclick="openEditFlow('${s.id}')">✏️ Tahrirlash</button>
+                                </div>
+                              </div>` : "";
                 return `
-                          <tr>
-                            <td class="idx-cell">${i + 1}</td>
-                            <td>${s.employeeName}</td>
-                            <td>${s.productName}</td>
-                            <td>${dateFormatted}</td>
-                            <td class="num">${s.quantity}</td>
-                            <td class="num">${Number(s.unitPrice).toLocaleString()} so'm</td>
-                            <td class="num">${Number(s.totalSum).toLocaleString()} so'm</td>
-                            <td>${menu}</td>
-                          </tr>`;
+                              <tr>
+                                <td class="idx-cell">${i + 1}</td>
+                                <td>${s.employeeName}</td>
+                                <td>${s.productName}</td>
+                                <td>${dateFormatted}</td>
+                                <td class="num">${s.quantity}</td>
+                                <td class="num">${Number(s.unitPrice).toLocaleString()} so'm</td>
+                                <td class="num">${Number(s.totalSum).toLocaleString()} so'm</td>
+                                <td>${menu}</td>
+                              </tr>`;
             }).join("");
 
             const totalQty = list.reduce((a, s) => a + s.quantity, 0);
             const totalSum = list.reduce((a, s) => a + s.totalSum, 0);
             foot.innerHTML = `
-                        <tr>
-                          <td colspan="4">Jami</td>
-                          <td class="num">${totalQty}</td>
-                          <td></td>
-                          <td class="num">${Number(totalSum).toLocaleString()} so'm</td>
-                          <td></td>
-                        </tr>`;
+                            <tr>
+                              <td colspan="4">Jami</td>
+                              <td class="num">${totalQty}</td>
+                              <td></td>
+                              <td class="num">${Number(totalSum).toLocaleString()} so'm</td>
+                              <td></td>
+                            </tr>`;
         }
 
         /* ---- row kebab menu ---- */
@@ -1573,9 +1747,9 @@
         function openEditModal(sale) {
             const select = document.getElementById("editProductSelect");
             select.innerHTML = productsList.map(p => `
-                        <option value="${p.id}" ${p.id == sale.productId ? "selected" : (p.name === sale.productName && !sale.productId ? "selected" : "")}>
-                          ${p.name} — ${Number(p.elementSellPrice).toLocaleString()} so'm
-                        </option>`).join("");
+                            <option value="${p.id}" ${p.id == sale.productId ? "selected" : (p.name === sale.productName && !sale.productId ? "selected" : "")}>
+                              ${p.name} — ${Number(p.elementSellPrice).toLocaleString()} so'm
+                            </option>`).join("");
 
             document.getElementById("editQtyInput").value = sale.quantity;
             document.getElementById("editError").textContent = "";
