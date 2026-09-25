@@ -319,11 +319,18 @@ public class ShopCabinetController : ControllerBase
         var statusError = await CheckShopStatusAsync(shopId);
         if (statusError != null) return statusError;
 
-        sale.ShopId = shopId;
-        _context.Sales.Add(sale);
-        await _context.SaveChangesAsync();
+        try
+        {
+            sale.ShopId = shopId;
+            _context.Sales.Add(sale);
+            await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Savdo muvaffaqiyatli qayd etildi va qoldiqdan ayrildi!" });
+            return Ok(new { success = true, message = "Savdo muvaffaqiyatli qayd etildi va qoldiqdan ayrildi!" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = "Savdoni saqlashda xatolik: " + (ex.InnerException?.Message ?? ex.Message) });
+        }
     }
 
     // 2.1 Xodim tomonidan mahsulot sotish (mavjud "Mahsulotlar" ro'yxatidan)
@@ -369,29 +376,36 @@ public class ShopCabinetController : ControllerBase
             return BadRequest(new { success = false, message = "Narx noto'g'ri!" });
         }
 
-        var sale = new Sale
+        try
         {
-            ShopId = shopId,
-            EmployeeId = employeeId,
-            EmployeeName = employee.FullName,
-            MenuCategory = "Umumiy",
-            ProductId = product.Id,
-            ProductName = product.Name,
-            Quantity = request.Quantity,
-            CostPrice = element.BuyPrice,
-            SalePrice = salePrice,
-            ListedPrice = element.SellPrice,
-            SoldAt = DateTime.UtcNow
-        };
+            var sale = new Sale
+            {
+                ShopId = shopId,
+                EmployeeId = employeeId,
+                EmployeeName = employee.FullName,
+                MenuCategory = "Umumiy",
+                ProductId = product.Id,
+                ProductName = product.Name,
+                Quantity = request.Quantity,
+                CostPrice = element.BuyPrice,
+                SalePrice = salePrice,
+                ListedPrice = element.SellPrice,
+                SoldAt = DateTime.UtcNow
+            };
 
-        // Faqat real qoldiqdan (Element) ayiramiz. Product.Quantity qabul qilingan tovar
-        // tarixi sifatida o'zgarishsiz qoladi.
-        element.Length -= request.Quantity;
+            // Faqat real qoldiqdan (Element) ayiramiz. Product.Quantity qabul qilingan tovar
+            // tarixi sifatida o'zgarishsiz qoladi.
+            element.Length -= request.Quantity;
 
-        _context.Sales.Add(sale);
-        await _context.SaveChangesAsync();
+            _context.Sales.Add(sale);
+            await _context.SaveChangesAsync();
 
-        return Ok(new { success = true, message = "Savdo muvaffaqiyatli qayd etildi!" });
+            return Ok(new { success = true, message = "Savdo muvaffaqiyatli qayd etildi!" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = "Savdoni saqlashda xatolik: " + (ex.InnerException?.Message ?? ex.Message) });
+        }
     }
 
     // 2.2 Xodim tomonidan QARZGA sotish — mahsulot ombordan kamayadi, savdo yoziladi,
@@ -479,59 +493,75 @@ public class ShopCabinetController : ControllerBase
             }
         }
 
-        // Qarzdorning umumiy qarz summasiga shu savdoni qo'shamiz
-        debtor.Amount += saleTotal;
-
-        var sale = new Sale
+        try
         {
-            ShopId = shopId,
-            EmployeeId = employeeId,
-            EmployeeName = employee.FullName,
-            MenuCategory = "Umumiy",
-            ProductId = product.Id,
-            ProductName = product.Name,
-            Quantity = request.Quantity,
-            CostPrice = element.BuyPrice,
-            SalePrice = salePrice,
-            ListedPrice = element.SellPrice,
-            SoldAt = DateTime.UtcNow,
-            IsCredit = true,
-            DebtorName = debtor.Name
-        };
+            // Qarzdorning umumiy qarz summasiga shu savdoni qo'shamiz
+            debtor.Amount += saleTotal;
 
-        element.Length -= request.Quantity;
+            var sale = new Sale
+            {
+                ShopId = shopId,
+                EmployeeId = employeeId,
+                EmployeeName = employee.FullName,
+                MenuCategory = "Umumiy",
+                ProductId = product.Id,
+                ProductName = product.Name,
+                Quantity = request.Quantity,
+                CostPrice = element.BuyPrice,
+                SalePrice = salePrice,
+                ListedPrice = element.SellPrice,
+                SoldAt = DateTime.UtcNow,
+                IsCredit = true,
+                DebtorName = debtor.Name
+            };
 
-        _context.Sales.Add(sale);
-        await _context.SaveChangesAsync();
+            element.Length -= request.Quantity;
 
-        // Sale.DebtorId ni saqlashdan oldin debtor.Id kerak edi — u yuqoridagi SaveChangesAsync
-        // paytida (yangi qarzdor bo'lsa) generatsiya qilinadi, shu sabab shu yerda yozib, yana saqlaymiz.
-        sale.DebtorId = debtor.Id;
-        await _context.SaveChangesAsync();
+            _context.Sales.Add(sale);
+            await _context.SaveChangesAsync();
 
-        return Ok(new
+            // Sale.DebtorId ni saqlashdan oldin debtor.Id kerak edi — u yuqoridagi SaveChangesAsync
+            // paytida (yangi qarzdor bo'lsa) generatsiya qilinadi, shu sabab shu yerda yozib, yana saqlaymiz.
+            sale.DebtorId = debtor.Id;
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = "Qarzga savdo muvaffaqiyatli qayd etildi!",
+                debtorId = debtor.Id,
+                debtorName = debtor.Name,
+                debtorRemaining = debtor.Amount - debtor.PaidAmount
+            });
+        }
+        catch (Exception ex)
         {
-            success = true,
-            message = "Qarzga savdo muvaffaqiyatli qayd etildi!",
-            debtorId = debtor.Id,
-            debtorName = debtor.Name,
-            debtorRemaining = debtor.Amount - debtor.PaidAmount
-        });
+            return StatusCode(500, new { success = false, message = "Qarzga savdoni saqlashda xatolik: " + (ex.InnerException?.Message ?? ex.Message) });
+        }
     }
 
     // Barcha savdolarni olish (boshliq kabineti — "Savdolar" bo'limi uchun)
+    // Har bir savdo qatorida EmployeeName (kim sotgan) va, qarzga sotilgan bo'lsa,
+    // DebtorName (kimga sotilgan) ham keladi — boshliq buni jadvalda ko'rsatishi mumkin.
     [HttpGet("{shopId}/sales")]
     public async Task<IActionResult> GetSales(int shopId)
     {
         var statusError = await CheckShopStatusAsync(shopId);
         if (statusError != null) return statusError;
 
-        var sales = await _context.Sales
-            .Where(s => s.ShopId == shopId)
-            .OrderByDescending(s => s.SoldAt)
-            .ToListAsync();
+        try
+        {
+            var sales = await _context.Sales
+                .Where(s => s.ShopId == shopId)
+                .OrderByDescending(s => s.SoldAt)
+                .ToListAsync();
 
-        return Ok(sales);
+            return Ok(sales);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = "Savdolarni olishda xatolik: " + (ex.InnerException?.Message ?? ex.Message) });
+        }
     }
 
     // Bitta xodimning o'z savdolari (xodim kabineti uchun)
@@ -541,12 +571,19 @@ public class ShopCabinetController : ControllerBase
         var statusError = await CheckShopStatusAsync(shopId);
         if (statusError != null) return statusError;
 
-        var sales = await _context.Sales
-            .Where(s => s.ShopId == shopId && s.EmployeeId == employeeId)
-            .OrderByDescending(s => s.SoldAt)
-            .ToListAsync();
+        try
+        {
+            var sales = await _context.Sales
+                .Where(s => s.ShopId == shopId && s.EmployeeId == employeeId)
+                .OrderByDescending(s => s.SoldAt)
+                .ToListAsync();
 
-        return Ok(sales);
+            return Ok(sales);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = "Savdo tarixini olishda xatolik: " + (ex.InnerException?.Message ?? ex.Message) });
+        }
     }
 
     // Xodimning o'z parolini tasdiqlash (savdoni tahrirlashdan oldin so'raladi)

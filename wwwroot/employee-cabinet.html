@@ -1557,6 +1557,21 @@
             let anyInvalid = cart.length === 0;
             let total = 0;
 
+            // Qayta chizishdan oldin, agar foydalanuvchi hozir shu konteyner ichidagi
+            // miqdor/narx maydonida yozayotgan bo'lsa — uning holatini (qaysi qator, qaysi maydon,
+            // kursor pozitsiyasi) eslab qolamiz, chunki innerHTML almashtirilganda input yo'q qilinib
+            // qayta yaratiladi va fokus (kursor) yo'qolib qoladi.
+            const active = document.activeElement;
+            let focusInfo = null;
+            if (active && container.contains(active) && active.tagName === "INPUT") {
+                focusInfo = {
+                    cartId: active.dataset.cartId,
+                    field: active.dataset.field,
+                    selStart: active.selectionStart,
+                    selEnd: active.selectionEnd
+                };
+            }
+
             container.innerHTML = cart.map(item => {
                 const product = productsList.find(p => p.id === item.productId);
                 if (!product) return "";
@@ -1578,13 +1593,13 @@
                                   </div>
                                   <div>
                                     <label class="field-label">Miqdori</label>
-                                    <input type="number" min="1" step="1" value="${item.qty}" oninput="onCartQtyChange(${item.cartId}, this.value)">
+                                    <input type="number" min="1" step="1" value="${item.qty}" data-cart-id="${item.cartId}" data-field="qty" oninput="onCartQtyChange(${item.cartId}, this.value)">
                                   </div>
                                 </div>
                                 <div class="row-top" style="margin-top:8px;">
                                   <div>
                                     <label class="field-label">Narxi (so'm)</label>
-                                    <input type="number" min="0" step="1" value="${item.price}" oninput="onCartPriceChange(${item.cartId}, this.value)">
+                                    <input type="number" min="0" step="1" value="${item.price}" data-cart-id="${item.cartId}" data-field="price" oninput="onCartPriceChange(${item.cartId}, this.value)">
                                   </div>
                                   <div></div>
                                 </div>
@@ -1597,6 +1612,17 @@
 
             document.getElementById("cartModalTotal").textContent = Number(total).toLocaleString() + " so'm";
             document.getElementById("cartSubmitBtn").disabled = anyInvalid;
+
+            // Fokusni (va kursor pozitsiyasini) o'zi yozayotgan maydonga qaytarib beramiz —
+            // shunda foydalanuvchi bir necha raqamni to'xtovsiz yozishi mumkin bo'ladi.
+            if (focusInfo) {
+                const selector = `input[data-cart-id="${focusInfo.cartId}"][data-field="${focusInfo.field}"]`;
+                const restoredEl = container.querySelector(selector);
+                if (restoredEl) {
+                    restoredEl.focus();
+                    try { restoredEl.setSelectionRange(focusInfo.selStart, focusInfo.selEnd); } catch (e) { /* raqam input turida ba'zi brauzerlar cheklaydi, muhim emas */ }
+                }
+            }
         }
 
         async function submitCart() {
