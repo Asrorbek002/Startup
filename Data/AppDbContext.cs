@@ -14,5 +14,6 @@ public class AppDbContext : DbContext // <--- ": DbContext" meros olishi shart!
     public DbSet<Element> Elements => Set<Element>(); // <--- Elementlar jadvali
     public DbSet<Product> Products => Set<Product>(); // <--- Tovar qabul qilish jadvali qo'shildi
     public DbSet<Payment> Payments => Set<Payment>(); // <--- Xodimlarga to'lovlar jadvali qo'shildi
+    public DbSet<Debtor> Debtors => Set<Debtor>(); // <--- Qarzdorlar jadvali
     public DbSet<SaleEditLog> SaleEditLogs => Set<SaleEditLog>(); // <--- Savdo tahrirlash tarixi jadvali qo'shildi
 }
