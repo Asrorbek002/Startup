@@ -20,9 +20,3 @@ public class TelegramSettings
     public DateTime? LastDailyReportSentAt { get; set; }
     public DateTime? LastLowStockAlertAt { get; set; }
 }
-namespace ShopManagementSystem.Entities
-{
-    public class TelegramSettings
-    {
-    }
-}
