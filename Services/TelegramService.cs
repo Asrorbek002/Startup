@@ -1,10 +1,4 @@
-﻿namespace ShopManagementSystem.Services
-{
-    public class TelegramService
-    {
-    }
-}
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 
 namespace ShopManagementSystem.Services;
 
