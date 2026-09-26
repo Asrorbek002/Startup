@@ -218,6 +218,59 @@
             font-size: 22px;
             position: relative;
             z-index: 1;
+            overflow: hidden;
+        }
+
+            .pc-avatar-lg img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 50%;
+                display: block;
+            }
+
+        .pc-avatar-wrap {
+            position: relative;
+            width: 60px;
+            margin: 0 auto 10px;
+        }
+
+            .pc-avatar-wrap .pc-avatar-lg {
+                margin: 0;
+            }
+
+        .avatar-edit-btn {
+            position: absolute;
+            right: -4px;
+            bottom: 6px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            background: var(--accent);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            cursor: pointer;
+            padding: 0;
+            z-index: 2;
+            box-shadow: 0 2px 6px rgba(0,0,0,.25);
+            transition: transform .15s, background .15s;
+        }
+
+            .avatar-edit-btn:hover {
+                background: var(--accent-dark);
+                transform: scale(1.1);
+            }
+
+        .topbar-user .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
         }
 
         .pc-head h5 {
@@ -1006,7 +1059,14 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
         }
+
+            .product-card:hover {
+                box-shadow: 0 10px 24px -8px rgba(20,26,33,.18);
+                transform: translateY(-2px);
+                border-color: var(--accent);
+            }
 
             .product-card .thumb {
                 width: 100%;
@@ -1156,7 +1216,11 @@
 
                 <div class="user-popover" id="userPopover">
                     <div class="pc-head">
-                        <div class="pc-avatar-lg" id="popAvatarLg">•</div>
+                        <div class="pc-avatar-wrap">
+                            <div class="pc-avatar-lg" id="popAvatarLg">•</div>
+                            <button type="button" class="avatar-edit-btn" id="avatarEditBtn" title="Rasmni o'zgartirish" onclick="event.stopPropagation(); document.getElementById('avatarInput').click();">✎</button>
+                            <input type="file" id="avatarInput" accept="image/*" hidden onclick="event.stopPropagation()">
+                        </div>
                         <h5 id="popNameText">—</h5>
                         <span class="pc-status"><i></i><span>Faol xodim</span></span>
                     </div>
@@ -1357,6 +1421,8 @@
             document.getElementById("popNameText").textContent = employeeName || "-";
             document.getElementById("popShop").textContent = shopName || "—";
 
+            setupEmployeeAvatar(initial);
+
             await fetchProducts();
             await fetchMySales();
             await fetchDebtors();
@@ -1365,6 +1431,57 @@
             // (boshliq tomonda element o'chirilsa/o'zgarsa, xodim sahifani yangilamasdan ham ko'radi).
             setInterval(fetchProducts, 20000);
         });
+
+        /* ---------------- profil rasmi (avatar) ---------------- */
+        function avatarKey() {
+            return "employeeAvatar_" + (localStorage.getItem("currentEmployeeId") || "0");
+        }
+
+        function applyEmployeeAvatar(dataUrl, initial) {
+            const small = document.getElementById("employeeAvatar");
+            const big = document.getElementById("popAvatarLg");
+            if (dataUrl) {
+                small.innerHTML = '<img alt="" src="' + dataUrl + '">';
+                big.innerHTML = '<img alt="" src="' + dataUrl + '">';
+            } else {
+                small.textContent = initial;
+                big.textContent = initial;
+            }
+        }
+
+        function setupEmployeeAvatar(initial) {
+            try {
+                const saved = localStorage.getItem(avatarKey());
+                if (saved) applyEmployeeAvatar(saved, initial);
+            } catch (e) { }
+
+            const input = document.getElementById("avatarInput");
+            input.addEventListener("change", () => {
+                const file = input.files && input.files[0];
+                input.value = "";
+                if (!file) return;
+                if (!file.type.startsWith("image/")) {
+                    alert("Iltimos, rasm faylini tanlang!");
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // Kvadratga kesib, 256x256 ga kichraytiramiz
+                        const size = 256, c = document.createElement("canvas");
+                        c.width = c.height = size;
+                        const side = Math.min(img.width, img.height);
+                        c.getContext("2d").drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+                        const dataUrl = c.toDataURL("image/jpeg", 0.85);
+                        applyEmployeeAvatar(dataUrl, initial);
+                        try { localStorage.setItem(avatarKey(), dataUrl); } catch (e) { console.error(e); }
+                    };
+                    img.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
 
         /* ---------------- view switching ---------------- */
         function setView(view) {
