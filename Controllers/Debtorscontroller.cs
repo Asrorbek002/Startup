@@ -94,6 +94,23 @@ public class DebtorsController : ControllerBase
         return Ok(new { success = true, paidAmount = debtor.PaidAmount });
     }
 
+    // Qarzdorni o'chirish
+    [HttpDelete("{shopId}/debtors/{debtorId}")]
+    public async Task<IActionResult> DeleteDebtor(int shopId, int debtorId)
+    {
+        var debtor = await _context.Debtors.FirstOrDefaultAsync(d => d.Id == debtorId && d.ShopId == shopId);
+        if (debtor == null)
+            return NotFound(new { success = false, message = "Qarzdor topilmadi!" });
+
+        var payments = _context.DebtorPayments.Where(p => p.DebtorId == debtorId && p.ShopId == shopId);
+        _context.DebtorPayments.RemoveRange(payments);
+
+        _context.Debtors.Remove(debtor);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true });
+    }
+
     // Bitta qarzdorning barcha to'lovlari tarixi (kim, qachon, qancha)
     [HttpGet("{shopId}/debtors/{debtorId}/payments")]
     public async Task<IActionResult> GetDebtorPayments(int shopId, int debtorId)
