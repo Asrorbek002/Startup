@@ -88,19 +88,27 @@
         /* ---------- topbar user (top-right) ---------- */
         .topbar-user {
             margin-left: auto;
-            padding: 8px 10px;
-            border-radius: 10px;
+            padding: 6px 12px 6px 6px;
+            border-radius: 999px;
             display: flex;
             align-items: center;
-            gap: 11px;
+            gap: 10px;
             cursor: pointer;
             position: relative;
             user-select: none;
-            transition: background .12s ease;
+            border: 1px solid transparent;
+            transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
         }
 
             .topbar-user:hover {
                 background: var(--base);
+                border-color: var(--line);
+            }
+
+            .topbar-user.open {
+                background: var(--base);
+                border-color: var(--line);
+                box-shadow: 0 0 0 3px rgba(201,122,43,.12);
             }
 
             .topbar-user .avatar {
@@ -108,13 +116,14 @@
                 height: 36px;
                 border-radius: 50%;
                 flex: none;
-                background: #E6EEF2;
-                color: var(--steel);
+                background: linear-gradient(150deg,var(--accent),var(--accent-dark));
+                color: #fff;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-weight: 700;
                 font-size: 14px;
+                box-shadow: 0 2px 6px rgba(154,90,30,.35);
             }
 
             .topbar-user .meta {
@@ -138,57 +147,164 @@
 
             .topbar-user .chevron {
                 color: var(--ink-soft);
-                font-size: 11px;
+                font-size: 10px;
                 flex: none;
+                transition: transform .2s ease;
             }
 
+            .topbar-user.open .chevron {
+                transform: rotate(180deg);
+            }
+
+        /* ---------- profile card popover ---------- */
         .user-popover {
             position: absolute;
-            top: calc(100% + 6px);
+            top: calc(100% + 10px);
             right: 0;
             left: auto;
-            width: 220px;
+            width: 272px;
             background: var(--surface);
             border: 1px solid var(--line);
-            border-radius: 11px;
-            box-shadow: var(--shadow);
-            padding: 12px 14px;
+            border-radius: 16px;
+            box-shadow: 0 20px 46px -12px rgba(20,26,33,.28), 0 2px 8px rgba(20,26,33,.08);
+            padding: 0;
             z-index: 40;
-            display: none;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-6px) scale(.97);
+            pointer-events: none;
+            transition: opacity .16s ease, transform .18s ease;
         }
 
             .user-popover.show {
                 display: block;
+                opacity: 1;
+                transform: none;
+                pointer-events: auto;
             }
 
-            .user-popover .row {
+        .pc-head {
+            background: linear-gradient(135deg, var(--steel), var(--accent-dark));
+            color: #fff;
+            text-align: center;
+            padding: 22px 16px 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .pc-head::after {
+                content: "";
+                position: absolute;
+                width: 150px;
+                height: 150px;
+                right: -50px;
+                top: -60px;
+                border-radius: 50%;
+                background: radial-gradient(circle, rgba(255,255,255,.22), rgba(255,255,255,0) 70%);
+                pointer-events: none;
+            }
+
+        .pc-avatar-lg {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.16);
+            border: 2px solid rgba(255,255,255,.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 22px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pc-head h5 {
+            margin: 0 0 8px;
+            font-size: 15.5px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pc-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 600;
+            background: rgba(255,255,255,.2);
+            border-radius: 999px;
+            padding: 3px 11px;
+            position: relative;
+            z-index: 1;
+        }
+
+            .pc-status i {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #7CE8A4;
+                display: inline-block;
+            }
+
+        .pc-body {
+            padding: 8px 16px 14px;
+        }
+
+        .user-popover .row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12.5px;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+            .user-popover .row:last-of-type {
+                border-bottom: 0;
+            }
+
+            .user-popover .row .pc-ico {
+                width: 30px;
+                height: 30px;
+                border-radius: 9px;
+                flex: none;
+                background: var(--base);
+                color: var(--accent-dark);
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
-                font-size: 12.5px;
-                padding: 6px 0;
-                border-bottom: 1px solid var(--line);
+                justify-content: center;
+                font-size: 13px;
             }
 
-                .user-popover .row:last-child {
-                    border-bottom: 0;
-                }
+            .user-popover .row .txt {
+                overflow: hidden;
+                flex: 1;
+            }
 
-                .user-popover .row .k {
-                    color: var(--ink-soft);
-                    font-weight: 600;
-                }
+            .user-popover .row .k {
+                display: block;
+                color: var(--ink-soft);
+                font-weight: 600;
+                font-size: 11px;
+            }
 
-                .user-popover .row .v {
-                    font-weight: 700;
-                    text-align: right;
-                }
+            .user-popover .row .v {
+                display: block;
+                font-weight: 700;
+                font-size: 12.5px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
 
-                    .user-popover .row .v.editable {
-                        cursor: pointer;
-                        color: var(--accent);
-                        text-decoration: underline dotted;
-                    }
+                .user-popover .row .v.editable {
+                    cursor: pointer;
+                    color: var(--accent);
+                    text-decoration: underline dotted;
+                }
 
         .popover-phone-edit {
             display: flex;
@@ -241,14 +357,14 @@
             padding: 9px 10px;
             border-radius: 9px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 8px;
             transition: color .15s, border-color .15s, background .15s;
         }
 
             .popover-logout-btn:hover {
-                color: var(--bad);
+                color: #fff;
                 border-color: var(--bad);
-                background: var(--bad-soft);
+                background: var(--bad);
             }
 
         /* ---------- shell: sidebar + content ---------- */
@@ -1038,16 +1154,21 @@
                 <span class="chevron">▾</span>
 
                 <div class="user-popover" id="userPopover">
-                    <div class="row"><span class="k">Login</span><span class="v" id="popLogin">—</span></div>
-                    <div class="row" id="popPhoneRow">
-                        <span class="k">Telefon</span>
-                        <span class="v" id="popPhone">—</span>
+                    <div class="pc-head">
+                        <div class="pc-avatar-lg" id="popAvatarLg">•</div>
+                        <h5 id="popNameText">—</h5>
+                        <span class="pc-status"><i></i><span>Faol xodim</span></span>
                     </div>
-                    <div class="popover-phone-edit" id="popPhoneEdit" style="display:none;">
-                        <input type="text" id="popPhoneInput" class="popover-phone-input" placeholder="+998 90 123 45 67" onclick="event.stopPropagation()">
-                        <button type="button" class="popover-phone-save" onclick="event.stopPropagation(); saveEmployeePhone()">Saqlash</button>
+                    <div class="pc-body">
+                        <div class="row"><div class="pc-ico">🏬</div><div class="txt"><span class="k">Do'kon</span><span class="v" id="popShop">—</span></div></div>
+                        <div class="row"><div class="pc-ico">👤</div><div class="txt"><span class="k">Login</span><span class="v" id="popLogin">—</span></div></div>
+                        <div class="row" id="popPhoneRow"><div class="pc-ico">☎</div><div class="txt"><span class="k">Telefon</span><span class="v" id="popPhone">—</span></div></div>
+                        <div class="popover-phone-edit" id="popPhoneEdit" style="display:none;">
+                            <input type="text" id="popPhoneInput" class="popover-phone-input" placeholder="+998 90 123 45 67" onclick="event.stopPropagation()">
+                            <button type="button" class="popover-phone-save" onclick="event.stopPropagation(); saveEmployeePhone()">Saqlash</button>
+                        </div>
+                        <button type="button" class="popover-logout-btn" onclick="event.stopPropagation(); logout()">⎋ Chiqish</button>
                     </div>
-                    <button type="button" class="popover-logout-btn" onclick="event.stopPropagation(); logout()">⎋ Chiqish</button>
                 </div>
             </div>
         </div>
@@ -1230,6 +1351,11 @@
             document.getElementById("employeeShopText").textContent = shopName;
             document.getElementById("employeeAvatar").textContent = (employeeName.trim()[0] || "•").toUpperCase();
 
+            const initial = (employeeName.trim()[0] || "•").toUpperCase();
+            document.getElementById("popAvatarLg").textContent = initial;
+            document.getElementById("popNameText").textContent = employeeName || "-";
+            document.getElementById("popShop").textContent = shopName || "—";
+
             await fetchProducts();
             await fetchMySales();
             await fetchDebtors();
@@ -1258,14 +1384,19 @@
         function toggleUserPopover(e) {
             e.stopPropagation();
             const pop = document.getElementById("userPopover");
+            const wrap = document.getElementById("sidebarUser");
             const willShow = !pop.classList.contains("show");
             pop.classList.toggle("show", willShow);
+            wrap.classList.toggle("open", willShow);
             if (willShow && !popoverLoaded) loadUserContactInfo();
         }
 
         document.addEventListener("click", (e) => {
             const wrap = document.getElementById("sidebarUser");
-            if (!wrap.contains(e.target)) document.getElementById("userPopover").classList.remove("show");
+            if (!wrap.contains(e.target)) {
+                document.getElementById("userPopover").classList.remove("show");
+                wrap.classList.remove("open");
+            }
         });
 
         async function loadUserContactInfo() {
