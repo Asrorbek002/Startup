@@ -28,4 +28,7 @@ public class DebtorPayment
     public decimal Amount { get; set; }
 
     public DateTime PaidAt { get; set; } = DateTime.UtcNow;
+
+    // Ixtiyoriy izoh: masalan "avans", "qarzning bir qismi" va h.k.
+    public string? Note { get; set; }
 }

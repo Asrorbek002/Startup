@@ -86,7 +86,8 @@ public class DebtorsController : ControllerBase
             EmployeeId = dto.EmployeeId,
             PaidByName = payerName,
             Amount = actualAmount,
-            PaidAt = DateTime.UtcNow
+            PaidAt = DateTime.UtcNow,
+            Note = string.IsNullOrWhiteSpace(dto.Note) ? null : dto.Note.Trim()
         });
 
         await _context.SaveChangesAsync();
@@ -124,7 +125,8 @@ public class DebtorsController : ControllerBase
                 p.Amount,
                 p.PaidAt,
                 p.EmployeeId,
-                p.PaidByName
+                p.PaidByName,
+                p.Note
             })
             .ToListAsync();
 
@@ -144,4 +146,5 @@ public class DebtorPaymentDto
     public decimal Amount { get; set; }
     public int? EmployeeId { get; set; }
     public string? PaidByName { get; set; }
+    public string? Note { get; set; }
 }

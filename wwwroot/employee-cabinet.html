@@ -754,7 +754,7 @@
                 font-weight: 600;
             }
 
-            .modal-box input[type="password"], .modal-box input[type="number"] {
+            .modal-box input[type="password"], .modal-box input[type="number"], .modal-box textarea {
                 width: 100%;
                 font: inherit;
                 font-size: 14px;
@@ -763,6 +763,9 @@
                 border: 1px solid var(--line);
                 border-radius: 9px;
                 padding: 10px 11px;
+                resize: vertical;
+                margin-top: 6px;
+                margin-bottom: 4px;
             }
 
         .modal-err {
@@ -1467,11 +1470,12 @@
                             <th>#</th>
                             <th>Sana / Vaqt</th>
                             <th>Kim to'lagan</th>
+                            <th>Izoh</th>
                             <th class="num">Summasi</th>
                         </tr>
                     </thead>
                     <tbody id="debtorHistoryBody">
-                        <tr><td colspan="4" class="muted">Yuklanmoqda...</td></tr>
+                        <tr><td colspan="5" class="muted">Yuklanmoqda...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1488,6 +1492,8 @@
             <div id="payDebtorInfo" style="margin-bottom:10px;font-weight:600;"></div>
             <label class="field-label">To'lov summasi (so'm)</label>
             <input type="number" min="1" step="1" id="payDebtorAmountInput" placeholder="Masalan: 100000">
+            <label class="field-label">Izoh (ixtiyoriy)</label>
+            <textarea id="payDebtorNoteInput" rows="2" placeholder="Masalan: qarzning bir qismi"></textarea>
             <div class="modal-err" id="payDebtorError"></div>
             <div class="modal-actions">
                 <button class="btn-secondary" onclick="closeDebtorPayModal()">Bekor qilish</button>
@@ -1760,17 +1766,17 @@
                     : `<span class="ph">📦</span>`;
                 const low = p.availableStock <= 0 ? "low" : "";
                 return `
-                                          <div class="product-card" data-product-id="${p.id}">
-                                            <div class="thumb">${thumb}</div>
-                                            <div class="body">
-                                              <div class="pname">${p.name}</div>
-                                              <div class="pstock ${low}">Omborda: ${p.availableStock} ${p.unit}</div>
-                                              <div class="pstock" style="color:var(--ink);font-weight:700;font-size:14px;">${Number(p.elementSellPrice).toLocaleString()} so'm</div>
-                                              <button type="button" class="btn-card-sell" ${p.availableStock <= 0 ? "disabled" : ""}
-                                                      onclick="openCartModal(${p.id})">🛒 Sotish</button>
-                                            </div>
-                                          </div>
-                                        `;
+                                              <div class="product-card" data-product-id="${p.id}">
+                                                <div class="thumb">${thumb}</div>
+                                                <div class="body">
+                                                  <div class="pname">${p.name}</div>
+                                                  <div class="pstock ${low}">Omborda: ${p.availableStock} ${p.unit}</div>
+                                                  <div class="pstock" style="color:var(--ink);font-weight:700;font-size:14px;">${Number(p.elementSellPrice).toLocaleString()} so'm</div>
+                                                  <button type="button" class="btn-card-sell" ${p.availableStock <= 0 ? "disabled" : ""}
+                                                          onclick="openCartModal(${p.id})">🛒 Sotish</button>
+                                                </div>
+                                              </div>
+                                            `;
             }).join("");
         }
 
@@ -1815,25 +1821,25 @@
                     ? `<button class="btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="openDebtorPayModal(${d.id})">💵 To'lov</button>`
                     : `<span class="muted">—</span>`;
                 return `
-                                    <tr>
-                                        <td class="idx-cell">${i + 1}</td>
-                                        <td>${d.name}</td>
-                                        <td><a href="tel:${(d.phone || "").replace(/\s/g, "")}" style="color:var(--steel);text-decoration:none;">${d.phone || "—"}</a></td>
-                                        <td class="num">${Number(d.amount).toLocaleString()} so'm</td>
-                                        <td class="num" style="cursor:pointer;text-decoration:underline;color:var(--good);" onclick="showDebtorPaymentHistory(${d.id})" title="To'lovlar tarixini ko'rish">${Number(d.paidAmount).toLocaleString()} so'm</td>
-                                        <td class="num" style="font-weight:700;color:${remaining > 0 ? 'var(--bad)' : 'var(--good)'};">${Number(remaining).toLocaleString()} so'm</td>
-                                        <td><span class="status-pill ${pillClass}">${pillText}</span></td>
-                                        <td>${payBtn}</td>
-                                    </tr>`;
+                                        <tr>
+                                            <td class="idx-cell">${i + 1}</td>
+                                            <td>${d.name}</td>
+                                            <td><a href="tel:${(d.phone || "").replace(/\s/g, "")}" style="color:var(--steel);text-decoration:none;">${d.phone || "—"}</a></td>
+                                            <td class="num">${Number(d.amount).toLocaleString()} so'm</td>
+                                            <td class="num" style="cursor:pointer;text-decoration:underline;color:var(--good);" onclick="showDebtorPaymentHistory(${d.id})" title="To'lovlar tarixini ko'rish">${Number(d.paidAmount).toLocaleString()} so'm</td>
+                                            <td class="num" style="font-weight:700;color:${remaining > 0 ? 'var(--bad)' : 'var(--good)'};">${Number(remaining).toLocaleString()} so'm</td>
+                                            <td><span class="status-pill ${pillClass}">${pillText}</span></td>
+                                            <td>${payBtn}</td>
+                                        </tr>`;
             }).join("");
 
             foot.innerHTML = `
-                                <tr>
-                                    <td colspan="5">Jami: ${filtered.length} ta qarzdor</td>
-                                    <td class="num">${Number(totalRemaining).toLocaleString()} so'm</td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>`;
+                                    <tr>
+                                        <td colspan="5">Jami: ${filtered.length} ta qarzdor</td>
+                                        <td class="num">${Number(totalRemaining).toLocaleString()} so'm</td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>`;
         }
 
         /* ---- xodim tomonidan qarzdorga to'lov qilish ---- */
@@ -1847,6 +1853,7 @@
             document.getElementById("payDebtorInfo").textContent = `${d.name} (qoldiq: ${Number(remaining).toLocaleString()} so'm)`;
             document.getElementById("payDebtorAmountInput").value = "";
             document.getElementById("payDebtorAmountInput").max = remaining;
+            document.getElementById("payDebtorNoteInput").value = "";
             document.getElementById("payDebtorError").textContent = "";
             document.getElementById("payDebtorModalOverlay").classList.add("show");
         }
@@ -1860,6 +1867,7 @@
             if (pendingPayDebtorId == null) return;
             const shopId = localStorage.getItem("currentShopId");
             const amount = parseFloat(document.getElementById("payDebtorAmountInput").value);
+            const note = document.getElementById("payDebtorNoteInput").value.trim();
             const errEl = document.getElementById("payDebtorError");
             const btn = document.getElementById("payDebtorSaveBtn");
 
@@ -1879,7 +1887,8 @@
                     body: JSON.stringify({
                         amount,
                         employeeId: employeeId ? parseInt(employeeId) : null,
-                        paidByName: employeeName
+                        paidByName: employeeName,
+                        note: note || null
                     })
                 });
                 const data = await response.json().catch(() => ({}));
@@ -1903,7 +1912,7 @@
             const d = debtorsList.find(x => x.id === debtorId);
             document.getElementById("debtorHistoryName").textContent = d ? d.name : "";
             const bodyEl = document.getElementById("debtorHistoryBody");
-            bodyEl.innerHTML = `<tr><td colspan="4" class="muted">Yuklanmoqda...</td></tr>`;
+            bodyEl.innerHTML = `<tr><td colspan="5" class="muted">Yuklanmoqda...</td></tr>`;
             document.getElementById("debtorHistoryModalOverlay").classList.add("show");
 
             let payments = [];
@@ -1915,7 +1924,7 @@
             }
 
             if (payments.length === 0) {
-                bodyEl.innerHTML = `<tr><td colspan="4" class="muted">Hozircha to'lovlar mavjud emas</td></tr>`;
+                bodyEl.innerHTML = `<tr><td colspan="5" class="muted">Hozircha to'lovlar mavjud emas</td></tr>`;
                 return;
             }
 
@@ -1924,13 +1933,15 @@
                     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
                 const who = p.paidByName || (p.employeeId ? "Xodim" : "Boshliq");
+                const note = p.note ? p.note : `<span class="muted">—</span>`;
                 return `
-                                    <tr>
-                                        <td class="idx-cell">${i + 1}</td>
-                                        <td>${dt}</td>
-                                        <td>${who}</td>
-                                        <td class="num">${Number(p.amount).toLocaleString()} so'm</td>
-                                    </tr>`;
+                                        <tr>
+                                            <td class="idx-cell">${i + 1}</td>
+                                            <td>${dt}</td>
+                                            <td>${who}</td>
+                                            <td>${note}</td>
+                                            <td class="num">${Number(p.amount).toLocaleString()} so'm</td>
+                                        </tr>`;
             }).join("");
         }
 
@@ -2155,29 +2166,29 @@
                 total += lineTotal;
 
                 return `
-                                          <div class="sale-row" data-cart-id="${item.cartId}">
-                                            <button type="button" class="row-remove" onclick="removeFromCart(${item.cartId})" title="O'chirish">−</button>
-                                            <div class="row-top">
-                                              <div>
-                                                <label class="field-label">${product.name}</label>
-                                                <div class="row-avail" style="font-size:11.5px;color:var(--ink-soft);">Omborda: ${available} ${product.unit}</div>
+                                              <div class="sale-row" data-cart-id="${item.cartId}">
+                                                <button type="button" class="row-remove" onclick="removeFromCart(${item.cartId})" title="O'chirish">−</button>
+                                                <div class="row-top">
+                                                  <div>
+                                                    <label class="field-label">${product.name}</label>
+                                                    <div class="row-avail" style="font-size:11.5px;color:var(--ink-soft);">Omborda: ${available} ${product.unit}</div>
+                                                  </div>
+                                                  <div>
+                                                    <label class="field-label">Miqdori</label>
+                                                    <input type="number" min="1" step="1" value="${item.qty}" data-cart-id="${item.cartId}" data-field="qty" oninput="onCartQtyChange(${item.cartId}, this.value)">
+                                                  </div>
+                                                </div>
+                                                <div class="row-top" style="margin-top:8px;">
+                                                  <div>
+                                                    <label class="field-label">Narxi (so'm)</label>
+                                                    <input type="number" min="0" step="1" value="${item.price}" data-cart-id="${item.cartId}" data-field="price" oninput="onCartPriceChange(${item.cartId}, this.value)">
+                                                  </div>
+                                                  <div></div>
+                                                </div>
+                                                <div class="row-hints">${isOver ? `<div class="row-hint low">Miqdor noto'g'ri yoki omborda yetarli emas!</div>` : ""}${isPriceLow ? `<div class="row-hint low">⚠️ Belgilangan narxdan past (${Number(product.elementSellPrice).toLocaleString()} so'm) — boshliqqa qayd etiladi</div>` : ""}</div>
+                                                <div class="row-linetotal"><span>Jami</span><b>${Number(lineTotal).toLocaleString()} so'm</b></div>
                                               </div>
-                                              <div>
-                                                <label class="field-label">Miqdori</label>
-                                                <input type="number" min="1" step="1" value="${item.qty}" data-cart-id="${item.cartId}" data-field="qty" oninput="onCartQtyChange(${item.cartId}, this.value)">
-                                              </div>
-                                            </div>
-                                            <div class="row-top" style="margin-top:8px;">
-                                              <div>
-                                                <label class="field-label">Narxi (so'm)</label>
-                                                <input type="number" min="0" step="1" value="${item.price}" data-cart-id="${item.cartId}" data-field="price" oninput="onCartPriceChange(${item.cartId}, this.value)">
-                                              </div>
-                                              <div></div>
-                                            </div>
-                                            <div class="row-hints">${isOver ? `<div class="row-hint low">Miqdor noto'g'ri yoki omborda yetarli emas!</div>` : ""}${isPriceLow ? `<div class="row-hint low">⚠️ Belgilangan narxdan past (${Number(product.elementSellPrice).toLocaleString()} so'm) — boshliqqa qayd etiladi</div>` : ""}</div>
-                                            <div class="row-linetotal"><span>Jami</span><b>${Number(lineTotal).toLocaleString()} so'm</b></div>
-                                          </div>
-                                        `;
+                                            `;
             }).join("");
 
             document.getElementById("cartModalTotal").textContent = Number(total).toLocaleString() + " so'm";
@@ -2355,35 +2366,35 @@
                     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
                 const menu = s.id != null ? `
-                                          <div class="row-menu">
-                                            <button class="kebab-btn" onclick="toggleRowMenu('${s.id}', event)">⋮</button>
-                                            <div class="row-menu-dropdown" id="menu-${s.id}">
-                                              <button onclick="openEditFlow('${s.id}')">✏️ Tahrirlash</button>
-                                            </div>
-                                          </div>` : "";
+                                              <div class="row-menu">
+                                                <button class="kebab-btn" onclick="toggleRowMenu('${s.id}', event)">⋮</button>
+                                                <div class="row-menu-dropdown" id="menu-${s.id}">
+                                                  <button onclick="openEditFlow('${s.id}')">✏️ Tahrirlash</button>
+                                                </div>
+                                              </div>` : "";
                 return `
-                                          <tr>
-                                            <td class="idx-cell">${i + 1}</td>
-                                            <td>${s.employeeName}</td>
-                                            <td>${s.productName}</td>
-                                            <td>${dateFormatted}</td>
-                                            <td class="num">${s.quantity}</td>
-                                            <td class="num">${Number(s.unitPrice).toLocaleString()} so'm</td>
-                                            <td class="num">${Number(s.totalSum).toLocaleString()} so'm</td>
-                                            <td>${menu}</td>
-                                          </tr>`;
+                                              <tr>
+                                                <td class="idx-cell">${i + 1}</td>
+                                                <td>${s.employeeName}</td>
+                                                <td>${s.productName}</td>
+                                                <td>${dateFormatted}</td>
+                                                <td class="num">${s.quantity}</td>
+                                                <td class="num">${Number(s.unitPrice).toLocaleString()} so'm</td>
+                                                <td class="num">${Number(s.totalSum).toLocaleString()} so'm</td>
+                                                <td>${menu}</td>
+                                              </tr>`;
             }).join("");
 
             const totalQty = list.reduce((a, s) => a + s.quantity, 0);
             const totalSum = list.reduce((a, s) => a + s.totalSum, 0);
             foot.innerHTML = `
-                                        <tr>
-                                          <td colspan="4">Jami</td>
-                                          <td class="num">${totalQty}</td>
-                                          <td></td>
-                                          <td class="num">${Number(totalSum).toLocaleString()} so'm</td>
-                                          <td></td>
-                                        </tr>`;
+                                            <tr>
+                                              <td colspan="4">Jami</td>
+                                              <td class="num">${totalQty}</td>
+                                              <td></td>
+                                              <td class="num">${Number(totalSum).toLocaleString()} so'm</td>
+                                              <td></td>
+                                            </tr>`;
         }
 
         /* ---- row kebab menu ---- */
@@ -2447,9 +2458,9 @@
         function openEditModal(sale) {
             const select = document.getElementById("editProductSelect");
             select.innerHTML = productsList.map(p => `
-                                        <option value="${p.id}" ${p.id == sale.productId ? "selected" : (p.name === sale.productName && !sale.productId ? "selected" : "")}>
-                                          ${p.name} — ${Number(p.elementSellPrice).toLocaleString()} so'm
-                                        </option>`).join("");
+                                            <option value="${p.id}" ${p.id == sale.productId ? "selected" : (p.name === sale.productName && !sale.productId ? "selected" : "")}>
+                                              ${p.name} — ${Number(p.elementSellPrice).toLocaleString()} so'm
+                                            </option>`).join("");
 
             document.getElementById("editQtyInput").value = sale.quantity;
             document.getElementById("editError").textContent = "";
