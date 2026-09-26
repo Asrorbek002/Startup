@@ -85,6 +85,98 @@
             font-weight: 700;
         }
 
+        /* ===== MyHisob logotipi (H harfi o'z o'qida aylanadi) ===== */
+        .brand-my {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 36px;
+            display: grid;
+            place-items: center;
+            color: var(--accent-dark);
+            animation: hSpin 4s linear infinite;
+        }
+
+            .brand-logo svg {
+                width: 30px;
+                height: 30px;
+                filter: drop-shadow(0 1px 3px rgba(20,26,33,.25));
+            }
+
+        .brand-my:hover .brand-logo {
+            filter: brightness(1.15);
+        }
+
+        .hl-up {
+            animation: hlBob 1.6s ease-in-out infinite;
+        }
+
+        @keyframes hSpin {
+            from {
+                transform: perspective(260px) rotateY(0deg);
+            }
+
+            to {
+                transform: perspective(260px) rotateY(360deg);
+            }
+        }
+
+        @keyframes hlBob {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-1.3px);
+            }
+        }
+
+        .brand-text {
+            font-size: 22px;
+            font-weight: 300;
+            letter-spacing: .3px;
+            line-height: 1;
+            background: linear-gradient(100deg, var(--steel) 0%, var(--accent) 25%, var(--accent-dark) 50%, var(--steel) 75%, var(--accent) 100%);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            animation: brandText 6s linear infinite;
+        }
+
+            .brand-text b {
+                font-weight: 800;
+            }
+
+        @keyframes brandText {
+            to {
+                background-position: -300% 0;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .brand-logo, .brand-text, .hl-up {
+                animation: none !important;
+            }
+        }
+
+        .panel-badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-dark);
+            background: var(--base);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 3px 10px;
+            letter-spacing: .2px;
+        }
+
         /* ---------- topbar user (top-right) ---------- */
         .topbar-user {
             margin-left: auto;
@@ -1202,8 +1294,13 @@
     <header class="topbar">
         <div class="topbar-inner">
             <div class="brand">
-                <div class="brand-mark">🧑‍💼</div>
-                Xodim Kabineti
+                <a class="brand-my" href="#" aria-label="MyHisob" onclick="return false;">
+                    <span class="brand-logo">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><g transform="translate(-.9 2)"><rect x="6" y="7" width="3.25" height="11" rx="1" /><rect x="6" y="11" width="12" height="3" rx="1" /><g class="hl-up"><rect x="14.75" y="5" width="3.25" height="13" rx="1" /><polygon points="13,5.6 16.4,2 19.8,5.6" /></g></g></svg>
+                    </span>
+                    <span class="brand-text">My<b>Hisob</b></span>
+                </a>
+                <span class="panel-badge">Xodim paneli</span>
             </div>
 
             <div class="topbar-user" id="sidebarUser" onclick="toggleUserPopover(event)">
