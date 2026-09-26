@@ -1081,18 +1081,25 @@ public class ShopCabinetController : ControllerBase
 
         try
         {
-            var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "elements");
-            Directory.CreateDirectory(uploadsDir);
+            // Rasm serverning diskiga (wwwroot/uploads) EMAS, to'g'ridan-to'g'ri
+            // ma'lumotlar bazasiga (base64 "data URI" ko'rinishida) saqlanadi.
+            // Sabab: Render kabi hostinglarda disk doimiy emas — server qayta
+            // ishga tushganda (deploy/uyg'onish) diskdagi fayllar o'chib ketadi,
+            // lekin baza saqlanib qoladi. Shu tufayli rasm hech qachon yo'qolmaydi.
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
 
-            var fileName = $"{elementId}_{Guid.NewGuid():N}{ext}";
-            var filePath = Path.Combine(uploadsDir, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            var mimeType = ext switch
             {
-                await file.CopyToAsync(stream);
-            }
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".webp" => "image/webp",
+                ".avif" => "image/avif",
+                _ => "image/jpeg"
+            };
 
-            element.ImageUrl = $"/uploads/elements/{fileName}";
+            element.ImageUrl = $"data:{mimeType};base64,{base64}";
             await _context.SaveChangesAsync();
 
             return Ok(new { success = true, imageUrl = element.ImageUrl });
