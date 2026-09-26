@@ -60,7 +60,7 @@ public class DebtorsController : ControllerBase
         return Ok(new { success = true, id = debtor.Id });
     }
 
-    // Qarzdor to'lovi (qoldiqdan oshmaydi)
+    // Qarzdor to'lovi (qoldiqdan oshmaydi) — har bir to'lov alohida tarix sifatida ham saqlanadi
     [HttpPost("{shopId}/debtors/{debtorId}/payments")]
     public async Task<IActionResult> PayDebtor(int shopId, int debtorId, [FromBody] DebtorPaymentDto dto)
     {
@@ -72,10 +72,46 @@ public class DebtorsController : ControllerBase
             return NotFound(new { success = false, message = "Qarzdor topilmadi!" });
 
         var remaining = debtor.Amount - debtor.PaidAmount;
-        debtor.PaidAmount += Math.Min(dto.Amount, remaining);
+        var actualAmount = Math.Min(dto.Amount, remaining);
+        debtor.PaidAmount += actualAmount;
+
+        var payerName = !string.IsNullOrWhiteSpace(dto.PaidByName)
+            ? dto.PaidByName
+            : (dto.EmployeeId.HasValue ? "Xodim" : "Boshliq");
+
+        _context.DebtorPayments.Add(new DebtorPayment
+        {
+            DebtorId = debtor.Id,
+            ShopId = shopId,
+            EmployeeId = dto.EmployeeId,
+            PaidByName = payerName,
+            Amount = actualAmount,
+            PaidAt = DateTime.UtcNow
+        });
+
         await _context.SaveChangesAsync();
 
         return Ok(new { success = true, paidAmount = debtor.PaidAmount });
+    }
+
+    // Bitta qarzdorning barcha to'lovlari tarixi (kim, qachon, qancha)
+    [HttpGet("{shopId}/debtors/{debtorId}/payments")]
+    public async Task<IActionResult> GetDebtorPayments(int shopId, int debtorId)
+    {
+        var payments = await _context.DebtorPayments
+            .Where(p => p.DebtorId == debtorId && p.ShopId == shopId)
+            .OrderByDescending(p => p.PaidAt)
+            .Select(p => new
+            {
+                p.Id,
+                p.Amount,
+                p.PaidAt,
+                p.EmployeeId,
+                p.PaidByName
+            })
+            .ToListAsync();
+
+        return Ok(payments);
     }
 }
 
@@ -89,4 +125,6 @@ public class DebtorCreateDto
 public class DebtorPaymentDto
 {
     public decimal Amount { get; set; }
+    public int? EmployeeId { get; set; }
+    public string? PaidByName { get; set; }
 }
