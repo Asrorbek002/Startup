@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
+using ShopManagementSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// --- Telegram bot xizmatlari ---
+builder.Services.AddHttpClient<ITelegramService, TelegramService>();
+builder.Services.AddHostedService<TelegramBackgroundService>();
 
 var app = builder.Build();
 

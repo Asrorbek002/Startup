@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ShopManagementSystem.Data;
@@ -11,9 +12,11 @@ using ShopManagementSystem.Data;
 namespace ShopManagementSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260926100000_AddTelegramSettings")]
+    partial class AddTelegramSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,427 +26,471 @@ namespace ShopManagementSystem.Migrations
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Shop", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("Balance")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("Balance")
+                    .HasColumnType("numeric");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("PasswordHash")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Phone")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Region")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Region")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Role")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<decimal>("Tariff")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("Tariff")
+                    .HasColumnType("numeric");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Username")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Shops");
-                });
+                b.ToTable("Shops");
+            });
 
             modelBuilder.Entity("ShopManagementSystem.Entities.Debtor", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric(18,2)");
+                b.Property<decimal>("Amount")
+                    .HasColumnType("numeric(18,2)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<decimal>("PaidAmount")
-                        .HasColumnType("numeric(18,2)");
+                b.Property<decimal>("PaidAmount")
+                    .HasColumnType("numeric(18,2)");
 
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Phone")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<int>("ShopId")
-                        .HasColumnType("integer");
+                b.Property<int>("ShopId")
+                    .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Debtors");
-                });
+                b.ToTable("Debtors");
+            });
 
             modelBuilder.Entity("ShopManagementSystem.Entities.DebtorPayment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric(18,2)");
+                b.Property<decimal>("Amount")
+                    .HasColumnType("numeric(18,2)");
 
-                    b.Property<int>("DebtorId")
-                        .HasColumnType("integer");
+                b.Property<int>("DebtorId")
+                    .HasColumnType("integer");
 
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("integer");
+                b.Property<int?>("EmployeeId")
+                    .HasColumnType("integer");
 
-                    b.Property<DateTime>("PaidAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("PaidAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("PaidByName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("PaidByName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<int>("ShopId")
-                        .HasColumnType("integer");
+                b.Property<int>("ShopId")
+                    .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("DebtorId");
+                b.HasIndex("DebtorId");
 
-                    b.ToTable("DebtorPayments");
-                });
+                b.ToTable("DebtorPayments");
+            });
 
             modelBuilder.Entity("ShopManagementSystem.Entities.Element", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("BuyPrice")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("BuyPrice")
+                    .HasColumnType("numeric");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
+                b.Property<string>("ImageUrl")
+                    .HasColumnType("text");
 
-                    b.Property<decimal>("Length")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("Length")
+                    .HasColumnType("numeric");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<decimal>("SellPrice")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("SellPrice")
+                    .HasColumnType("numeric");
 
-                    b.Property<int>("ShopId")
-                        .HasColumnType("integer");
+                b.Property<int>("ShopId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Unit")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("ShopId");
+                b.HasIndex("ShopId");
 
-                    b.ToTable("Elements");
-                });
+                b.ToTable("Elements");
+            });
 
             modelBuilder.Entity("ShopManagementSystem.Entities.Employee", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("FullName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsActive")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Note")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Note")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("PasswordHash")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Phone")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<int>("PinCode")
-                        .HasColumnType("integer");
+                b.Property<int>("PinCode")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Position")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Position")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Role")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<decimal>("Salary")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("Salary")
+                    .HasColumnType("numeric");
 
-                    b.Property<int>("ShopId")
-                        .HasColumnType("integer");
+                b.Property<int>("ShopId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Username")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Employees");
-                });
+                b.ToTable("Employees");
+            });
 
             modelBuilder.Entity("ShopManagementSystem.Entities.Payment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                b.Property<decimal>("Amount")
+                    .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("integer");
+                b.Property<int>("EmployeeId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Note")
-                        .HasColumnType("text");
+                b.Property<string>("Note")
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("PaidAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("PaidAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ShopId")
-                        .HasColumnType("integer");
+                b.Property<int>("ShopId")
+                    .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("EmployeeId");
+                b.HasIndex("EmployeeId");
 
-                    b.ToTable("Payments");
-                });
+                b.ToTable("Payments");
+            });
 
             modelBuilder.Entity("ShopManagementSystem.Entities.Product", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("BuyPrice")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("BuyPrice")
+                    .HasColumnType("numeric");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("Quantity")
+                    .HasColumnType("numeric");
 
-                    b.Property<decimal>("SellPrice")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("SellPrice")
+                    .HasColumnType("numeric");
 
-                    b.Property<int>("ShopId")
-                        .HasColumnType("integer");
+                b.Property<int>("ShopId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Unit")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Products");
-                });
+                b.ToTable("Products");
+            });
 
             modelBuilder.Entity("ShopManagementSystem.Entities.Sale", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("CostPrice")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("CostPrice")
+                    .HasColumnType("numeric");
 
-                    b.Property<int?>("DebtorId")
-                        .HasColumnType("integer");
+                b.Property<int?>("DebtorId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("DebtorName")
-                        .HasColumnType("text");
+                b.Property<string>("DebtorName")
+                    .HasColumnType("text");
 
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("integer");
+                b.Property<int>("EmployeeId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("EmployeeName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("EmployeeName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsCredit")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsCredit")
+                    .HasColumnType("boolean");
 
-                    b.Property<decimal>("ListedPrice")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("ListedPrice")
+                    .HasColumnType("numeric");
 
-                    b.Property<string>("MenuCategory")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("MenuCategory")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
+                b.Property<int>("ProductId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("ProductName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("ProductName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
+                b.Property<int>("Quantity")
+                    .HasColumnType("integer");
 
-                    b.Property<decimal>("SalePrice")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("SalePrice")
+                    .HasColumnType("numeric");
 
-                    b.Property<int>("ShopId")
-                        .HasColumnType("integer");
+                b.Property<int>("ShopId")
+                    .HasColumnType("integer");
 
-                    b.Property<DateTime>("SoldAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("SoldAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Sales");
-                });
+                b.ToTable("Sales");
+            });
 
             modelBuilder.Entity("ShopManagementSystem.Entities.SaleEditLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("EditedAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("EditedAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("integer");
+                b.Property<int>("EmployeeId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("EmployeeName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("EmployeeName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("NewProductName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("NewProductName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<int>("NewQuantity")
-                        .HasColumnType("integer");
+                b.Property<int>("NewQuantity")
+                    .HasColumnType("integer");
 
-                    b.Property<decimal>("NewSalePrice")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("NewSalePrice")
+                    .HasColumnType("numeric");
 
-                    b.Property<decimal>("NewTotalSum")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("NewTotalSum")
+                    .HasColumnType("numeric");
 
-                    b.Property<string>("OldProductName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("OldProductName")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<int>("OldQuantity")
-                        .HasColumnType("integer");
+                b.Property<int>("OldQuantity")
+                    .HasColumnType("integer");
 
-                    b.Property<decimal>("OldSalePrice")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("OldSalePrice")
+                    .HasColumnType("numeric");
 
-                    b.Property<decimal>("OldTotalSum")
-                        .HasColumnType("numeric");
+                b.Property<decimal>("OldTotalSum")
+                    .HasColumnType("numeric");
 
-                    b.Property<int>("SaleId")
-                        .HasColumnType("integer");
+                b.Property<int>("SaleId")
+                    .HasColumnType("integer");
 
-                    b.Property<int>("ShopId")
-                        .HasColumnType("integer");
+                b.Property<int>("ShopId")
+                    .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("SaleEditLogs");
-                });
+                b.ToTable("SaleEditLogs");
+            });
+
+            modelBuilder.Entity("ShopManagementSystem.Entities.TelegramSettings", b =>
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
+
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                b.Property<string>("BotToken")
+                    .IsRequired()
+                    .HasColumnType("text");
+
+                b.Property<string>("ChatId")
+                    .IsRequired()
+                    .HasColumnType("text");
+
+                b.Property<bool>("DailyReportEnabled")
+                    .HasColumnType("boolean");
+
+                b.Property<int>("DailyReportHour")
+                    .HasColumnType("integer");
+
+                b.Property<bool>("IsEnabled")
+                    .HasColumnType("boolean");
+
+                b.Property<DateTime?>("LastDailyReportSentAt")
+                    .HasColumnType("timestamp with time zone");
+
+                b.Property<DateTime?>("LastLowStockAlertAt")
+                    .HasColumnType("timestamp with time zone");
+
+                b.Property<decimal>("LowStockThreshold")
+                    .HasColumnType("numeric");
+
+                b.Property<int>("ShopId")
+                    .HasColumnType("integer");
+
+                b.HasKey("Id");
+
+                b.HasIndex("ShopId");
+
+                b.ToTable("TelegramSettings");
+            });
 
             modelBuilder.Entity("ShopManagementSystem.Entities.DebtorPayment", b =>
-                {
-                    b.HasOne("ShopManagementSystem.Entities.Debtor", "Debtor")
-                        .WithMany()
-                        .HasForeignKey("DebtorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            {
+                b.HasOne("ShopManagementSystem.Entities.Debtor", "Debtor")
+                    .WithMany()
+                    .HasForeignKey("DebtorId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.Navigation("Debtor");
-                });
+                b.Navigation("Debtor");
+            });
 
             modelBuilder.Entity("ShopManagementSystem.Entities.Element", b =>
-                {
-                    b.HasOne("Shop", "Shop")
-                        .WithMany()
-                        .HasForeignKey("ShopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            {
+                b.HasOne("Shop", "Shop")
+                    .WithMany()
+                    .HasForeignKey("ShopId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.Navigation("Shop");
-                });
+                b.Navigation("Shop");
+            });
 
             modelBuilder.Entity("ShopManagementSystem.Entities.Payment", b =>
-                {
-                    b.HasOne("ShopManagementSystem.Entities.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            {
+                b.HasOne("ShopManagementSystem.Entities.Employee", "Employee")
+                    .WithMany()
+                    .HasForeignKey("EmployeeId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.Navigation("Employee");
-                });
+                b.Navigation("Employee");
+            });
 #pragma warning restore 612, 618
         }
     }

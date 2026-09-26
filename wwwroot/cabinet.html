@@ -1045,6 +1045,9 @@
                 <a href="#" class="sidebar-menu-item" onclick="switchTab('debtors', this)">
                     💳 <span>Qarzdorlar</span>
                 </a>
+                <a href="#" class="sidebar-menu-item" onclick="switchTab('telegram', this)">
+                    📲 <span>Telegram bot</span>
+                </a>
             </div>
 
             <div class="mt-auto px-3">
@@ -1183,6 +1186,69 @@
                     <div class="debtors-table-footer d-flex justify-content-between align-items-center px-3 py-2">
                         <span class="fw-semibold text-muted">Jami: <span id="debtorsFooterCount" class="text-dark fw-bold">0</span> ta qarzdor</span>
                         <span class="text-muted small">Qoldiq bo'yicha umumiy qarz: <span id="debtorsFooterRemaining" class="fw-bold text-danger">0 so'm</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TELEGRAM BOT BO'LIMI -->
+            <div id="section-telegram" class="content-section d-none">
+                <h4 class="fw-bold mb-3">📲 Telegram bot</h4>
+
+                <div class="card shadow-sm mb-3" style="max-width: 560px;">
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">
+                            Bot orqali kam qolgan mahsulotlar va kunlik savdo hisoboti belgilangan Telegram guruhingizga avtomatik yuboriladi.
+                        </p>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Bot Token</label>
+                            <input type="text" id="tgBotToken" class="form-control" placeholder="123456789:AAExampleTokenHere">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Guruh Chat ID</label>
+                            <input type="text" id="tgChatId" class="form-control" placeholder="-1001234567890">
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small">Kam qolish chegarasi</label>
+                                <input type="number" id="tgThreshold" class="form-control" min="0" step="1" value="5">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small">Kunlik hisobot soati (0-23)</label>
+                                <input type="number" id="tgReportHour" class="form-control" min="0" max="23" step="1" value="21">
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="tgIsEnabled" checked>
+                            <label class="form-check-label small" for="tgIsEnabled">Bot yoqilgan (barcha xabarlar shu holatga bog'liq)</label>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="tgDailyReportEnabled" checked>
+                            <label class="form-check-label small" for="tgDailyReportEnabled">Kunlik hisobot yuborilsin</label>
+                        </div>
+
+                        <div id="tgStatusMsg" class="alert py-2 small" style="display:none;"></div>
+
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary btn-sm" onclick="saveTelegramSettings()">💾 Saqlash</button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="testTelegramMessage()">✉️ Test xabar yuborish</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm" style="max-width: 560px;">
+                    <div class="card-body small text-muted">
+                        <h6 class="fw-bold text-dark">Botni qanday sozlash kerak?</h6>
+                        <ol class="ps-3 mb-0">
+                            <li class="mb-2">Telegramda <b>@BotFather</b>ga yozing → <b>/newbot</b> buyrug'ini yuboring → nom bering → sizga <b>token</b> beriladi, shuni yuqoriga kiriting.</li>
+                            <li class="mb-2">Yaratilgan botni kerakli Telegram guruhingizga <b>admin</b> qilib qo'shing.</li>
+                            <li class="mb-2">Guruhda botga (yoki guruhga) biror xabar yozdiring, so'ng brauzerda shu manzilni oching:<br><code>https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code></li>
+                            <li>Javobda chiqqan <code>"chat":{"id": -1001234567890}</code> qismidagi sonni <b>Guruh Chat ID</b>ga kiriting (guruhlar uchun odatda manfiy son bo'ladi).</li>
+                        </ol>
                     </div>
                 </div>
             </div>
@@ -1889,6 +1955,88 @@
 
             if (sectionId === 'sales') fetchSales();
             if (sectionId === 'debtors') fetchDebtors();
+            if (sectionId === 'telegram') loadTelegramSettings();
+        }
+
+        // ===== TELEGRAM BOT SOZLAMALARI =====
+        function showTgStatus(message, isSuccess) {
+            const el = document.getElementById('tgStatusMsg');
+            el.textContent = message;
+            el.className = 'alert py-2 small ' + (isSuccess ? 'alert-success' : 'alert-danger');
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+
+        async function loadTelegramSettings() {
+            const shopId = localStorage.getItem("currentShopId") || "18";
+            try {
+                const res = await fetch(`/api/shop-cabinet/${shopId}/telegram-settings`);
+                const data = await res.json();
+
+                document.getElementById('tgBotToken').value = data.botToken || '';
+                document.getElementById('tgChatId').value = data.chatId || '';
+                document.getElementById('tgThreshold').value = data.lowStockThreshold ?? 5;
+                document.getElementById('tgReportHour').value = data.dailyReportHour ?? 21;
+                document.getElementById('tgIsEnabled').checked = !!data.isEnabled;
+                document.getElementById('tgDailyReportEnabled').checked = !!data.dailyReportEnabled;
+            } catch (err) {
+                console.error('Telegram sozlamalarini yuklashda xatolik:', err);
+            }
+        }
+
+        async function saveTelegramSettings() {
+            const shopId = localStorage.getItem("currentShopId") || "18";
+
+            const payload = {
+                botToken: document.getElementById('tgBotToken').value.trim(),
+                chatId: document.getElementById('tgChatId').value.trim(),
+                isEnabled: document.getElementById('tgIsEnabled').checked,
+                lowStockThreshold: parseFloat(document.getElementById('tgThreshold').value) || 0,
+                dailyReportEnabled: document.getElementById('tgDailyReportEnabled').checked,
+                dailyReportHour: parseInt(document.getElementById('tgReportHour').value) || 21
+            };
+
+            if (!payload.botToken || !payload.chatId) {
+                showTgStatus('Bot Token va Chat ID kiritilishi shart!', false);
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/shop-cabinet/${shopId}/telegram-settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showTgStatus('Sozlamalar muvaffaqiyatli saqlandi!', true);
+                } else {
+                    showTgStatus(data.message || 'Xatolik yuz berdi!', false);
+                }
+            } catch (err) {
+                showTgStatus('Serverga ulanishda xatolik!', false);
+            }
+        }
+
+        async function testTelegramMessage() {
+            const shopId = localStorage.getItem("currentShopId") || "18";
+            showTgStatus('Yuborilmoqda...', true);
+
+            try {
+                const res = await fetch(`/api/shop-cabinet/${shopId}/telegram-settings/test`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showTgStatus('✅ Test xabar guruhga yuborildi! Telegramni tekshiring.', true);
+                } else {
+                    showTgStatus(data.message || 'Xabar yuborilmadi!', false);
+                }
+            } catch (err) {
+                showTgStatus('Serverga ulanishda xatolik!', false);
+            }
         }
 
         let elementsList = [];
@@ -2294,21 +2442,21 @@
                 const rowClass = isDropped ? "table-danger" : "";
                 const priceCell = isDropped
                     ? `<span class="fw-bold text-danger">${Number(s.salePrice).toLocaleString()} so'm</span>
-                                               <div class="small text-danger">−${Number(listed - s.salePrice).toLocaleString()} so'm/dona</div>`
+                                                   <div class="small text-danger">−${Number(listed - s.salePrice).toLocaleString()} so'm/dona</div>`
                     : `${Number(s.salePrice).toLocaleString()} so'm`;
                 tbody.innerHTML += `
-                                                                                <tr class="${rowClass}">
-                                                                                    <td>${idx + 1}</td>
-                                                                                    <td>${dateFormatted}</td>
-                                                                                    <td>${s.employeeName || "-"}</td>
-                                                                                    <td>${s.productName}${isDropped ? ' <span class="badge bg-danger">narx pasaytirilgan</span>' : ''}</td>
-                                                                                    <td>${s.quantity}</td>
-                                                                                    <td>${listed ? Number(listed).toLocaleString() + " so'm" : "—"}</td>
-                                                                                    <td>${priceCell}</td>
-                                                                                    <td class="fw-bold">${Number(s.totalSum).toLocaleString()} so'm</td>
-                                                                                    <td class="fw-bold text-success">${Number(s.profit).toLocaleString()} so'm</td>
-                                                                                </tr>
-                                                                            `;
+                                                                                    <tr class="${rowClass}">
+                                                                                        <td>${idx + 1}</td>
+                                                                                        <td>${dateFormatted}</td>
+                                                                                        <td>${s.employeeName || "-"}</td>
+                                                                                        <td>${s.productName}${isDropped ? ' <span class="badge bg-danger">narx pasaytirilgan</span>' : ''}</td>
+                                                                                        <td>${s.quantity}</td>
+                                                                                        <td>${listed ? Number(listed).toLocaleString() + " so'm" : "—"}</td>
+                                                                                        <td>${priceCell}</td>
+                                                                                        <td class="fw-bold">${Number(s.totalSum).toLocaleString()} so'm</td>
+                                                                                        <td class="fw-bold text-success">${Number(s.profit).toLocaleString()} so'm</td>
+                                                                                    </tr>
+                                                                                `;
                 totalSum += s.totalSum;
                 totalProfit += s.profit;
             });
@@ -2471,16 +2619,16 @@
                 const originalIdx = productsList.indexOf(p);
                 const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
                 tbody.innerHTML += `
-                                                                                <tr style="cursor: pointer;" onclick="showProductDetails(${originalIdx})">
-                                                                                    <td><strong>${i + 1}</strong></td>
-                                                                                    <td>${p.name}</td>
-                                                                                    <td>${p.quantity}</td>
-                                                                                    <td><span class="badge bg-info text-dark">${p.unit}</span></td>
-                                                                                    <td>${p.buyPrice} so'm</td>
-                                                                                    <td>${p.sellPrice} so'm</td>
-                                                                                    <td class="text-muted small">${dateFormatted}</td>
-                                                                                </tr>
-                                                                            `;
+                                                                                    <tr style="cursor: pointer;" onclick="showProductDetails(${originalIdx})">
+                                                                                        <td><strong>${i + 1}</strong></td>
+                                                                                        <td>${p.name}</td>
+                                                                                        <td>${p.quantity}</td>
+                                                                                        <td><span class="badge bg-info text-dark">${p.unit}</span></td>
+                                                                                        <td>${p.buyPrice} so'm</td>
+                                                                                        <td>${p.sellPrice} so'm</td>
+                                                                                        <td class="text-muted small">${dateFormatted}</td>
+                                                                                    </tr>
+                                                                                `;
             });
         }
 
@@ -2784,26 +2932,26 @@
                     ? `<img src="${el.imageUrl}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">`
                     : `<span class="text-muted">—</span>`;
                 tbody.innerHTML += `
-                                                                                <tr>
-                                                                                    <td><strong>${idx + 1}</strong></td>
-                                                                                    <td>${imgCell}</td>
-                                                                                    <td>${el.name}</td>
-                                                                                    <td>${el.length}</td>
-                                                                                    <td><span class="badge bg-info text-dark">${el.unit}</span></td>
-                                                                                    <td>${Number(el.buyPrice || 0).toLocaleString()} so'm</td>
-                                                                                    <td>${Number(el.sellPrice || 0).toLocaleString()} so'm</td>
-                                                                                    <td class="text-muted small">${dateFormatted}</td>
-                                                                                    <td class="text-center">
-                                                                                        <div class="dropdown">
-                                                                                            <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
-                                                                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteElement(${el.id}); return false;">🗑️ ${translations[currentLang].btn_delete}</a></li>
-                                                                                                <li><a class="dropdown-item" href="#" onclick="editElement(${el.id}); return false;">✏️ ${translations[currentLang].btn_edit}</a></li>
-                                                                                            </ul>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            `;
+                                                                                    <tr>
+                                                                                        <td><strong>${idx + 1}</strong></td>
+                                                                                        <td>${imgCell}</td>
+                                                                                        <td>${el.name}</td>
+                                                                                        <td>${el.length}</td>
+                                                                                        <td><span class="badge bg-info text-dark">${el.unit}</span></td>
+                                                                                        <td>${Number(el.buyPrice || 0).toLocaleString()} so'm</td>
+                                                                                        <td>${Number(el.sellPrice || 0).toLocaleString()} so'm</td>
+                                                                                        <td class="text-muted small">${dateFormatted}</td>
+                                                                                        <td class="text-center">
+                                                                                            <div class="dropdown">
+                                                                                                <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
+                                                                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                                                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteElement(${el.id}); return false;">🗑️ ${translations[currentLang].btn_delete}</a></li>
+                                                                                                    <li><a class="dropdown-item" href="#" onclick="editElement(${el.id}); return false;">✏️ ${translations[currentLang].btn_edit}</a></li>
+                                                                                                </ul>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                `;
             });
 
             renderElementsPagination();
@@ -2820,9 +2968,9 @@
 
             const addPageItem = (label, page, disabled, active) => {
                 paginationEl.innerHTML += `
-                                                                                <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
-                                                                                    <a class="page-link" href="#" onclick="goToElementsPage(${page}); return false;">${label}</a>
-                                                                                </li>`;
+                                                                                    <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
+                                                                                        <a class="page-link" href="#" onclick="goToElementsPage(${page}); return false;">${label}</a>
+                                                                                    </li>`;
             };
 
             addPageItem('«', currentElementsPage - 1, currentElementsPage === 1, false);
@@ -2886,10 +3034,10 @@
             toastEl.setAttribute("aria-live", "assertive");
             toastEl.setAttribute("aria-atomic", "true");
             toastEl.innerHTML = `
-                                                                            <div class="d-flex">
-                                                                                <div class="toast-body">${message}</div>
-                                                                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                                                                            </div>`;
+                                                                                <div class="d-flex">
+                                                                                    <div class="toast-body">${message}</div>
+                                                                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                                                                </div>`;
             container.appendChild(toastEl);
 
             const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
@@ -2959,14 +3107,14 @@
             listContainer.innerHTML = "";
             productsList.forEach((p, idx) => {
                 listContainer.innerHTML += `
-                                                                                <li class="list-group-item d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="showProductDetails(${idx})">
-                                                                                    <div>
-                                                                                        <strong>${p.name}</strong><br>
-                                                                                        <small class="text-muted">Miqdor: ${p.quantity} ${p.unit} | Narx: ${p.sellPrice} so'm</small>
-                                                                                    </div>
-                                                                                    <span class="badge bg-primary rounded-pill">#${idx + 1}</span>
-                                                                                </li>
-                                                                            `;
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="showProductDetails(${idx})">
+                                                                                        <div>
+                                                                                            <strong>${p.name}</strong><br>
+                                                                                            <small class="text-muted">Miqdor: ${p.quantity} ${p.unit} | Narx: ${p.sellPrice} so'm</small>
+                                                                                        </div>
+                                                                                        <span class="badge bg-primary rounded-pill">#${idx + 1}</span>
+                                                                                    </li>
+                                                                                `;
             });
         }
 
@@ -2977,14 +3125,14 @@
             const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
 
             document.getElementById("productDetailsBody").innerHTML = `
-                                                                            <table class="table table-borderless mb-0">
-                                                                                <tr><td class="text-muted">Nomi</td><td class="text-end fw-bold">${p.name}</td></tr>
-                                                                                <tr><td class="text-muted">Qabul qilingan miqdor</td><td class="text-end fw-bold">${p.quantity} ${p.unit}</td></tr>
-                                                                                <tr><td class="text-muted">Kelish narxi</td><td class="text-end">${p.buyPrice} so'm</td></tr>
-                                                                                <tr><td class="text-muted">Sotish narxi</td><td class="text-end">${p.sellPrice} so'm</td></tr>
-                                                                                <tr><td class="text-muted">Qabul qilingan sana/vaqt</td><td class="text-end">${dateFormatted}</td></tr>
-                                                                            </table>
-                                                                        `;
+                                                                                <table class="table table-borderless mb-0">
+                                                                                    <tr><td class="text-muted">Nomi</td><td class="text-end fw-bold">${p.name}</td></tr>
+                                                                                    <tr><td class="text-muted">Qabul qilingan miqdor</td><td class="text-end fw-bold">${p.quantity} ${p.unit}</td></tr>
+                                                                                    <tr><td class="text-muted">Kelish narxi</td><td class="text-end">${p.buyPrice} so'm</td></tr>
+                                                                                    <tr><td class="text-muted">Sotish narxi</td><td class="text-end">${p.sellPrice} so'm</td></tr>
+                                                                                    <tr><td class="text-muted">Qabul qilingan sana/vaqt</td><td class="text-end">${dateFormatted}</td></tr>
+                                                                                </table>
+                                                                            `;
 
             const modalEl = document.getElementById('productDetailsModal');
             let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
@@ -3053,18 +3201,18 @@
             tbody.innerHTML = "";
             staffList.forEach((staff, idx) => {
                 tbody.innerHTML += `
-                                                                                <tr>
-                                                                                    <td><strong>${idx + 1}</strong></td>
-                                                                                    <td>${staff.firstname} ${staff.lastname}</td>
-                                                                                    <td>${staff.phone}</td>
-                                                                                    <td>${staff.login}</td>
-                                                                                    <td>${staff.salary.toLocaleString()} so'm</td>
-                                                                                    <td class="text-center">
-                                                                                        <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="requestStaffAction('edit', ${idx})">✏️</button>
-                                                                                        <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="requestStaffAction('delete', ${idx})">🗑️</button>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            `;
+                                                                                    <tr>
+                                                                                        <td><strong>${idx + 1}</strong></td>
+                                                                                        <td>${staff.firstname} ${staff.lastname}</td>
+                                                                                        <td>${staff.phone}</td>
+                                                                                        <td>${staff.login}</td>
+                                                                                        <td>${staff.salary.toLocaleString()} so'm</td>
+                                                                                        <td class="text-center">
+                                                                                            <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="requestStaffAction('edit', ${idx})">✏️</button>
+                                                                                            <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="requestStaffAction('delete', ${idx})">🗑️</button>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                `;
             });
         }
 
@@ -3082,28 +3230,28 @@
                 const paid = staff.paid || 0;
                 const remaining = Math.max(staff.salary - paid, 0);
                 tbody.innerHTML += `
-                                                                                <tr>
-                                                                                    <td><strong>${idx + 1}</strong></td>
-                                                                                    <td>${staff.firstname}</td>
-                                                                                    <td>${staff.lastname}</td>
-                                                                                    <td>${staff.phone}</td>
-                                                                                    <td>${staff.login}</td>
-                                                                                    <td class="fw-bold text-success">${staff.salary.toLocaleString()} so'm</td>
-                                                                                    <td class="fw-bold text-primary" style="cursor:pointer; text-decoration:underline;" onclick="showPaymentHistory(${idx})" title="To'lovlar tarixini ko'rish">${paid.toLocaleString()} so'm</td>
-                                                                                    <td class="fw-bold ${remaining > 0 ? 'text-danger' : 'text-success'}">${remaining.toLocaleString()} so'm</td>
-                                                                                    <td class="text-center">
-                                                                                        <div class="dropdown">
-                                                                                            <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
-                                                                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                                                                <li><a class="dropdown-item py-2" href="#" onclick="executeAction('pay', ${idx}); return false;">💵 To'lov</a></li>
-                                                                                                <li><a class="dropdown-item py-2" href="#" onclick="executeAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
-                                                                                                <li><hr class="dropdown-divider"></li>
-                                                                                                <li><a class="dropdown-item py-2 text-danger" href="#" onclick="executeAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
-                                                                                            </ul>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            `;
+                                                                                    <tr>
+                                                                                        <td><strong>${idx + 1}</strong></td>
+                                                                                        <td>${staff.firstname}</td>
+                                                                                        <td>${staff.lastname}</td>
+                                                                                        <td>${staff.phone}</td>
+                                                                                        <td>${staff.login}</td>
+                                                                                        <td class="fw-bold text-success">${staff.salary.toLocaleString()} so'm</td>
+                                                                                        <td class="fw-bold text-primary" style="cursor:pointer; text-decoration:underline;" onclick="showPaymentHistory(${idx})" title="To'lovlar tarixini ko'rish">${paid.toLocaleString()} so'm</td>
+                                                                                        <td class="fw-bold ${remaining > 0 ? 'text-danger' : 'text-success'}">${remaining.toLocaleString()} so'm</td>
+                                                                                        <td class="text-center">
+                                                                                            <div class="dropdown">
+                                                                                                <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                                                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                                                                    <li><a class="dropdown-item py-2" href="#" onclick="executeAction('pay', ${idx}); return false;">💵 To'lov</a></li>
+                                                                                                    <li><a class="dropdown-item py-2" href="#" onclick="executeAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
+                                                                                                    <li><hr class="dropdown-divider"></li>
+                                                                                                    <li><a class="dropdown-item py-2 text-danger" href="#" onclick="executeAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
+                                                                                                </ul>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                `;
             });
         }
 
@@ -3242,34 +3390,34 @@
                             ? `<div class="text-muted small mt-1">📝 ${p.note}</div>`
                             : "";
                         return `
-                                                                                <tr>
-                                                                                    <td>
-                                                                                        <div>${dateFormatted}</div>
-                                                                                        ${noteRow}
-                                                                                    </td>
-                                                                                    <td class="text-end fw-bold text-success">${p.amount.toLocaleString()} so'm</td>
-                                                                                </tr>
-                                                                            `;
+                                                                                    <tr>
+                                                                                        <td>
+                                                                                            <div>${dateFormatted}</div>
+                                                                                            ${noteRow}
+                                                                                        </td>
+                                                                                        <td class="text-end fw-bold text-success">${p.amount.toLocaleString()} so'm</td>
+                                                                                    </tr>
+                                                                                `;
                     })
                     .join("");
 
                 bodyEl.innerHTML = `
-                                                                        <table class="table table-sm table-hover align-middle mb-0">
-                                                                            <thead class="table-light">
-                                                                                <tr>
-                                                                                    <th>Sana</th>
-                                                                                    <th class="text-end">Miqdor</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>${rows}</tbody>
-                                                                            <tfoot>
-                                                                                <tr class="table-light">
-                                                                                    <td class="fw-bold">Jami to'langan</td>
-                                                                                    <td class="text-end fw-bold text-success">${(staff.paid || 0).toLocaleString()} so'm</td>
-                                                                                </tr>
-                                                                            </tfoot>
-                                                                        </table>
-                                                                    `;
+                                                                            <table class="table table-sm table-hover align-middle mb-0">
+                                                                                <thead class="table-light">
+                                                                                    <tr>
+                                                                                        <th>Sana</th>
+                                                                                        <th class="text-end">Miqdor</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>${rows}</tbody>
+                                                                                <tfoot>
+                                                                                    <tr class="table-light">
+                                                                                        <td class="fw-bold">Jami to'langan</td>
+                                                                                        <td class="text-end fw-bold text-success">${(staff.paid || 0).toLocaleString()} so'm</td>
+                                                                                    </tr>
+                                                                                </tfoot>
+                                                                            </table>
+                                                                        `;
             }
         }
 
@@ -3437,27 +3585,27 @@
                 });
                 const phoneLink = debtEsc(d.phone).replace(/\s/g, "");
                 return `
-                                <tr>
-                                    <td>${i + 1}</td>
-                                    <td>${dt}</td>
-                                    <td class="fw-semibold">${debtEsc(d.name)}</td>
-                                    <td><a href="tel:${d.phone.replace(/\s/g, "")}" class="text-decoration-none">${debtEsc(d.phone)}</a></td>
-                                    <td>${formatSom(d.amount)} so'm</td>
-                                    <td class="text-success" style="cursor:pointer;text-decoration:underline;" onclick="showDebtorPaymentHistory(${d.id})" title="To'lovlar tarixini ko'rish">${formatSom(d.paidAmount)} so'm</td>
-                                    <td class="fw-bold ${left > 0 ? 'text-danger' : 'text-success'}">${formatSom(left)} so'm</td>
-                                    <td>${badge}</td>
-                                    <td class="text-center">
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold debtor-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
-                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm debtor-dropdown-menu">
-                                                <li><a class="dropdown-item py-2" href="#" ${left <= 0 ? 'style="pointer-events:none;opacity:.45;"' : ''} onclick="openPayDebtor(${d.id}); return false;">💵 To'lov</a></li>
-                                                <li><a class="dropdown-item py-2" href="#" onclick="openEditDebtor(${d.id}); return false;">✏️ Tahrirlash</a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item py-2 text-danger" href="#" onclick="deleteDebtor(${d.id}); return false;">🗑️ O'chirish</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>`;
+                                    <tr>
+                                        <td>${i + 1}</td>
+                                        <td>${dt}</td>
+                                        <td class="fw-semibold">${debtEsc(d.name)}</td>
+                                        <td><a href="tel:${d.phone.replace(/\s/g, "")}" class="text-decoration-none">${debtEsc(d.phone)}</a></td>
+                                        <td>${formatSom(d.amount)} so'm</td>
+                                        <td class="text-success" style="cursor:pointer;text-decoration:underline;" onclick="showDebtorPaymentHistory(${d.id})" title="To'lovlar tarixini ko'rish">${formatSom(d.paidAmount)} so'm</td>
+                                        <td class="fw-bold ${left > 0 ? 'text-danger' : 'text-success'}">${formatSom(left)} so'm</td>
+                                        <td>${badge}</td>
+                                        <td class="text-center">
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold debtor-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm debtor-dropdown-menu">
+                                                    <li><a class="dropdown-item py-2" href="#" ${left <= 0 ? 'style="pointer-events:none;opacity:.45;"' : ''} onclick="openPayDebtor(${d.id}); return false;">💵 To'lov</a></li>
+                                                    <li><a class="dropdown-item py-2" href="#" onclick="openEditDebtor(${d.id}); return false;">✏️ Tahrirlash</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item py-2 text-danger" href="#" onclick="deleteDebtor(${d.id}); return false;">🗑️ O'chirish</a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>`;
             }).join("");
         }
 
@@ -3558,10 +3706,10 @@
             }).join("");
 
             bodyEl.innerHTML = `
-                            <table class="table table-sm mb-0">
-                                <thead><tr><th>#</th><th>Sana / Vaqt</th><th>Kim to'lagan</th><th class="text-end">Summasi</th></tr></thead>
-                                <tbody>${rows}</tbody>
-                            </table>`;
+                                <table class="table table-sm mb-0">
+                                    <thead><tr><th>#</th><th>Sana / Vaqt</th><th>Kim to'lagan</th><th class="text-end">Summasi</th></tr></thead>
+                                    <tbody>${rows}</tbody>
+                                </table>`;
         }
 
         function openEditDebtor(id) {
