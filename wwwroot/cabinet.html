@@ -2546,21 +2546,21 @@
                 const rowClass = isDropped ? "table-danger" : "";
                 const priceCell = isDropped
                     ? `<span class="fw-bold text-danger">${Number(s.salePrice).toLocaleString()} so'm</span>
-                                                       <div class="small text-danger">−${Number(listed - s.salePrice).toLocaleString()} so'm/dona</div>`
+                                                           <div class="small text-danger">−${Number(listed - s.salePrice).toLocaleString()} so'm/dona</div>`
                     : `${Number(s.salePrice).toLocaleString()} so'm`;
                 tbody.innerHTML += `
-                                                                                        <tr class="${rowClass}">
-                                                                                            <td>${idx + 1}</td>
-                                                                                            <td>${dateFormatted}</td>
-                                                                                            <td>${s.employeeName || "-"}</td>
-                                                                                            <td>${s.productName}${isDropped ? ' <span class="badge bg-danger">narx pasaytirilgan</span>' : ''}</td>
-                                                                                            <td>${s.quantity}</td>
-                                                                                            <td>${listed ? Number(listed).toLocaleString() + " so'm" : "—"}</td>
-                                                                                            <td>${priceCell}</td>
-                                                                                            <td class="fw-bold">${Number(s.totalSum).toLocaleString()} so'm</td>
-                                                                                            <td class="fw-bold text-success">${Number(s.profit).toLocaleString()} so'm</td>
-                                                                                        </tr>
-                                                                                    `;
+                                                                                            <tr class="${rowClass}">
+                                                                                                <td>${idx + 1}</td>
+                                                                                                <td>${dateFormatted}</td>
+                                                                                                <td>${s.employeeName || "-"}</td>
+                                                                                                <td>${s.productName}${isDropped ? ' <span class="badge bg-danger">narx pasaytirilgan</span>' : ''}</td>
+                                                                                                <td>${s.quantity}</td>
+                                                                                                <td>${listed ? Number(listed).toLocaleString() + " so'm" : "—"}</td>
+                                                                                                <td>${priceCell}</td>
+                                                                                                <td class="fw-bold">${Number(s.totalSum).toLocaleString()} so'm</td>
+                                                                                                <td class="fw-bold text-success">${Number(s.profit).toLocaleString()} so'm</td>
+                                                                                            </tr>
+                                                                                        `;
                 totalSum += s.totalSum;
                 totalProfit += s.profit;
             });
@@ -2724,16 +2724,16 @@
                 const originalIdx = productsList.indexOf(p);
                 const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
                 tbody.innerHTML += `
-                                                                                        <tr style="cursor: pointer;" onclick="showProductDetails(${originalIdx})">
-                                                                                            <td><strong>${i + 1}</strong></td>
-                                                                                            <td>${p.name}</td>
-                                                                                            <td>${p.quantity}</td>
-                                                                                            <td><span class="badge bg-info text-dark">${p.unit}</span></td>
-                                                                                            <td>${p.buyPrice} so'm</td>
-                                                                                            <td>${p.sellPrice} so'm</td>
-                                                                                            <td class="text-muted small">${dateFormatted}</td>
-                                                                                        </tr>
-                                                                                    `;
+                                                                                            <tr style="cursor: pointer;" onclick="showProductDetails(${originalIdx})">
+                                                                                                <td><strong>${i + 1}</strong></td>
+                                                                                                <td>${p.name}</td>
+                                                                                                <td>${p.quantity}</td>
+                                                                                                <td><span class="badge bg-info text-dark">${p.unit}</span></td>
+                                                                                                <td>${p.buyPrice} so'm</td>
+                                                                                                <td>${p.sellPrice} so'm</td>
+                                                                                                <td class="text-muted small">${dateFormatted}</td>
+                                                                                            </tr>
+                                                                                        `;
             });
         }
 
@@ -3037,26 +3037,26 @@
                     ? `<img src="${el.imageUrl}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">`
                     : `<span class="text-muted">—</span>`;
                 tbody.innerHTML += `
-                                                                                        <tr>
-                                                                                            <td><strong>${idx + 1}</strong></td>
-                                                                                            <td>${imgCell}</td>
-                                                                                            <td>${el.name}</td>
-                                                                                            <td>${el.length}</td>
-                                                                                            <td><span class="badge bg-info text-dark">${el.unit}</span></td>
-                                                                                            <td>${Number(el.buyPrice || 0).toLocaleString()} so'm</td>
-                                                                                            <td>${Number(el.sellPrice || 0).toLocaleString()} so'm</td>
-                                                                                            <td class="text-muted small">${dateFormatted}</td>
-                                                                                            <td class="text-center">
-                                                                                                <div class="dropdown">
-                                                                                                    <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
-                                                                                                    <ul class="dropdown-menu dropdown-menu-end">
-                                                                                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteElement(${el.id}); return false;">🗑️ ${translations[currentLang].btn_delete}</a></li>
-                                                                                                        <li><a class="dropdown-item" href="#" onclick="editElement(${el.id}); return false;">✏️ ${translations[currentLang].btn_edit}</a></li>
-                                                                                                    </ul>
-                                                                                                </div>
-                                                                                            </td>
-                                                                                        </tr>
-                                                                                    `;
+                                                                                            <tr>
+                                                                                                <td><strong>${idx + 1}</strong></td>
+                                                                                                <td>${imgCell}</td>
+                                                                                                <td>${el.name}</td>
+                                                                                                <td>${el.length}</td>
+                                                                                                <td><span class="badge bg-info text-dark">${el.unit}</span></td>
+                                                                                                <td>${Number(el.buyPrice || 0).toLocaleString()} so'm</td>
+                                                                                                <td>${Number(el.sellPrice || 0).toLocaleString()} so'm</td>
+                                                                                                <td class="text-muted small">${dateFormatted}</td>
+                                                                                                <td class="text-center">
+                                                                                                    <div class="dropdown">
+                                                                                                        <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
+                                                                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                                                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteElement(${el.id}); return false;">🗑️ ${translations[currentLang].btn_delete}</a></li>
+                                                                                                            <li><a class="dropdown-item" href="#" onclick="editElement(${el.id}); return false;">✏️ ${translations[currentLang].btn_edit}</a></li>
+                                                                                                        </ul>
+                                                                                                    </div>
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        `;
             });
 
             renderElementsPagination();
@@ -3073,9 +3073,9 @@
 
             const addPageItem = (label, page, disabled, active) => {
                 paginationEl.innerHTML += `
-                                                                                        <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
-                                                                                            <a class="page-link" href="#" onclick="goToElementsPage(${page}); return false;">${label}</a>
-                                                                                        </li>`;
+                                                                                            <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
+                                                                                                <a class="page-link" href="#" onclick="goToElementsPage(${page}); return false;">${label}</a>
+                                                                                            </li>`;
             };
 
             addPageItem('«', currentElementsPage - 1, currentElementsPage === 1, false);
@@ -3139,10 +3139,10 @@
             toastEl.setAttribute("aria-live", "assertive");
             toastEl.setAttribute("aria-atomic", "true");
             toastEl.innerHTML = `
-                                                                                    <div class="d-flex">
-                                                                                        <div class="toast-body">${message}</div>
-                                                                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                                                                                    </div>`;
+                                                                                        <div class="d-flex">
+                                                                                            <div class="toast-body">${message}</div>
+                                                                                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                                                                        </div>`;
             container.appendChild(toastEl);
 
             const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
@@ -3212,14 +3212,14 @@
             listContainer.innerHTML = "";
             productsList.forEach((p, idx) => {
                 listContainer.innerHTML += `
-                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="showProductDetails(${idx})">
-                                                                                            <div>
-                                                                                                <strong>${p.name}</strong><br>
-                                                                                                <small class="text-muted">Miqdor: ${p.quantity} ${p.unit} | Narx: ${p.sellPrice} so'm</small>
-                                                                                            </div>
-                                                                                            <span class="badge bg-primary rounded-pill">#${idx + 1}</span>
-                                                                                        </li>
-                                                                                    `;
+                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="showProductDetails(${idx})">
+                                                                                                <div>
+                                                                                                    <strong>${p.name}</strong><br>
+                                                                                                    <small class="text-muted">Miqdor: ${p.quantity} ${p.unit} | Narx: ${p.sellPrice} so'm</small>
+                                                                                                </div>
+                                                                                                <span class="badge bg-primary rounded-pill">#${idx + 1}</span>
+                                                                                            </li>
+                                                                                        `;
             });
         }
 
@@ -3230,14 +3230,14 @@
             const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
 
             document.getElementById("productDetailsBody").innerHTML = `
-                                                                                    <table class="table table-borderless mb-0">
-                                                                                        <tr><td class="text-muted">Nomi</td><td class="text-end fw-bold">${p.name}</td></tr>
-                                                                                        <tr><td class="text-muted">Qabul qilingan miqdor</td><td class="text-end fw-bold">${p.quantity} ${p.unit}</td></tr>
-                                                                                        <tr><td class="text-muted">Kelish narxi</td><td class="text-end">${p.buyPrice} so'm</td></tr>
-                                                                                        <tr><td class="text-muted">Sotish narxi</td><td class="text-end">${p.sellPrice} so'm</td></tr>
-                                                                                        <tr><td class="text-muted">Qabul qilingan sana/vaqt</td><td class="text-end">${dateFormatted}</td></tr>
-                                                                                    </table>
-                                                                                `;
+                                                                                        <table class="table table-borderless mb-0">
+                                                                                            <tr><td class="text-muted">Nomi</td><td class="text-end fw-bold">${p.name}</td></tr>
+                                                                                            <tr><td class="text-muted">Qabul qilingan miqdor</td><td class="text-end fw-bold">${p.quantity} ${p.unit}</td></tr>
+                                                                                            <tr><td class="text-muted">Kelish narxi</td><td class="text-end">${p.buyPrice} so'm</td></tr>
+                                                                                            <tr><td class="text-muted">Sotish narxi</td><td class="text-end">${p.sellPrice} so'm</td></tr>
+                                                                                            <tr><td class="text-muted">Qabul qilingan sana/vaqt</td><td class="text-end">${dateFormatted}</td></tr>
+                                                                                        </table>
+                                                                                    `;
 
             const modalEl = document.getElementById('productDetailsModal');
             let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
@@ -3307,18 +3307,18 @@
             tbody.innerHTML = "";
             staffList.forEach((staff, idx) => {
                 tbody.innerHTML += `
-                                                                                        <tr>
-                                                                                            <td><strong>${idx + 1}</strong></td>
-                                                                                            <td>${staff.firstname} ${staff.lastname}</td>
-                                                                                            <td>${staff.phone}</td>
-                                                                                            <td>${staff.login}</td>
-                                                                                            <td>${staff.salary.toLocaleString()} so'm</td>
-                                                                                            <td class="text-center">
-                                                                                                <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="requestStaffAction('edit', ${idx})">✏️</button>
-                                                                                                <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="requestStaffAction('delete', ${idx})">🗑️</button>
-                                                                                            </td>
-                                                                                        </tr>
-                                                                                    `;
+                                                                                            <tr>
+                                                                                                <td><strong>${idx + 1}</strong></td>
+                                                                                                <td>${staff.firstname} ${staff.lastname}</td>
+                                                                                                <td>${staff.phone}</td>
+                                                                                                <td>${staff.login}</td>
+                                                                                                <td>${staff.salary.toLocaleString()} so'm</td>
+                                                                                                <td class="text-center">
+                                                                                                    <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="requestStaffAction('edit', ${idx})">✏️</button>
+                                                                                                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="requestStaffAction('delete', ${idx})">🗑️</button>
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        `;
             });
         }
 
@@ -3336,28 +3336,28 @@
                 const paid = staff.paid || 0;
                 const remaining = Math.max(staff.salary - paid, 0);
                 tbody.innerHTML += `
-                                                                                        <tr>
-                                                                                            <td><strong>${idx + 1}</strong></td>
-                                                                                            <td>${staff.firstname}${wsRoleBadge(staff.role)}</td>
-                                                                                            <td>${staff.lastname}</td>
-                                                                                            <td>${staff.phone}</td>
-                                                                                            <td>${staff.login}</td>
-                                                                                            <td class="fw-bold text-success">${staff.salary.toLocaleString()} so'm</td>
-                                                                                            <td class="fw-bold text-primary" style="cursor:pointer; text-decoration:underline;" onclick="showPaymentHistory(${idx})" title="To'lovlar tarixini ko'rish">${paid.toLocaleString()} so'm</td>
-                                                                                            <td class="fw-bold ${remaining > 0 ? 'text-danger' : 'text-success'}">${remaining.toLocaleString()} so'm</td>
-                                                                                            <td class="text-center">
-                                                                                                <div class="dropdown">
-                                                                                                    <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
-                                                                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                                                                        <li><a class="dropdown-item py-2" href="#" onclick="executeAction('pay', ${idx}); return false;">💵 To'lov</a></li>
-                                                                                                        <li><a class="dropdown-item py-2" href="#" onclick="executeAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
-                                                                                                        <li><hr class="dropdown-divider"></li>
-                                                                                                        <li><a class="dropdown-item py-2 text-danger" href="#" onclick="executeAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
-                                                                                                    </ul>
-                                                                                                </div>
-                                                                                            </td>
-                                                                                        </tr>
-                                                                                    `;
+                                                                                            <tr>
+                                                                                                <td><strong>${idx + 1}</strong></td>
+                                                                                                <td>${staff.firstname}${wsRoleBadge(staff.role)}</td>
+                                                                                                <td>${staff.lastname}</td>
+                                                                                                <td>${staff.phone}</td>
+                                                                                                <td>${staff.login}</td>
+                                                                                                <td class="fw-bold text-success">${staff.salary.toLocaleString()} so'm</td>
+                                                                                                <td class="fw-bold text-primary" style="cursor:pointer; text-decoration:underline;" onclick="showPaymentHistory(${idx})" title="To'lovlar tarixini ko'rish">${paid.toLocaleString()} so'm</td>
+                                                                                                <td class="fw-bold ${remaining > 0 ? 'text-danger' : 'text-success'}">${remaining.toLocaleString()} so'm</td>
+                                                                                                <td class="text-center">
+                                                                                                    <div class="dropdown">
+                                                                                                        <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                                                                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                                                                            <li><a class="dropdown-item py-2" href="#" onclick="executeAction('pay', ${idx}); return false;">💵 To'lov</a></li>
+                                                                                                            <li><a class="dropdown-item py-2" href="#" onclick="executeAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
+                                                                                                            <li><hr class="dropdown-divider"></li>
+                                                                                                            <li><a class="dropdown-item py-2 text-danger" href="#" onclick="executeAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
+                                                                                                        </ul>
+                                                                                                    </div>
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        `;
             });
         }
 
@@ -3496,34 +3496,34 @@
                             ? `<div class="text-muted small mt-1">📝 ${p.note}</div>`
                             : "";
                         return `
-                                                                                        <tr>
-                                                                                            <td>
-                                                                                                <div>${dateFormatted}</div>
-                                                                                                ${noteRow}
-                                                                                            </td>
-                                                                                            <td class="text-end fw-bold text-success">${p.amount.toLocaleString()} so'm</td>
-                                                                                        </tr>
-                                                                                    `;
+                                                                                            <tr>
+                                                                                                <td>
+                                                                                                    <div>${dateFormatted}</div>
+                                                                                                    ${noteRow}
+                                                                                                </td>
+                                                                                                <td class="text-end fw-bold text-success">${p.amount.toLocaleString()} so'm</td>
+                                                                                            </tr>
+                                                                                        `;
                     })
                     .join("");
 
                 bodyEl.innerHTML = `
-                                                                                <table class="table table-sm table-hover align-middle mb-0">
-                                                                                    <thead class="table-light">
-                                                                                        <tr>
-                                                                                            <th>Sana</th>
-                                                                                            <th class="text-end">Miqdor</th>
-                                                                                        </tr>
-                                                                                    </thead>
-                                                                                    <tbody>${rows}</tbody>
-                                                                                    <tfoot>
-                                                                                        <tr class="table-light">
-                                                                                            <td class="fw-bold">Jami to'langan</td>
-                                                                                            <td class="text-end fw-bold text-success">${(staff.paid || 0).toLocaleString()} so'm</td>
-                                                                                        </tr>
-                                                                                    </tfoot>
-                                                                                </table>
-                                                                            `;
+                                                                                    <table class="table table-sm table-hover align-middle mb-0">
+                                                                                        <thead class="table-light">
+                                                                                            <tr>
+                                                                                                <th>Sana</th>
+                                                                                                <th class="text-end">Miqdor</th>
+                                                                                            </tr>
+                                                                                        </thead>
+                                                                                        <tbody>${rows}</tbody>
+                                                                                        <tfoot>
+                                                                                            <tr class="table-light">
+                                                                                                <td class="fw-bold">Jami to'langan</td>
+                                                                                                <td class="text-end fw-bold text-success">${(staff.paid || 0).toLocaleString()} so'm</td>
+                                                                                            </tr>
+                                                                                        </tfoot>
+                                                                                    </table>
+                                                                                `;
             }
         }
 
@@ -3659,8 +3659,9 @@
 
         function wsRoleBadge(role) {
             const r = wsRoleOf(role);
-            if (r === "Sotuvchi") return "";
-            const cls = r === "Usta" ? "bg-warning text-dark" : "bg-info text-dark";
+            const cls = r === "Usta" ? "bg-warning text-dark"
+                : r === "Pechat" ? "bg-info text-dark"
+                    : "bg-success";
             return ` <span class="badge ${cls}" style="font-size:10px;">${r}</span>`;
         }
 
@@ -3749,10 +3750,10 @@
             tbody.innerHTML = wsStock.map(s => {
                 const out = s.stock <= 0;
                 return `<tr>
-                    <td>${wsEsc(s.name)}</td>
-                    <td class="text-end fw-bold ${out ? "text-danger" : "text-success"}">${wsNum(s.stock)} ${wsEsc(s.unit)}${out ? ' <span class="badge bg-danger">Tugagan</span>' : ""}</td>
-                    <td class="text-end">${wsNum(s.usedTotal)} ${wsEsc(s.unit)}</td>
-                </tr>`;
+                        <td>${wsEsc(s.name)}</td>
+                        <td class="text-end fw-bold ${out ? "text-danger" : "text-success"}">${wsNum(s.stock)} ${wsEsc(s.unit)}${out ? ' <span class="badge bg-danger">Tugagan</span>' : ""}</td>
+                        <td class="text-end">${wsNum(s.usedTotal)} ${wsEsc(s.unit)}</td>
+                    </tr>`;
             }).join("");
         }
 
@@ -3786,14 +3787,14 @@
                     ? `<span class="badge bg-secondary">Bekor qilingan</span>`
                     : `<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="wsCancelUsage(${u.id})">↩ Bekor</button>`;
                 return `<tr class="${u.isCancelled ? "text-muted" : ""}">
-                    <td class="small">${new Date(u.createdAt).toLocaleString()}</td>
-                    <td>${wsEsc(u.employeeName)}${wsRoleBadge(u.employeeRole)}</td>
-                    <td>${wsEsc(u.elementName)}</td>
-                    <td class="text-end fw-bold ${u.isCancelled ? "text-decoration-line-through" : ""}">${wsNum(u.quantity)} ${wsEsc(u.unit)}</td>
-                    <td class="text-end">${u.outputCount ?? "-"}</td>
-                    <td>${wsEsc(u.note || "")}${cancelInfo}</td>
-                    <td class="text-center">${action}</td>
-                </tr>`;
+                        <td class="small">${new Date(u.createdAt).toLocaleString()}</td>
+                        <td>${wsEsc(u.employeeName)}${wsRoleBadge(u.employeeRole)}</td>
+                        <td>${wsEsc(u.elementName)}</td>
+                        <td class="text-end fw-bold ${u.isCancelled ? "text-decoration-line-through" : ""}">${wsNum(u.quantity)} ${wsEsc(u.unit)}</td>
+                        <td class="text-end">${u.outputCount ?? "-"}</td>
+                        <td>${wsEsc(u.note || "")}${cancelInfo}</td>
+                        <td class="text-center">${action}</td>
+                    </tr>`;
             }).join("");
         }
 
@@ -3937,27 +3938,27 @@
                 });
                 const phoneLink = debtEsc(d.phone).replace(/\s/g, "");
                 return `
-                                        <tr>
-                                            <td>${i + 1}</td>
-                                            <td>${dt}</td>
-                                            <td class="fw-semibold">${debtEsc(d.name)}</td>
-                                            <td><a href="tel:${d.phone.replace(/\s/g, "")}" class="text-decoration-none">${debtEsc(d.phone)}</a></td>
-                                            <td>${formatSom(d.amount)} so'm</td>
-                                            <td class="text-success" style="cursor:pointer;text-decoration:underline;" onclick="showDebtorPaymentHistory(${d.id})" title="To'lovlar tarixini ko'rish">${formatSom(d.paidAmount)} so'm</td>
-                                            <td class="fw-bold ${left > 0 ? 'text-danger' : 'text-success'}">${formatSom(left)} so'm</td>
-                                            <td>${badge}</td>
-                                            <td class="text-center">
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold debtor-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
-                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm debtor-dropdown-menu">
-                                                        <li><a class="dropdown-item py-2" href="#" ${left <= 0 ? 'style="pointer-events:none;opacity:.45;"' : ''} onclick="openPayDebtor(${d.id}); return false;">💵 To'lov</a></li>
-                                                        <li><a class="dropdown-item py-2" href="#" onclick="openEditDebtor(${d.id}); return false;">✏️ Tahrirlash</a></li>
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item py-2 text-danger" href="#" onclick="deleteDebtor(${d.id}); return false;">🗑️ O'chirish</a></li>
-                                                    </ul>
-                                                </div>
-                                            </td>
-                                        </tr>`;
+                                            <tr>
+                                                <td>${i + 1}</td>
+                                                <td>${dt}</td>
+                                                <td class="fw-semibold">${debtEsc(d.name)}</td>
+                                                <td><a href="tel:${d.phone.replace(/\s/g, "")}" class="text-decoration-none">${debtEsc(d.phone)}</a></td>
+                                                <td>${formatSom(d.amount)} so'm</td>
+                                                <td class="text-success" style="cursor:pointer;text-decoration:underline;" onclick="showDebtorPaymentHistory(${d.id})" title="To'lovlar tarixini ko'rish">${formatSom(d.paidAmount)} so'm</td>
+                                                <td class="fw-bold ${left > 0 ? 'text-danger' : 'text-success'}">${formatSom(left)} so'm</td>
+                                                <td>${badge}</td>
+                                                <td class="text-center">
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold debtor-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm debtor-dropdown-menu">
+                                                            <li><a class="dropdown-item py-2" href="#" ${left <= 0 ? 'style="pointer-events:none;opacity:.45;"' : ''} onclick="openPayDebtor(${d.id}); return false;">💵 To'lov</a></li>
+                                                            <li><a class="dropdown-item py-2" href="#" onclick="openEditDebtor(${d.id}); return false;">✏️ Tahrirlash</a></li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li><a class="dropdown-item py-2 text-danger" href="#" onclick="deleteDebtor(${d.id}); return false;">🗑️ O'chirish</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>`;
             }).join("");
         }
 
@@ -4061,10 +4062,10 @@
             }).join("");
 
             bodyEl.innerHTML = `
-                                    <table class="table table-sm mb-0">
-                                        <thead><tr><th>#</th><th>Sana / Vaqt</th><th>Kim to'lagan</th><th>Izoh</th><th class="text-end">Summasi</th></tr></thead>
-                                        <tbody>${rows}</tbody>
-                                    </table>`;
+                                        <table class="table table-sm mb-0">
+                                            <thead><tr><th>#</th><th>Sana / Vaqt</th><th>Kim to'lagan</th><th>Izoh</th><th class="text-end">Summasi</th></tr></thead>
+                                            <tbody>${rows}</tbody>
+                                        </table>`;
         }
 
         function openEditDebtor(id) {
