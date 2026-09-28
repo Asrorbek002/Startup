@@ -19,7 +19,6 @@ public class TelegramSettingsController : ControllerBase
         _telegram = telegram;
     }
 
-    // Joriy sozlamalarni olish
     [HttpGet("{shopId}/telegram-settings")]
     public async Task<IActionResult> GetSettings(int shopId)
     {
@@ -51,7 +50,6 @@ public class TelegramSettingsController : ControllerBase
         });
     }
 
-    // Sozlamalarni saqlash (birinchi marta yaratish yoki yangilash)
     [HttpPost("{shopId}/telegram-settings")]
     public async Task<IActionResult> SaveSettings(int shopId, [FromBody] TelegramSettingsDto dto)
     {
@@ -78,7 +76,6 @@ public class TelegramSettingsController : ControllerBase
         return Ok(new { success = true });
     }
 
-    // "Test" tugmasi — sozlamalar to'g'ri ishlashini tekshirish uchun sinov xabari yuboradi
     [HttpPost("{shopId}/telegram-settings/test")]
     public async Task<IActionResult> TestMessage(int shopId)
     {
