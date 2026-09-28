@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
 using ShopManagementSystem.Entities;
+using ShopManagementSystem.Services;
 
 namespace ShopManagementSystem.Controllers;
 
@@ -13,6 +14,7 @@ namespace ShopManagementSystem.Controllers;
 public class MaterialUsageController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ITelegramService _telegram;
 
     // Bir vaqtda ikki so'rov qoldiqni buzmasligi uchun (bitta server nusxasi ichida)
     private static readonly SemaphoreSlim StockLock = new(1, 1);
@@ -20,9 +22,10 @@ public class MaterialUsageController : ControllerBase
     // Xodim o'z yozuvini shuncha daqiqa ichida o'zi bekor qila oladi
     private const int EmployeeCancelMinutes = 15;
 
-    public MaterialUsageController(AppDbContext context)
+    public MaterialUsageController(AppDbContext context, ITelegramService telegram)
     {
         _context = context;
+        _telegram = telegram;
     }
 
     // Xodim turini yagona ko'rinishga keltiradi: Sotuvchi / Usta / Pechat.
@@ -243,6 +246,7 @@ public class MaterialUsageController : ControllerBase
                 });
             }
 
+            var stockBefore = element.Length;
             element.Length -= quantity;
 
             var usage = new MaterialUsage
@@ -264,6 +268,10 @@ public class MaterialUsageController : ControllerBase
 
             // Qoldiq kamayishi va yozuv bitta SaveChanges (bitta tranzaksiya) ichida saqlanadi
             await _context.SaveChangesAsync();
+
+            // Qoldiq chegaradan pastga tushgan bo'lsa, Telegramga darrov xabar
+            await LowStockAlert.NotifyAsync(_context, _telegram, shopId,
+                new StockChange(element.Name, element.Unit, stockBefore, element.Length));
 
             return Ok(new
             {

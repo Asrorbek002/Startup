@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
+using ShopManagementSystem.Services;
 using System.IO;
 
 namespace ShopManagementSystem.Controllers;
@@ -12,10 +13,12 @@ namespace ShopManagementSystem.Controllers;
 public class ShopCabinetController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ITelegramService _telegram;
 
-    public ShopCabinetController(AppDbContext context)
+    public ShopCabinetController(AppDbContext context, ITelegramService telegram)
     {
         _context = context;
+        _telegram = telegram;
     }
 
     // Do'kon (biznes egasi) tizimga kirishi uchun login API
@@ -400,10 +403,15 @@ public class ShopCabinetController : ControllerBase
 
             // Faqat real qoldiqdan (Element) ayiramiz. Product.Quantity qabul qilingan tovar
             // tarixi sifatida o'zgarishsiz qoladi.
+            var stockBefore = element.Length;
             element.Length -= request.Quantity;
 
             _context.Sales.Add(sale);
             await _context.SaveChangesAsync();
+
+            // Qoldiq chegaradan pastga tushgan bo'lsa, Telegramga darrov xabar
+            await LowStockAlert.NotifyAsync(_context, _telegram, shopId,
+                new StockChange(element.Name, element.Unit, stockBefore, element.Length));
 
             return Ok(new { success = true, message = "Savdo muvaffaqiyatli qayd etildi!" });
         }
@@ -520,10 +528,15 @@ public class ShopCabinetController : ControllerBase
                 DebtorName = debtor.Name
             };
 
+            var stockBefore = element.Length;
             element.Length -= request.Quantity;
 
             _context.Sales.Add(sale);
             await _context.SaveChangesAsync();
+
+            // Qoldiq chegaradan pastga tushgan bo'lsa, Telegramga darrov xabar
+            await LowStockAlert.NotifyAsync(_context, _telegram, shopId,
+                new StockChange(element.Name, element.Unit, stockBefore, element.Length));
 
             // Sale.DebtorId ni saqlashdan oldin debtor.Id kerak edi — u yuqoridagi SaveChangesAsync
             // paytida (yangi qarzdor bo'lsa) generatsiya qilinadi, shu sabab shu yerda yozib, yana saqlaymiz.
@@ -652,6 +665,8 @@ public class ShopCabinetController : ControllerBase
             return BadRequest(new { success = false, message = "Yangi mahsulotga mos element topilmadi!" });
         }
 
+        var newStockBefore = newElement.Length;
+
         if (sale.ProductId == newProduct.Id)
         {
             // Mahsulot o'zgarmagan — faqat farqni ombordan ayiramiz/qaytaramiz
@@ -704,6 +719,9 @@ public class ShopCabinetController : ControllerBase
 
         _context.SaleEditLogs.Add(log);
         await _context.SaveChangesAsync();
+
+        await LowStockAlert.NotifyAsync(_context, _telegram, shopId,
+            new StockChange(newElement.Name, newElement.Unit, newStockBefore, newElement.Length));
 
         return Ok(new { success = true, message = "Savdo muvaffaqiyatli tahrirlandi!" });
     }
@@ -816,6 +834,7 @@ public class ShopCabinetController : ControllerBase
             }
 
             var oldName = existingElement.Name;
+            var stockBefore = existingElement.Length;
 
             existingElement.Name = element.Name;
             existingElement.Unit = element.Unit;
@@ -841,6 +860,9 @@ public class ShopCabinetController : ControllerBase
             }
 
             await _context.SaveChangesAsync();
+
+            await LowStockAlert.NotifyAsync(_context, _telegram, shopId,
+                new StockChange(existingElement.Name, existingElement.Unit, stockBefore, existingElement.Length));
 
             return Ok(new { success = true, message = "Element muvaffaqiyatli tahrirlandi!" });
         }
