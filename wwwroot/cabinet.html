@@ -1762,63 +1762,31 @@
 
                 <!-- 5. XODIMLAR NAZORATI -->
                 <div id="section-staff" class="content-section d-none">
-                    <div class="row justify-content-center">
-                        <div class="col-lg-7 mb-4">
-                            <div class="card shadow-sm">
-                                <div class="card-header bg-white fw-bold" id="staffFormTitle" data-i18n="staff_form_title">Yangi Xodim Qo'shish</div>
-                                <div class="card-body">
-                                    <form onsubmit="saveStaff(event)">
-                                        <input type="hidden" id="editingStaffIndex" value="">
-                                        <div class="mb-3">
-                                            <label class="form-label small" data-i18n="staff_firstname">Ismi</label>
-                                            <input type="text" class="form-control" id="staffFirstname" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small" data-i18n="staff_lastname">Familiyasi</label>
-                                            <input type="text" class="form-control" id="staffLastname" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small" data-i18n="staff_phone">Telefon raqami</label>
-                                            <input type="text" class="form-control" id="staffPhone" placeholder="+998 90 123 45 67" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small" data-i18n="staff_login">Login</label>
-                                            <input type="text" class="form-control" id="staffLogin" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small" data-i18n="staff_pass">Parol</label>
-                                            <input type="password" class="form-control" id="staffPassword" placeholder="Tahrirlashda bo'sh qoldirsangiz, eski parol saqlanib qoladi">
-                                            <div class="form-text" id="staffPasswordHint" style="display:none;">Parolni o'zgartirmoqchi bo'lmasangiz, bu maydonni bo'sh qoldiring.</div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small">Xodim turi</label>
-                                            <select class="form-select" id="staffRole" onchange="staffOnRoleChange()">
-                                                <option value="Sotuvchi">Sotuvchi (faqat tovar sotadi)</option>
-                                                <option value="Usta">Usta (materialdan ishlatadi)</option>
-                                                <option value="Pechat">Pechat xodimi (pechat chiqaradi)</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3" id="staffElementsWrap" style="display:none;">
-                                            <label class="form-label small">Xodim ko'radigan elementlar</label>
-                                            <div class="border rounded p-2" style="max-height:220px; overflow:auto;">
-                                                <div class="form-check border-bottom pb-1 mb-1">
-                                                    <input class="form-check-input" type="checkbox" id="staffElAll" checked onchange="staffElToggleAll(this.checked)">
-                                                    <label class="form-check-label fw-bold" for="staffElAll">Hammasi</label>
-                                                </div>
-                                                <div id="staffElementsList"></div>
-                                            </div>
-                                            <div class="form-text" id="staffElementsHint"></div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small" data-i18n="staff_salary">Oyligi (so'm)</label>
-                                            <input type="number" step="0.01" class="form-control" id="staffSalary" placeholder="Masalan: 3500000" required>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-primary w-100" id="staffSubmitBtn" data-i18n="btn_create_staff">Xodim yaratish</button>
-                                            <button type="button" class="btn btn-secondary d-none" id="staffCancelBtn" onclick="resetStaffForm()">Bekor qilish</button>
-                                        </div>
-                                    </form>
-                                </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold mb-0">Xodimlar <span id="staffCountBadge" class="badge bg-secondary">0</span></h4>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="openStaffCreateModal()">＋ Yaratish</button>
+                    </div>
+
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <input type="text" id="staffSearch" class="form-control form-control-sm mb-3" style="max-width: 280px;" placeholder="Izlash..." oninput="renderStaffTable()">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-bordered align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 50px;">#</th>
+                                            <th>Ism Familiya</th>
+                                            <th>Login</th>
+                                            <th>Telefon raqami</th>
+                                            <th>Lavozimi</th>
+                                            <th>Kabinet paroli</th>
+                                            <th style="width: 60px;" class="text-center">Amal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="staffTableBody">
+                                        <tr><td colspan="7" class="text-center text-muted py-4">Hozircha xodimlar mavjud emas</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -2166,6 +2134,71 @@
         </div>
 
         <!-- Tahrirlash / O'chirish uchun Admin Parolini Tasdiqlash Modal Oynasi -->
+        <!-- Xodim yaratish / tahrirlash oynasi -->
+        <div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <form class="modal-content" onsubmit="saveStaff(event)">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold" id="staffFormTitle" data-i18n="staff_form_title">Yangi Xodim Qo'shish</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editingStaffIndex" value="">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small" data-i18n="staff_firstname">Ismi</label>
+                                <input type="text" class="form-control" id="staffFirstname" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small" data-i18n="staff_lastname">Familiyasi</label>
+                                <input type="text" class="form-control" id="staffLastname" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small" data-i18n="staff_phone">Telefon raqami</label>
+                                <input type="text" class="form-control" id="staffPhone" placeholder="+998 90 123 45 67" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small" data-i18n="staff_login">Login</label>
+                                <input type="text" class="form-control" id="staffLogin" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small" data-i18n="staff_pass">Kabinet paroli</label>
+                                <input type="password" class="form-control" id="staffPassword" placeholder="Tahrirlashda bo'sh qoldirsangiz, eski parol saqlanib qoladi" autocomplete="new-password">
+                                <div class="form-text" id="staffPasswordHint" style="display:none;">Parolni o'zgartirmoqchi bo'lmasangiz, bu maydonni bo'sh qoldiring.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Xodim turi (lavozimi)</label>
+                                <select class="form-select" id="staffRole" onchange="staffOnRoleChange()">
+                                    <option value="Sotuvchi">Sotuvchi (faqat tovar sotadi)</option>
+                                    <option value="Usta">Usta (materialdan ishlatadi)</option>
+                                    <option value="Pechat">Pechat xodimi (pechat chiqaradi)</option>
+                                </select>
+                            </div>
+                            <div class="col-12" id="staffElementsWrap" style="display:none;">
+                                <label class="form-label small">Xodim ko'radigan elementlar</label>
+                                <div class="border rounded p-2" style="max-height:220px; overflow:auto;">
+                                    <div class="form-check border-bottom pb-1 mb-1">
+                                        <input class="form-check-input" type="checkbox" id="staffElAll" checked onchange="staffElToggleAll(this.checked)">
+                                        <label class="form-check-label fw-bold" for="staffElAll">Hammasi</label>
+                                    </div>
+                                    <div id="staffElementsList"></div>
+                                </div>
+                                <div class="form-text" id="staffElementsHint"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small" data-i18n="staff_salary">Oyligi (so'm)</label>
+                                <input type="number" step="0.01" class="form-control" id="staffSalary" placeholder="Masalan: 3500000" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary d-none" id="staffCancelBtn" data-bs-dismiss="modal">Bekor qilish</button>
+                        <button type="submit" class="btn btn-primary" id="staffSubmitBtn" data-i18n="btn_create_staff">Xodim yaratish</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div class="modal fade" id="staffActionPasswordModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -3653,6 +3686,7 @@
                             : (currentLang === 'uz' ? "Xodim ma'lumotlari tahrirlandi!" : "Данные отредактированы!"), true);
                         await fetchEmployees();
                         resetStaffForm();
+                        closeStaffModal();
                     } else {
                         showToast(data.message || "Xodimni saqlashda xatolik yuz berdi!", false);
                     }
@@ -3666,27 +3700,43 @@
                 const tbody = document.getElementById("staffTableBody");
                 if (!tbody) return;
 
-                if (staffList.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Hozircha xodimlar mavjud emas</td></tr>`;
+                const badge = document.getElementById("staffCountBadge");
+                if (badge) badge.textContent = staffList.length;
+
+                const q = (document.getElementById("staffSearch")?.value || "").trim().toLowerCase();
+                const rows = staffList
+                    .map((staff, idx) => ({ staff, idx }))
+                    .filter(({ staff }) => !q ||
+                        `${staff.firstname} ${staff.lastname} ${staff.login} ${staff.phone}`.toLowerCase().includes(q));
+
+                if (rows.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Hozircha xodimlar mavjud emas</td></tr>`;
                     return;
                 }
 
-                tbody.innerHTML = "";
-                staffList.forEach((staff, idx) => {
-                    tbody.innerHTML += `
-                                                                                                        <tr>
-                                                                                                            <td><strong>${idx + 1}</strong></td>
-                                                                                                            <td>${staff.firstname} ${staff.lastname}</td>
-                                                                                                            <td>${staff.phone}</td>
-                                                                                                            <td>${staff.login}</td>
-                                                                                                            <td>${staff.salary.toLocaleString()} so'm</td>
-                                                                                                            <td class="text-center">
-                                                                                                                <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="requestStaffAction('edit', ${idx})">✏️</button>
-                                                                                                                <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="requestStaffAction('delete', ${idx})">🗑️</button>
-                                                                                                            </td>
-                                                                                                        </tr>
-                                                                                                    `;
-                });
+                tbody.innerHTML = rows.map(({ staff, idx }, i) => `
+                            <tr>
+                                <td class="text-muted">${i + 1}</td>
+                                <td class="fw-semibold">${wsEsc(staff.firstname)} ${wsEsc(staff.lastname)}</td>
+                                <td>${wsEsc(staff.login)}</td>
+                                <td>${wsEsc(staff.phone) || "—"}</td>
+                                <td>${wsRoleBadge(staff.role)}</td>
+                                <td>
+                                    <span class="text-muted" style="letter-spacing:2px;">••••••</span>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 ms-1" title="Parolni o'zgartirish"
+                                            onclick="requestStaffAction('edit', ${idx}, { focusPass: true })">🔑</button>
+                                </td>
+                                <td class="text-center">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                            <li><a class="dropdown-item py-2" href="#" onclick="requestStaffAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item py-2 text-danger" href="#" onclick="requestStaffAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>`).join("");
             }
 
             function renderReportsStaffTable() {
@@ -3744,11 +3794,11 @@
             // --- TAHRIRLASH / O'CHIRISH UCHUN ADMIN (TIZIM) PAROLINI TASDIQLASH ---
             let pendingStaffAction = null;
 
-            function requestStaffAction(actionType, idx) {
+            function requestStaffAction(actionType, idx, opts) {
                 const staff = staffList[idx];
                 if (!staff) return;
 
-                pendingStaffAction = { actionType, idx };
+                pendingStaffAction = { actionType, idx, focusPass: !!(opts && opts.focusPass) };
 
                 const titleEl = document.getElementById("staffActionPasswordTitle");
                 const descEl = document.getElementById("staffActionPasswordDesc");
@@ -3779,7 +3829,7 @@
                 e.preventDefault();
                 if (!pendingStaffAction) return;
 
-                const { actionType, idx } = pendingStaffAction;
+                const { actionType, idx, focusPass } = pendingStaffAction;
                 const staff = staffList[idx];
                 const errorEl = document.getElementById("staffActionPasswordError");
 
@@ -3804,6 +3854,7 @@
                 if (actionType === 'edit') {
                     switchTab('staff', document.querySelectorAll('.sidebar-menu-item')[5]);
                     editStaff(idx);
+                    if (focusPass) setTimeout(() => document.getElementById("staffPassword").focus(), 400);
                     showToast("Xodim ma'lumotlarini tahrirlashingiz mumkin.", true);
                 } else if (actionType === 'delete') {
                     const shopId = localStorage.getItem("currentShopId") || "18";
@@ -3990,7 +4041,29 @@
                 document.getElementById("staffSubmitBtn").textContent = currentLang === 'uz' ? "Saqlash" : "Сохранить";
                 document.getElementById("staffCancelBtn").classList.remove("d-none");
                 document.getElementById("staffFormTitle").textContent = currentLang === 'uz' ? "Xodimni Tahrirlash" : "Редактировать сотрудника";
+                openStaffModal();
             }
+
+            function openStaffModal() {
+                const el = document.getElementById("staffModal");
+                (bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el)).show();
+            }
+
+            function closeStaffModal() {
+                const el = document.getElementById("staffModal");
+                const inst = bootstrap.Modal.getInstance(el);
+                if (inst) inst.hide();
+            }
+
+            function openStaffCreateModal() {
+                resetStaffForm();
+                openStaffModal();
+            }
+
+            // Oyna yopilganda (X, Bekor qilish yoki fon bosilganda) forma tozalanadi
+            document.addEventListener("hidden.bs.modal", (e) => {
+                if (e.target && e.target.id === "staffModal") resetStaffForm();
+            });
 
             function resetStaffForm() {
                 document.getElementById("editingStaffIndex").value = "";
