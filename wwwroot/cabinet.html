@@ -1048,6 +1048,9 @@
                 <a href="#" class="sidebar-menu-item" onclick="switchTab('telegram', this)">
                     📲 <span>Telegram bot</span>
                 </a>
+                <a href="#" class="sidebar-menu-item" onclick="switchTab('workshop', this)">
+                    🛠️ <span>Sex / Sarf</span>
+                </a>
             </div>
 
             <div class="mt-auto px-3">
@@ -1480,6 +1483,14 @@
                                         <div class="form-text" id="staffPasswordHint" style="display:none;">Parolni o'zgartirmoqchi bo'lmasangiz, bu maydonni bo'sh qoldiring.</div>
                                     </div>
                                     <div class="mb-3">
+                                        <label class="form-label small">Xodim turi</label>
+                                        <select class="form-select" id="staffRole">
+                                            <option value="Sotuvchi">Sotuvchi (faqat tovar sotadi)</option>
+                                            <option value="Usta">Usta (materialdan ishlatadi)</option>
+                                            <option value="Pechat">Pechat xodimi (pechat chiqaradi)</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
                                         <label class="form-label small" data-i18n="staff_salary">Oyligi (so'm)</label>
                                         <input type="number" step="0.01" class="form-control" id="staffSalary" placeholder="Masalan: 3500000" required>
                                     </div>
@@ -1488,6 +1499,98 @@
                                         <button type="button" class="btn btn-secondary d-none" id="staffCancelBtn" onclick="resetStaffForm()">Bekor qilish</button>
                                     </div>
                                 </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5.1 SEX / MATERIAL SARFI (Usta va Pechat xodimlari) -->
+            <div id="section-workshop" class="content-section d-none">
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white fw-bold">🛠️ Material sarfini yozish</div>
+                            <div class="card-body">
+                                <div class="alert alert-warning small py-2 d-none" id="wsNoWorkers">
+                                    Sex xodimi yo'q. "Xodimlar Nazorati" bo'limida xodim qo'shayotganda <b>Xodim turi</b> ni <b>Usta</b> yoki <b>Pechat xodimi</b> qilib tanlang.
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small">Xodim (Usta / Pechat)</label>
+                                    <select class="form-select" id="wsEmployee" onchange="wsOnEmployeeChange()"></select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small">Material</label>
+                                    <select class="form-select" id="wsElement" onchange="wsOnElementChange()"></select>
+                                    <div class="form-text" id="wsElementHint"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small">Ishlatilgan miqdor <span id="wsUnitLabel" class="text-muted"></span></label>
+                                    <input type="number" step="any" min="0" class="form-control" id="wsQty" placeholder="Masalan: 2.5">
+                                </div>
+                                <div class="mb-3 d-none" id="wsOutputWrap">
+                                    <label class="form-label small">Chiqarilgan pechat soni (ixtiyoriy)</label>
+                                    <input type="number" step="1" min="0" class="form-control" id="wsOutput" placeholder="Masalan: 50">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small">Izoh (ixtiyoriy)</label>
+                                    <input type="text" maxlength="200" class="form-control" id="wsNote" placeholder="Masalan: buyurtma #12">
+                                </div>
+                                <button type="button" class="btn btn-primary w-100" id="wsSubmitBtn" onclick="wsSubmit()">Sarfni yozish</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                                <span>📦 Ombordagi qoldiq</span>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="wsLoadStock()">↻ Yangilash</button>
+                            </div>
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>Material</th>
+                                            <th class="text-end">Qoldiq</th>
+                                            <th class="text-end">Sexda jami ishlatilgan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="wsStockBody">
+                                        <tr><td colspan="3" class="text-center text-muted py-3">Yuklanmoqda...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white fw-bold d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                                <span>🧾 Sarf tarixi</span>
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <select class="form-select form-select-sm" id="wsFilterEmployee" style="width: auto;" onchange="wsLoadUsages()"></select>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" id="wsShowCancelled" onchange="wsRenderUsages()">
+                                        <label class="form-check-label small" for="wsShowCancelled">Bekor qilinganlar</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>Sana</th>
+                                            <th>Xodim</th>
+                                            <th>Material</th>
+                                            <th class="text-end">Miqdor</th>
+                                            <th class="text-end">Pechat soni</th>
+                                            <th>Izoh</th>
+                                            <th class="text-center">Amal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="wsUsageBody">
+                                        <tr><td colspan="7" class="text-center text-muted py-3">Yuklanmoqda...</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -1956,6 +2059,7 @@
             if (sectionId === 'sales') fetchSales();
             if (sectionId === 'debtors') fetchDebtors();
             if (sectionId === 'telegram') loadTelegramSettings();
+            if (sectionId === 'workshop') loadWorkshop();
         }
 
         // ===== TELEGRAM BOT SOZLAMALARI =====
@@ -2543,7 +2647,8 @@
                             phone: e.phone || "",
                             login: e.username || "",
                             salary: e.salary || 0,
-                            paid: e.paid || 0
+                            paid: e.paid || 0,
+                            role: e.role || ""
                         };
                     });
                 } else {
@@ -3163,7 +3268,8 @@
                 username: login,
                 phone: phone,
                 salary: salary,
-                isActive: true
+                isActive: true,
+                role: document.getElementById("staffRole").value
             };
             if (password) payload.passwordHash = password;
 
@@ -3232,7 +3338,7 @@
                 tbody.innerHTML += `
                                                                                         <tr>
                                                                                             <td><strong>${idx + 1}</strong></td>
-                                                                                            <td>${staff.firstname}</td>
+                                                                                            <td>${staff.firstname}${wsRoleBadge(staff.role)}</td>
                                                                                             <td>${staff.lastname}</td>
                                                                                             <td>${staff.phone}</td>
                                                                                             <td>${staff.login}</td>
@@ -3511,6 +3617,7 @@
             document.getElementById("staffPassword").value = "";
             document.getElementById("staffPasswordHint").style.display = "block";
             document.getElementById("staffSalary").value = staff.salary;
+            document.getElementById("staffRole").value = wsRoleOf(staff.role);
             document.getElementById("editingStaffIndex").value = staff.id;
             document.getElementById("staffSubmitBtn").textContent = currentLang === 'uz' ? "Saqlash" : "Сохранить";
             document.getElementById("staffCancelBtn").classList.remove("d-none");
@@ -3526,9 +3633,254 @@
             document.getElementById("staffPassword").value = "";
             document.getElementById("staffPasswordHint").style.display = "none";
             document.getElementById("staffSalary").value = "";
+            document.getElementById("staffRole").value = "Sotuvchi";
             document.getElementById("staffSubmitBtn").textContent = translations[currentLang].btn_create_staff || "Xodim yaratish";
             document.getElementById("staffCancelBtn").classList.add("d-none");
             document.getElementById("staffFormTitle").textContent = translations[currentLang].staff_form_title || "Yangi Xodim Qo'shish";
+        }
+
+        // ===== SEX / SARF (Usta va Pechat xodimlari material sarfi) =====
+        let wsStock = [];
+        let wsUsages = [];
+        let wsBusy = false;
+
+        function wsEsc(text) {
+            const div = document.createElement("div");
+            div.textContent = text ?? "";
+            return div.innerHTML;
+        }
+
+        function wsRoleOf(role) {
+            const r = (role || "").toLowerCase();
+            if (r.includes("usta")) return "Usta";
+            if (r.includes("pechat") || r.includes("print")) return "Pechat";
+            return "Sotuvchi";
+        }
+
+        function wsRoleBadge(role) {
+            const r = wsRoleOf(role);
+            if (r === "Sotuvchi") return "";
+            const cls = r === "Usta" ? "bg-warning text-dark" : "bg-info text-dark";
+            return ` <span class="badge ${cls}" style="font-size:10px;">${r}</span>`;
+        }
+
+        function wsNum(n) {
+            return Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 3 });
+        }
+
+        function wsShopId() {
+            return localStorage.getItem("currentShopId") || "18";
+        }
+
+        function wsWorkers() {
+            return staffList.filter(s => wsRoleOf(s.role) !== "Sotuvchi");
+        }
+
+        async function loadWorkshop() {
+            await fetchEmployees();
+            wsFillEmployees();
+            await wsLoadStock();
+            await wsLoadUsages();
+        }
+
+        function wsFillEmployees() {
+            const workers = wsWorkers();
+            const sel = document.getElementById("wsEmployee");
+            const fsel = document.getElementById("wsFilterEmployee");
+            const prev = sel.value;
+            const prevF = fsel.value;
+            const noWorkers = document.getElementById("wsNoWorkers");
+
+            if (workers.length === 0) {
+                sel.innerHTML = `<option value="">Sex xodimi yo'q</option>`;
+                noWorkers.classList.remove("d-none");
+            } else {
+                noWorkers.classList.add("d-none");
+                sel.innerHTML = workers.map(w =>
+                    `<option value="${w.id}">${wsEsc(w.firstname + " " + w.lastname)} (${wsRoleOf(w.role)})</option>`).join("");
+                if (prev && workers.some(w => String(w.id) === prev)) sel.value = prev;
+            }
+
+            fsel.innerHTML = `<option value="">Hamma xodimlar</option>` + workers.map(w =>
+                `<option value="${w.id}">${wsEsc(w.firstname + " " + w.lastname)}</option>`).join("");
+            if (prevF && workers.some(w => String(w.id) === prevF)) fsel.value = prevF;
+
+            wsOnEmployeeChange();
+        }
+
+        function wsOnEmployeeChange() {
+            const id = document.getElementById("wsEmployee").value;
+            const w = staffList.find(s => String(s.id) === id);
+            const isPrint = !!w && wsRoleOf(w.role) === "Pechat";
+            document.getElementById("wsOutputWrap").classList.toggle("d-none", !isPrint);
+        }
+
+        function wsOnElementChange() {
+            const id = parseInt(document.getElementById("wsElement").value);
+            const item = wsStock.find(s => s.elementId === id);
+            document.getElementById("wsUnitLabel").textContent = item ? `(${item.unit})` : "";
+            document.getElementById("wsElementHint").textContent = item
+                ? `Omborda qoldiq: ${wsNum(item.stock)} ${item.unit}` : "";
+        }
+
+        async function wsLoadStock() {
+            try {
+                const res = await fetch(`/api/shop-cabinet/${wsShopId()}/materials/stock`);
+                wsStock = res.ok ? await res.json() : [];
+            } catch (err) {
+                console.error("Ombor qoldig'ini olishda xatolik:", err);
+                wsStock = [];
+            }
+
+            const sel = document.getElementById("wsElement");
+            const prev = sel.value;
+            sel.innerHTML = wsStock.length === 0
+                ? `<option value="">Materiallar yo'q</option>`
+                : wsStock.map(s =>
+                    `<option value="${s.elementId}">${wsEsc(s.name)} — qoldiq: ${wsNum(s.stock)} ${wsEsc(s.unit)}</option>`).join("");
+            if (prev && wsStock.some(s => String(s.elementId) === prev)) sel.value = prev;
+            wsOnElementChange();
+
+            const tbody = document.getElementById("wsStockBody");
+            if (wsStock.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">Hozircha materiallar yo'q</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = wsStock.map(s => {
+                const out = s.stock <= 0;
+                return `<tr>
+                    <td>${wsEsc(s.name)}</td>
+                    <td class="text-end fw-bold ${out ? "text-danger" : "text-success"}">${wsNum(s.stock)} ${wsEsc(s.unit)}${out ? ' <span class="badge bg-danger">Tugagan</span>' : ""}</td>
+                    <td class="text-end">${wsNum(s.usedTotal)} ${wsEsc(s.unit)}</td>
+                </tr>`;
+            }).join("");
+        }
+
+        async function wsLoadUsages() {
+            const empId = document.getElementById("wsFilterEmployee").value;
+            const qs = empId ? `?employeeId=${empId}` : "";
+            try {
+                const res = await fetch(`/api/shop-cabinet/${wsShopId()}/material-usages${qs}`);
+                wsUsages = res.ok ? await res.json() : [];
+            } catch (err) {
+                console.error("Sarf tarixini olishda xatolik:", err);
+                wsUsages = [];
+            }
+            wsRenderUsages();
+        }
+
+        function wsRenderUsages() {
+            const showCancelled = document.getElementById("wsShowCancelled").checked;
+            const rows = wsUsages.filter(u => showCancelled || !u.isCancelled);
+            const tbody = document.getElementById("wsUsageBody");
+
+            if (rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3">Hozircha sarf yozilmagan</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = rows.map(u => {
+                const cancelInfo = u.isCancelled
+                    ? `<div class="small text-danger">Bekor: ${wsEsc(u.cancelReason || "")} (${wsEsc(u.cancelledBy || "")})</div>` : "";
+                const action = u.isCancelled
+                    ? `<span class="badge bg-secondary">Bekor qilingan</span>`
+                    : `<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="wsCancelUsage(${u.id})">↩ Bekor</button>`;
+                return `<tr class="${u.isCancelled ? "text-muted" : ""}">
+                    <td class="small">${new Date(u.createdAt).toLocaleString()}</td>
+                    <td>${wsEsc(u.employeeName)}${wsRoleBadge(u.employeeRole)}</td>
+                    <td>${wsEsc(u.elementName)}</td>
+                    <td class="text-end fw-bold ${u.isCancelled ? "text-decoration-line-through" : ""}">${wsNum(u.quantity)} ${wsEsc(u.unit)}</td>
+                    <td class="text-end">${u.outputCount ?? "-"}</td>
+                    <td>${wsEsc(u.note || "")}${cancelInfo}</td>
+                    <td class="text-center">${action}</td>
+                </tr>`;
+            }).join("");
+        }
+
+        async function wsSubmit() {
+            if (wsBusy) return;
+
+            const employeeId = parseInt(document.getElementById("wsEmployee").value);
+            const elementId = parseInt(document.getElementById("wsElement").value);
+            const qty = parseFloat(document.getElementById("wsQty").value);
+            const note = document.getElementById("wsNote").value.trim();
+            const outRaw = document.getElementById("wsOutput").value;
+
+            if (!employeeId) { showToast("Xodimni tanlang!", false); return; }
+            if (!elementId) { showToast("Materialni tanlang!", false); return; }
+            if (isNaN(qty) || qty <= 0) { showToast("Miqdorni to'g'ri kiriting!", false); return; }
+
+            const item = wsStock.find(s => s.elementId === elementId);
+            if (item && qty > item.stock) {
+                showToast(`Omborda faqat ${wsNum(item.stock)} ${item.unit} bor!`, false);
+                return;
+            }
+
+            const payload = {
+                employeeId: employeeId,
+                elementId: elementId,
+                quantity: qty,
+                note: note || null,
+                outputCount: outRaw !== "" ? parseInt(outRaw) : null
+            };
+
+            const btn = document.getElementById("wsSubmitBtn");
+            wsBusy = true;
+            btn.disabled = true;
+            try {
+                const res = await fetch(`/api/shop-cabinet/${wsShopId()}/material-usages`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                let data = {};
+                try { data = await res.json(); } catch (e) { }
+
+                if (res.ok && data.success) {
+                    showToast(`Sarf yozildi. Qoldiq: ${wsNum(data.remaining)} ${data.unit}`, true);
+                    document.getElementById("wsQty").value = "";
+                    document.getElementById("wsNote").value = "";
+                    document.getElementById("wsOutput").value = "";
+                    await wsLoadStock();
+                    await wsLoadUsages();
+                } else {
+                    showToast(data.message || "Sarfni saqlashda xatolik yuz berdi!", false);
+                }
+            } catch (err) {
+                console.error("Sarfni saqlashda xatolik:", err);
+                showToast("Server bilan bog'lanishda xatolik yuz berdi!", false);
+            } finally {
+                wsBusy = false;
+                btn.disabled = false;
+            }
+        }
+
+        async function wsCancelUsage(id) {
+            const reason = prompt("Bekor qilish sababini yozing (masalan: xato kiritilgan):");
+            if (reason === null) return;
+            if (reason.trim().length < 3) {
+                showToast("Sababni yozish shart!", false);
+                return;
+            }
+            try {
+                const res = await fetch(`/api/shop-cabinet/${wsShopId()}/material-usages/${id}/cancel`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reason: reason.trim() })
+                });
+                let data = {};
+                try { data = await res.json(); } catch (e) { }
+                if (res.ok && data.success) {
+                    showToast(data.message || "Bekor qilindi.", true);
+                    await wsLoadStock();
+                    await wsLoadUsages();
+                } else {
+                    showToast(data.message || "Bekor qilishda xatolik!", false);
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Server bilan bog'lanishda xatolik yuz berdi!", false);
+            }
         }
 
         // --- QARZDORLAR ---

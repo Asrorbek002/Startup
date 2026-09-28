@@ -99,6 +99,9 @@ END $$;
             app.Logger.LogError(ex, "Postgres sxemasini tuzatishda xatolik.");
         }
     }
+
+    // Sex xodimlari material sarfi jadvali (yo'q bo'lsa yaratadi, bor bo'lsa tegmaydi)
+    SchemaBootstrap.EnsureMaterialUsages(context, app.Logger);
 }
 
 // --- 1. SHU YERGA USEDEFAULTFILES() QO'SHING ---
