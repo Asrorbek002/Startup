@@ -3041,6 +3041,7 @@
                                 salary: e.salary || 0,
                                 paid: e.paid || 0,
                                 role: e.role || "",
+                                password: e.password || e.plainPassword || "",   // server qaytarsagina ko'rinadi
                                 allowedElementIds: staffParseIds(e.allowedElementIds)
                             };
                         });
@@ -3722,7 +3723,9 @@
                                 <td>${wsEsc(staff.phone) || "—"}</td>
                                 <td>${wsRoleBadge(staff.role)}</td>
                                 <td>
-                                    <span class="text-muted" style="letter-spacing:2px;">••••••</span>
+                                    ${staff.password
+                        ? `<code class="fs-6 text-dark">${wsEsc(staff.password)}</code>`
+                        : `<span class="text-muted" style="letter-spacing:2px;" title="Server parolni qaytarmayapti">••••••</span>`}
                                     <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 ms-1" title="Parolni o'zgartirish"
                                             onclick="requestStaffAction('edit', ${idx}, { focusPass: true })">🔑</button>
                                 </td>
