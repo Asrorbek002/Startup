@@ -1484,11 +1484,22 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label small">Xodim turi</label>
-                                        <select class="form-select" id="staffRole">
+                                        <select class="form-select" id="staffRole" onchange="staffOnRoleChange()">
                                             <option value="Sotuvchi">Sotuvchi (faqat tovar sotadi)</option>
                                             <option value="Usta">Usta (materialdan ishlatadi)</option>
                                             <option value="Pechat">Pechat xodimi (pechat chiqaradi)</option>
                                         </select>
+                                    </div>
+                                    <div class="mb-3" id="staffElementsWrap" style="display:none;">
+                                        <label class="form-label small">Xodim ko'radigan elementlar</label>
+                                        <div class="border rounded p-2" style="max-height:220px; overflow:auto;">
+                                            <div class="form-check border-bottom pb-1 mb-1">
+                                                <input class="form-check-input" type="checkbox" id="staffElAll" checked onchange="staffElToggleAll(this.checked)">
+                                                <label class="form-check-label fw-bold" for="staffElAll">Hammasi</label>
+                                            </div>
+                                            <div id="staffElementsList"></div>
+                                        </div>
+                                        <div class="form-text" id="staffElementsHint"></div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label small" data-i18n="staff_salary">Oyligi (so'm)</label>
@@ -2060,6 +2071,7 @@
             if (sectionId === 'debtors') fetchDebtors();
             if (sectionId === 'telegram') loadTelegramSettings();
             if (sectionId === 'workshop') loadWorkshop();
+            if (sectionId === 'staff' && !document.getElementById("editingStaffIndex").value) renderStaffElementPicker(null);
         }
 
         // ===== TELEGRAM BOT SOZLAMALARI =====
@@ -2648,7 +2660,8 @@
                             login: e.username || "",
                             salary: e.salary || 0,
                             paid: e.paid || 0,
-                            role: e.role || ""
+                            role: e.role || "",
+                            allowedElementIds: staffParseIds(e.allowedElementIds)
                         };
                     });
                 } else {
@@ -3262,6 +3275,12 @@
                 return;
             }
 
+            const allowedIds = staffElGetSelected();
+            if (Array.isArray(allowedIds) && allowedIds.length === 0) {
+                showToast("Kamida bitta element tanlang!", false);
+                return;
+            }
+
             const payload = {
                 id: editingId === "" ? 0 : parseInt(editingId),
                 fullName: `${firstname} ${lastname}`.trim(),
@@ -3269,7 +3288,8 @@
                 phone: phone,
                 salary: salary,
                 isActive: true,
-                role: document.getElementById("staffRole").value
+                role: document.getElementById("staffRole").value,
+                allowedElementIds: allowedIds ? allowedIds.join(",") : null   // null = hamma element
             };
             if (password) payload.passwordHash = password;
 
@@ -3618,6 +3638,7 @@
             document.getElementById("staffPasswordHint").style.display = "block";
             document.getElementById("staffSalary").value = staff.salary;
             document.getElementById("staffRole").value = wsRoleOf(staff.role);
+            renderStaffElementPicker(staff.allowedElementIds);
             document.getElementById("editingStaffIndex").value = staff.id;
             document.getElementById("staffSubmitBtn").textContent = currentLang === 'uz' ? "Saqlash" : "Сохранить";
             document.getElementById("staffCancelBtn").classList.remove("d-none");
@@ -3634,9 +3655,70 @@
             document.getElementById("staffPasswordHint").style.display = "none";
             document.getElementById("staffSalary").value = "";
             document.getElementById("staffRole").value = "Sotuvchi";
+            renderStaffElementPicker(null);
             document.getElementById("staffSubmitBtn").textContent = translations[currentLang].btn_create_staff || "Xodim yaratish";
             document.getElementById("staffCancelBtn").classList.add("d-none");
             document.getElementById("staffFormTitle").textContent = translations[currentLang].staff_form_title || "Yangi Xodim Qo'shish";
+        }
+
+        // ===== XODIM KO'RADIGAN ELEMENTLAR (forma) =====
+        function staffParseIds(v) {
+            if (v === null || v === undefined || v === "") return null;
+            const arr = Array.isArray(v) ? v : String(v).split(",");
+            const ids = arr.map(x => parseInt(x)).filter(x => !isNaN(x));
+            return ids.length ? ids : null;   // bo'sh = hamma element
+        }
+
+        function staffElCandidates(role) {
+            // Pechat xodimiga faqat metrdagi elementlar tanlash uchun chiqadi
+            return wsRoleOf(role) === "Pechat" ? elementsList.filter(e => wsIsMeter(e.unit)) : elementsList;
+        }
+
+        function renderStaffElementPicker(selectedIds) {
+            const wrap = document.getElementById("staffElementsWrap");
+            const box = document.getElementById("staffElementsList");
+            if (!wrap || !box) return;
+
+            const role = document.getElementById("staffRole").value;
+            if (wsRoleOf(role) === "Sotuvchi") { wrap.style.display = "none"; return; }
+            wrap.style.display = "block";
+
+            const list = staffElCandidates(role);
+            const all = !selectedIds || selectedIds.length === 0;
+            box.innerHTML = list.length === 0
+                ? `<div class="text-muted small py-1">Mos element yo'q</div>`
+                : list.map(e => `
+                        <div class="form-check">
+                            <input class="form-check-input staff-el-cb" type="checkbox" value="${e.id}" id="staffEl_${e.id}"
+                                   ${all || selectedIds.includes(e.id) ? "checked" : ""} onchange="staffElSyncAll()">
+                            <label class="form-check-label" for="staffEl_${e.id}">${wsEsc(e.name)} <span class="text-muted small">(${wsEsc(e.unit)})</span></label>
+                        </div>`).join("");
+            document.getElementById("staffElementsHint").textContent =
+                wsRoleOf(role) === "Pechat" ? "Pechat xodimi uchun faqat metrdagi elementlar ko'rsatilgan." : "";
+            staffElSyncAll();
+        }
+
+        function staffElToggleAll(checked) {
+            document.querySelectorAll(".staff-el-cb").forEach(cb => cb.checked = checked);
+        }
+
+        function staffElSyncAll() {
+            const cbs = [...document.querySelectorAll(".staff-el-cb")];
+            const allCb = document.getElementById("staffElAll");
+            if (allCb) allCb.checked = cbs.length > 0 && cbs.every(cb => cb.checked);
+        }
+
+        // null = cheklov yo'q (hamma element), massiv = faqat shu elementlar
+        function staffElGetSelected() {
+            const role = document.getElementById("staffRole").value;
+            if (wsRoleOf(role) === "Sotuvchi") return null;
+            const cbs = [...document.querySelectorAll(".staff-el-cb")];
+            if (cbs.length === 0 || cbs.every(cb => cb.checked)) return null;
+            return cbs.filter(cb => cb.checked).map(cb => parseInt(cb.value));
+        }
+
+        function staffOnRoleChange() {
+            renderStaffElementPicker(staffElGetSelected());
         }
 
         // ===== SEX / SARF (Usta va Pechat xodimlari material sarfi) =====
@@ -3709,11 +3791,52 @@
             wsOnEmployeeChange();
         }
 
-        function wsOnEmployeeChange() {
+        // "Metr (m)" true; "Santimetr (sm)" va "Kvadrat metr (m²)" false
+        function wsIsMeter(unit) {
+            return (unit || "").trim().toLowerCase().startsWith("metr");
+        }
+
+        function wsSelectedEmployee() {
             const id = document.getElementById("wsEmployee").value;
-            const w = staffList.find(s => String(s.id) === id);
-            const isPrint = !!w && wsRoleOf(w.role) === "Pechat";
-            document.getElementById("wsOutputWrap").classList.toggle("d-none", !isPrint);
+            return staffList.find(s => String(s.id) === id);
+        }
+
+        function wsSelectedIsPrint() {
+            const w = wsSelectedEmployee();
+            return !!w && wsRoleOf(w.role) === "Pechat";
+        }
+
+        // Tanlangan xodimga ruxsat etilgan materiallar
+        function wsAllowedStock() {
+            const w = wsSelectedEmployee();
+            let list = wsStock;
+            if (w && wsRoleOf(w.role) === "Pechat") list = list.filter(s => wsIsMeter(s.unit));
+            if (w && Array.isArray(w.allowedElementIds) && w.allowedElementIds.length)
+                list = list.filter(s => w.allowedElementIds.includes(s.elementId));
+            return list;
+        }
+
+        // Pechat xodimi tanlansa faqat metrdagi materiallar chiqadi
+        function wsFillElements() {
+            const sel = document.getElementById("wsElement");
+            const prev = sel.value;
+            const list = wsAllowedStock();
+
+            if (list.length === 0) {
+                sel.innerHTML = wsStock.length === 0
+                    ? `<option value="">Materiallar yo'q</option>`
+                    : `<option value="">Bu xodimga ruxsat etilgan material yo'q</option>`;
+            } else {
+                sel.innerHTML = list.map(s =>
+                    `<option value="${s.elementId}">${wsEsc(s.name)} — qoldiq: ${wsNum(s.stock)} ${wsEsc(s.unit)}</option>`).join("");
+                if (prev && list.some(s => String(s.elementId) === prev)) sel.value = prev;
+            }
+            wsOnElementChange();
+        }
+
+        function wsOnEmployeeChange() {
+            document.getElementById("wsOutputWrap").classList.toggle("d-none", !wsSelectedIsPrint());
+            wsFillElements();
         }
 
         function wsOnElementChange() {
@@ -3733,14 +3856,7 @@
                 wsStock = [];
             }
 
-            const sel = document.getElementById("wsElement");
-            const prev = sel.value;
-            sel.innerHTML = wsStock.length === 0
-                ? `<option value="">Materiallar yo'q</option>`
-                : wsStock.map(s =>
-                    `<option value="${s.elementId}">${wsEsc(s.name)} — qoldiq: ${wsNum(s.stock)} ${wsEsc(s.unit)}</option>`).join("");
-            if (prev && wsStock.some(s => String(s.elementId) === prev)) sel.value = prev;
-            wsOnElementChange();
+            wsFillElements();
 
             const tbody = document.getElementById("wsStockBody");
             if (wsStock.length === 0) {
@@ -3812,6 +3928,10 @@
             if (isNaN(qty) || qty <= 0) { showToast("Miqdorni to'g'ri kiriting!", false); return; }
 
             const item = wsStock.find(s => s.elementId === elementId);
+            if (item && !wsAllowedStock().some(s => s.elementId === elementId)) {
+                showToast("Bu xodimga bu material ruxsat etilmagan!", false);
+                return;
+            }
             if (item && qty > item.stock) {
                 showToast(`Omborda faqat ${wsNum(item.stock)} ${item.unit} bor!`, false);
                 return;

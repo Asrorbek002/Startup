@@ -13,6 +13,7 @@ public class Employee
     public string Position { get; set; } = string.Empty; // Lavozim
     public int PinCode { get; set; }                     // Tezkor kirish uchun Pin kod
     public bool IsActive { get; set; } = true;
+    public string? AllowedElementIds { get; set; }       // Xodim ko'ra oladigan element ID lari: "3,5,8". null/bo'sh = hammasi
     public decimal Salary { get; set; }// Ishda yoki ishdan bo'shatilganligi
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

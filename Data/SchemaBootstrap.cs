@@ -67,5 +67,37 @@ CREATE TABLE IF NOT EXISTS ""MaterialUsages"" (
         {
             logger.LogError(ex, "MaterialUsages jadvalini yaratishda xatolik.");
         }
+
+        EnsureEmployeeAllowedElements(context, logger);
+    }
+
+    // "Employees" jadvaliga "AllowedElementIds" ustunini qo'shadi (xodim ko'ra oladigan elementlar, masalan "3,5,8").
+    // Ustun allaqachon bo'lsa hech narsa qilmaydi, mavjud ma'lumotga tegmaydi.
+    public static void EnsureEmployeeAllowedElements(AppDbContext context, ILogger logger)
+    {
+        try
+        {
+            if (context.Database.IsNpgsql())
+            {
+                context.Database.ExecuteSqlRaw(@"ALTER TABLE ""Employees"" ADD COLUMN IF NOT EXISTS ""AllowedElementIds"" TEXT NULL;");
+            }
+            else
+            {
+                try
+                {
+                    context.Database.ExecuteSqlRaw(@"ALTER TABLE ""Employees"" ADD COLUMN ""AllowedElementIds"" TEXT NULL;");
+                }
+                catch (Exception ex) when (ex.Message.Contains("duplicate column", StringComparison.OrdinalIgnoreCase))
+                {
+                    // SQLite: ustun oldindan mavjud, muammo yo'q
+                }
+            }
+
+            logger.LogInformation("Employees.AllowedElementIds ustuni tekshirildi.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Employees.AllowedElementIds ustunini qo'shishda xatolik.");
+        }
     }
 }

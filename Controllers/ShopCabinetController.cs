@@ -167,6 +167,8 @@ public class ShopCabinetController : ControllerBase
                 existing.PinCode = employee.PinCode;
                 existing.IsActive = employee.IsActive;
                 existing.Salary = employee.Salary;
+                existing.AllowedElementIds = string.IsNullOrWhiteSpace(employee.AllowedElementIds)
+                    ? null : employee.AllowedElementIds.Trim();
 
                 if (!string.IsNullOrEmpty(employee.PasswordHash))
                 {
@@ -185,6 +187,8 @@ public class ShopCabinetController : ControllerBase
 
                 employee.ShopId = shopId;
                 employee.CreatedAt = DateTime.UtcNow;
+                employee.AllowedElementIds = string.IsNullOrWhiteSpace(employee.AllowedElementIds)
+                    ? null : employee.AllowedElementIds.Trim();
 
                 if (!string.IsNullOrEmpty(employee.PasswordHash))
                 {
@@ -224,6 +228,7 @@ public class ShopCabinetController : ControllerBase
                 e.PinCode,
                 e.IsActive,
                 e.Salary,
+                e.AllowedElementIds,
                 e.CreatedAt,
                 Paid = _context.Payments
                     .Where(p => p.EmployeeId == e.Id)
