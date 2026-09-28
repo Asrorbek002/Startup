@@ -35,6 +35,30 @@ public class MaterialUsageController : ControllerBase
         return "Sotuvchi";
     }
 
+    // "Metr (m)" true; "Santimetr (sm)" va "Kvadrat metr (m²)" false
+    private static bool IsMeter(string? unit)
+        => (unit ?? string.Empty).Trim().StartsWith("metr", StringComparison.OrdinalIgnoreCase);
+
+    // Employee.AllowedElementIds ("3,5,8") ni to'plamga aylantiradi. null = cheklov yo'q (hamma element)
+    private static HashSet<int>? ParseAllowedIds(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var ids = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(x => int.TryParse(x, out var n) ? n : (int?)null)
+            .Where(n => n.HasValue)
+            .Select(n => n!.Value)
+            .ToHashSet();
+        return ids.Count == 0 ? null : ids;
+    }
+
+    // Xodim shu materialdan foydalana oladimi? (Pechat: faqat metr; + boshliq belgilagan elementlar)
+    private static bool IsElementAllowed(Employee employee, string role, int elementId, string? unit)
+    {
+        if (role == "Pechat" && !IsMeter(unit)) return false;
+        var allowed = ParseAllowedIds(employee.AllowedElementIds);
+        return allowed == null || allowed.Contains(elementId);
+    }
+
     private async Task<IActionResult?> CheckShopAsync(int shopId)
     {
         var shop = await _context.Shops.FindAsync(shopId);
@@ -86,7 +110,9 @@ public class MaterialUsageController : ControllerBase
 
     // Ombordagi barcha material/tovarlar: joriy qoldiq va sex xodimlari jami ishlatgan miqdor
     [HttpGet("{shopId}/materials/stock")]
-    public async Task<IActionResult> GetMaterialStock(int shopId)
+    // employeeId berilsa (xodim kabineti) — faqat shu xodimga ruxsat etilgan materiallar qaytadi.
+    // berilmasa (boshliq kabineti) — hammasi.
+    public async Task<IActionResult> GetMaterialStock(int shopId, [FromQuery] int? employeeId)
     {
         var err = await CheckShopAsync(shopId);
         if (err != null) return err;
@@ -96,6 +122,19 @@ public class MaterialUsageController : ControllerBase
             .OrderBy(e => e.Name)
             .Select(e => new { e.Id, e.Name, e.Unit, e.Length })
             .ToListAsync();
+
+        if (employeeId.HasValue)
+        {
+            var emp = await _context.Employees
+                .FirstOrDefaultAsync(e => e.Id == employeeId.Value && e.ShopId == shopId);
+            if (emp == null)
+                return NotFound(new { success = false, message = "Xodim topilmadi!" });
+
+            var empRole = NormalizeRole(emp.Role);
+            elements = elements
+                .Where(e => IsElementAllowed(emp, empRole, e.Id, e.Unit))
+                .ToList();
+        }
 
         // decimal yig'indisini SQLite ham, Postgres ham bir xil hisoblashi uchun xotirada hisoblaymiz
         var usedRows = await _context.MaterialUsages
@@ -191,6 +230,9 @@ public class MaterialUsageController : ControllerBase
                 .FirstOrDefaultAsync(e => e.Id == request.ElementId && e.ShopId == shopId);
             if (element == null)
                 return NotFound(new { success = false, message = "Material topilmadi!" });
+
+            if (!IsElementAllowed(employee, role, element.Id, element.Unit))
+                return BadRequest(new { success = false, message = "Bu material sizga ruxsat etilmagan!" });
 
             if (quantity > element.Length)
             {
