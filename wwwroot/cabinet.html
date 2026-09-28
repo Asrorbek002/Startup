@@ -2134,6 +2134,27 @@
         </div>
 
         <!-- Tahrirlash / O'chirish uchun Admin Parolini Tasdiqlash Modal Oynasi -->
+        <!-- Sarfni bekor qilish sababi oynasi -->
+        <div class="modal fade" id="cancelUsageModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <form class="modal-content" onsubmit="wsConfirmCancelUsage(event)">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">↩ Sarfni bekor qilish</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label small" for="cancelUsageReason">Bekor qilish sababini yozing</label>
+                        <textarea id="cancelUsageReason" class="form-control" rows="3" maxlength="200" placeholder="Masalan: xato kiritilgan"></textarea>
+                        <div class="form-text text-danger d-none" id="cancelUsageError">Sababni yozing (kamida 3 ta belgi).</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
+                        <button type="submit" class="btn btn-danger" id="cancelUsageSubmit">Bekor qilish</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Xodim yaratish / tahrirlash oynasi -->
         <div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -4399,22 +4420,44 @@
                 }
             }
 
-            async function wsCancelUsage(id) {
-                const reason = prompt("Bekor qilish sababini yozing (masalan: xato kiritilgan):");
-                if (reason === null) return;
-                if (reason.trim().length < 3) {
-                    showToast("Sababni yozish shart!", false);
+            let pendingCancelUsageId = null;
+
+            function wsCancelUsage(id) {
+                pendingCancelUsageId = id;
+                document.getElementById("cancelUsageReason").value = "";
+                document.getElementById("cancelUsageError").classList.add("d-none");
+                const el = document.getElementById("cancelUsageModal");
+                el.addEventListener("shown.bs.modal", () => document.getElementById("cancelUsageReason").focus(), { once: true });
+                (bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el)).show();
+            }
+
+            async function wsConfirmCancelUsage(e) {
+                e.preventDefault();
+                if (pendingCancelUsageId == null) return;
+
+                const reason = document.getElementById("cancelUsageReason").value.trim();
+                const errEl = document.getElementById("cancelUsageError");
+                if (reason.length < 3) {
+                    errEl.classList.remove("d-none");
                     return;
                 }
+                errEl.classList.add("d-none");
+
+                const btn = document.getElementById("cancelUsageSubmit");
+                btn.disabled = true;
                 try {
-                    const res = await fetch(`/api/shop-cabinet/${wsShopId()}/material-usages/${id}/cancel`, {
+                    const res = await fetch(`/api/shop-cabinet/${wsShopId()}/material-usages/${pendingCancelUsageId}/cancel`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ reason: reason.trim() })
+                        body: JSON.stringify({ reason })
                     });
                     let data = {};
-                    try { data = await res.json(); } catch (e) { }
+                    try { data = await res.json(); } catch (err) { }
                     if (res.ok && data.success) {
+                        const el = document.getElementById("cancelUsageModal");
+                        const inst = bootstrap.Modal.getInstance(el);
+                        if (inst) inst.hide();
+                        pendingCancelUsageId = null;
                         showToast(data.message || "Bekor qilindi.", true);
                         await wsLoadStock();
                         await wsLoadUsages();
@@ -4424,6 +4467,8 @@
                 } catch (err) {
                     console.error(err);
                     showToast("Server bilan bog'lanishda xatolik yuz berdi!", false);
+                } finally {
+                    btn.disabled = false;
                 }
             }
 

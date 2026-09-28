@@ -1975,6 +1975,20 @@
 
     </div>
 
+    <!-- ---------- sarfni bekor qilish sababi ---------- -->
+    <div class="modal-overlay" id="wkCancelOverlay">
+        <div class="modal-box">
+            <h3>↩ Sarfni bekor qilish</h3>
+            <label class="field-label" for="wkCancelReason">Bekor qilish sababini yozing</label>
+            <textarea id="wkCancelReason" rows="3" maxlength="200" placeholder="Masalan: xato kiritilgan"></textarea>
+            <div class="modal-err" id="wkCancelError"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="wkCloseCancel()">Yopish</button>
+                <button class="btn-primary" id="wkCancelConfirmBtn" onclick="wkConfirmCancel()">Bekor qilish</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ---------- password confirmation modal ---------- -->
     <div class="modal-overlay" id="pwModalOverlay">
         <div class="modal-box">
@@ -2428,189 +2442,58 @@
             }
         }
 
-        async function wkCancel(id) {
-            const reason = prompt("Bekor qilish sababini yozing (masalan: xato kiritilgan):");
-            if (reason === null) return;
-            if (reason.trim().length < 3) {
-                wkMsg("err", "Sababni yozish shart!");
+        let wkPendingCancelId = null;
+
+        function wkCancel(id) {
+            wkPendingCancelId = id;
+            document.getElementById("wkCancelReason").value = "";
+            document.getElementById("wkCancelError").textContent = "";
+            document.getElementById("wkCancelOverlay").classList.add("show");
+            document.getElementById("wkCancelReason").focus();
+        }
+
+        function wkCloseCancel() {
+            document.getElementById("wkCancelOverlay").classList.remove("show");
+            wkPendingCancelId = null;
+        }
+
+        async function wkConfirmCancel() {
+            if (wkPendingCancelId == null) return;
+            const reason = document.getElementById("wkCancelReason").value.trim();
+            const errEl = document.getElementById("wkCancelError");
+            if (reason.length < 3) {
+                errEl.textContent = "Sababni yozing (kamida 3 ta belgi).";
                 return;
             }
+            errEl.textContent = "";
+
+            const id = wkPendingCancelId;
             const shopId = localStorage.getItem("currentShopId");
             const employeeId = parseInt(localStorage.getItem("currentEmployeeId"));
+            const btn = document.getElementById("wkCancelConfirmBtn");
+            btn.disabled = true;
             try {
                 const res = await fetch(`/api/shop-cabinet/${shopId}/material-usages/${id}/cancel`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ reason: reason.trim(), employeeId: employeeId })
+                    body: JSON.stringify({ reason: reason, employeeId: employeeId })
                 });
                 let data = {};
                 try { data = await res.json(); } catch (e) { }
                 if (res.ok && data.success) {
+                    wkCloseCancel();
                     wkMsg("ok", data.message || "Bekor qilindi.");
                     await wkLoadUsages();
                     await wkLoadStock();
                 } else {
-                    wkMsg("err", data.message || "Bekor qilishda xatolik!");
+                    errEl.textContent = data.message || "Bekor qilishda xatolik!";
                 }
             } catch (err) {
                 console.error(err);
-                wkMsg("err", "Server bilan bog'lanishda xatolik yuz berdi!");
+                errEl.textContent = "Server bilan bog'lanishda xatolik yuz berdi!";
+            } finally {
+                btn.disabled = false;
             }
-        }
-
-        /* ---------------- Hisobot: xodimning o'z sarflari (Usta / Pechat) ---------------- */
-        let rpRange = "month";
-        const RP_MONTHS = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"];
-
-        function rpPad(n) { return String(n).padStart(2, "0"); }
-        function rpDate(d) { return `${rpPad(d.getDate())}.${rpPad(d.getMonth() + 1)}.${d.getFullYear()}`; }
-        function rpDateTime(d) { return `${rpDate(d)} ${rpPad(d.getHours())}:${rpPad(d.getMinutes())}`; }
-        function rpAddDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
-        function rpParseInput(v) {
-            if (!v) return null;
-            const [y, m, d] = v.split("-").map(Number);
-            return new Date(y, m - 1, d);
-        }
-
-        function rpGetRange() {
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            if (rpRange === "today") return { from: today, to: rpAddDays(today, 1), label: `Bugun, ${rpDate(today)}` };
-            if (rpRange === "week") return { from: rpAddDays(today, -6), to: rpAddDays(today, 1), label: `${rpDate(rpAddDays(today, -6))} — ${rpDate(today)}` };
-            if (rpRange === "month") return {
-                from: new Date(now.getFullYear(), now.getMonth(), 1),
-                to: new Date(now.getFullYear(), now.getMonth() + 1, 1),
-                label: `${RP_MONTHS[now.getMonth()]} ${now.getFullYear()}`
-            };
-            if (rpRange === "custom") {
-                const f = rpParseInput(document.getElementById("rpFrom").value);
-                const t = rpParseInput(document.getElementById("rpTo").value);
-                return {
-                    from: f,
-                    to: t ? rpAddDays(t, 1) : null,
-                    label: (f ? rpDate(f) : "boshidan") + " — " + (t ? rpDate(t) : "hozirgacha")
-                };
-            }
-            return { from: null, to: null, label: "Barcha vaqt" };
-        }
-
-        function rpSetRange(range) {
-            rpRange = range;
-            document.querySelectorAll(".rp-chip").forEach(b => b.classList.toggle("active", b.dataset.range === range));
-            document.getElementById("rpCustom").style.display = range === "custom" ? "flex" : "none";
-            rpRender();
-        }
-
-        async function rpRefresh() {
-            await wkLoadUsages();
-            rpRender();
-        }
-
-        // Tanlangan davrdagi (bekor qilinmagan) sarflar — eskisidan yangisiga
-        function rpFiltered() {
-            const range = rpGetRange();
-            const list = wkUsages
-                .filter(u => !u.isCancelled)
-                .filter(u => {
-                    const t = new Date(u.createdAt);
-                    return (!range.from || t >= range.from) && (!range.to || t < range.to);
-                })
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            return { list, range };
-        }
-
-        function rpGroups(list) {
-            const map = {};
-            list.forEach(u => {
-                const key = u.elementId + "|" + u.unit;
-                const g = map[key] || (map[key] = { name: u.elementName || "-", unit: u.unit || "", qty: 0, count: 0, out: 0 });
-                g.qty += Number(u.quantity || 0);
-                g.count += 1;
-                g.out += Number(u.outputCount || 0);
-            });
-            return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
-        }
-
-        function rpRender() {
-            const isPrinter = employeeRole === "Pechat";
-            const { list, range } = rpFiltered();
-            const groups = rpGroups(list);
-            const totalOut = groups.reduce((a, g) => a + g.out, 0);
-
-            document.getElementById("rpEmpName").textContent = localStorage.getItem("employeeName") || "-";
-            document.getElementById("rpRoleText").textContent = employeeRole === "Pechat" ? "Pechatchi" : employeeRole;
-            document.getElementById("rpShop").textContent = localStorage.getItem("shopName") || "-";
-            document.getElementById("rpPeriod").textContent = range.label;
-            document.getElementById("rpPrintedAt").textContent = rpDateTime(new Date());
-
-            document.getElementById("rpStats").innerHTML =
-                `<div class="rp-stat"><div class="k">Sarf yozuvlari</div><div class="v">${list.length}</div></div>` +
-                `<div class="rp-stat"><div class="k">Material turlari</div><div class="v">${groups.length}</div></div>` +
-                (isPrinter ? `<div class="rp-stat"><div class="k">Jami pechat soni</div><div class="v">${wkNum(totalOut)}</div></div>` : "");
-
-            const sumCols = isPrinter ? 4 : 3;
-            document.getElementById("rpSumHead").innerHTML =
-                `<tr><th>Material</th><th class="num">Yozuvlar soni</th><th class="num">Jami miqdor</th>${isPrinter ? '<th class="num">Pechat soni</th>' : ""}</tr>`;
-            document.getElementById("rpSumBody").innerHTML = groups.length === 0
-                ? `<tr><td colspan="${sumCols}" class="muted">Bu davrda sarf yozilmagan</td></tr>`
-                : groups.map(g => `<tr>
-                                <td>${wkEsc(g.name)}</td>
-                                <td class="num">${g.count}</td>
-                                <td class="num"><b>${wkNum(g.qty)} ${wkEsc(g.unit)}</b></td>
-                                ${isPrinter ? `<td class="num">${g.out ? wkNum(g.out) : "-"}</td>` : ""}
-                            </tr>`).join("");
-
-            const detCols = isPrinter ? 6 : 5;
-            document.getElementById("rpDetHead").innerHTML =
-                `<tr><th>#</th><th>Sana</th><th>Material</th><th class="num">Miqdor</th>${isPrinter ? '<th class="num">Pechat soni</th>' : ""}<th>Izoh</th></tr>`;
-            document.getElementById("rpDetBody").innerHTML = list.length === 0
-                ? `<tr><td colspan="${detCols}" class="muted">Bu davrda sarf yozilmagan</td></tr>`
-                : list.map((u, i) => `<tr>
-                                <td class="idx-cell">${i + 1}</td>
-                                <td>${rpDateTime(new Date(u.createdAt))}</td>
-                                <td>${wkEsc(u.elementName)}</td>
-                                <td class="num">${wkNum(u.quantity)} ${wkEsc(u.unit)}</td>
-                                ${isPrinter ? `<td class="num">${u.outputCount ?? "-"}</td>` : ""}
-                                <td>${wkEsc(u.note || "")}</td>
-                            </tr>`).join("");
-
-            document.getElementById("rpDetFoot").innerHTML = list.length === 0 ? "" :
-                `<tr><td colspan="${isPrinter ? 4 : 3}">Jami yozuvlar: ${list.length} ta</td>` +
-                (isPrinter ? `<td class="num">${wkNum(totalOut)}</td>` : "") +
-                `<td></td></tr>`;
-        }
-
-        function rpPrint() {
-            rpRender();
-            window.print();
-        }
-
-        function rpExportCsv() {
-            const isPrinter = employeeRole === "Pechat";
-            const { list, range } = rpFiltered();
-            const esc = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-            const num = n => String(Number(n || 0)).replace(".", ",");   // Excel (uz/ru) uchun o'nlik vergul
-
-            const rows = [];
-            rows.push(["Material sarfi hisoboti"].map(esc).join(";"));
-            rows.push(["Xodim", localStorage.getItem("employeeName") || "-"].map(esc).join(";"));
-            rows.push(["Davr", range.label].map(esc).join(";"));
-            rows.push("");
-            rows.push(["#", "Sana", "Material", "Miqdor", "Birlik"].concat(isPrinter ? ["Pechat soni"] : []).concat(["Izoh"]).map(esc).join(";"));
-            list.forEach((u, i) => {
-                rows.push([i + 1, rpDateTime(new Date(u.createdAt)), u.elementName, num(u.quantity), u.unit]
-                    .concat(isPrinter ? [u.outputCount ?? ""] : [])
-                    .concat([u.note || ""]).map(esc).join(";"));
-            });
-
-            const blob = new Blob(["\ufeff" + rows.join("\r\n")], { type: "text/csv;charset=utf-8" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `hisobot_${(localStorage.getItem("employeeName") || "xodim").replace(/\s+/g, "_")}_${rpDate(new Date())}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
         }
 
         /* ---------------- kun / tun rejimi ---------------- */
