@@ -24,4 +24,5 @@ public class AppDbContext : DbContext // <--- ": DbContext" meros olishi shart!
     public DbSet<Supplier> Suppliers => Set<Supplier>(); // <--- Ta'minotchilar
     public DbSet<SupplierPurchase> SupplierPurchases => Set<SupplierPurchase>(); // <--- Ta'minotchidan olingan tovarlar
     public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>(); // <--- Ta'minotchilarga to'lovlar
+    public DbSet<BotDailyLog> BotDailyLogs => Set<BotDailyLog>(); // <--- Botga kunlik xabarlar yuborilganini eslab qoladi
 }
