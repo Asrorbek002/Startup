@@ -957,16 +957,76 @@ public class ShopCabinetController : ControllerBase
     }
 
     // 4. Tovar qabul qilish va bazaga saqlash (POST)
+    // Ixtiyoriy (query orqali): tovar kimdan olingani va qancha pul darrov to'langani.
+    //   ?supplierId=5  yoki  ?supplierName=Ali&supplierPhone=90...  &paidAmount=100000
+    // Tovarning umumiy summasi (miqdor * kelish narxi) dan to'langan summa ayrilib,
+    // qolgani ta'minotchiga bo'lgan qarz sifatida yoziladi.
     [HttpPost("{shopId}/products")]
-    public async Task<IActionResult> CreateProduct(int shopId, [FromBody] Product product)
+    public async Task<IActionResult> CreateProduct(
+        int shopId,
+        [FromBody] Product product,
+        [FromQuery] int? supplierId = null,
+        [FromQuery] string? supplierName = null,
+        [FromQuery] string? supplierPhone = null,
+        [FromQuery] decimal? paidAmount = null)
     {
         var statusError = await CheckShopStatusAsync(shopId);
         if (statusError != null) return statusError;
+
+        var hasSupplier = (supplierId.HasValue && supplierId.Value > 0) || !string.IsNullOrWhiteSpace(supplierName);
 
         try
         {
             product.ShopId = shopId;
             product.CreatedAt = DateTime.UtcNow;
+
+            // Ta'minotchini avval aniqlaymiz (topilmasa xato qaytaramiz — tovar saqlanmaydi)
+            Supplier? supplier = null;
+            decimal purchaseTotal = 0, purchasePaid = 0;
+
+            if (hasSupplier)
+            {
+                if (supplierId.HasValue && supplierId.Value > 0)
+                {
+                    supplier = await _context.Suppliers.FirstOrDefaultAsync(s => s.Id == supplierId.Value && s.ShopId == shopId);
+                    if (supplier == null)
+                        return NotFound(new { success = false, message = "Tanlangan ta'minotchi topilmadi!" });
+                }
+                else
+                {
+                    var sName = supplierName!.Trim();
+                    supplier = await _context.Suppliers
+                        .FirstOrDefaultAsync(s => s.ShopId == shopId && s.Name.ToLower() == sName.ToLower());
+
+                    if (supplier == null)
+                    {
+                        supplier = new Supplier
+                        {
+                            ShopId = shopId,
+                            Name = sName,
+                            Phone = (supplierPhone ?? string.Empty).Trim(),
+                            TotalAmount = 0,
+                            PaidAmount = 0,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _context.Suppliers.Add(supplier);
+                    }
+                    else if (string.IsNullOrWhiteSpace(supplier.Phone) && !string.IsNullOrWhiteSpace(supplierPhone))
+                    {
+                        supplier.Phone = supplierPhone.Trim();
+                    }
+                }
+
+                purchaseTotal = product.Quantity * product.BuyPrice;
+                purchasePaid = paidAmount ?? 0;
+                if (purchasePaid < 0)
+                    return BadRequest(new { success = false, message = "To'langan summa noto'g'ri!" });
+                if (purchasePaid > purchaseTotal)
+                    return BadRequest(new { success = false, message = "To'langan summa tovar summasidan oshib ketdi!" });
+
+                supplier.TotalAmount += purchaseTotal;
+                supplier.PaidAmount += purchasePaid;
+            }
 
             _context.Products.Add(product);
 
@@ -983,11 +1043,38 @@ public class ShopCabinetController : ControllerBase
 
             await _context.SaveChangesAsync();
 
+            // Product.Id va Supplier.Id endi ma'lum — partiya yozuvini saqlaymiz
+            if (supplier != null)
+            {
+                _context.SupplierPurchases.Add(new SupplierPurchase
+                {
+                    SupplierId = supplier.Id,
+                    ShopId = shopId,
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    Unit = product.Unit ?? string.Empty,
+                    Quantity = product.Quantity,
+                    TotalAmount = purchaseTotal,
+                    PaidAmount = purchasePaid,
+                    CreatedAt = DateTime.UtcNow
+                });
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Tovar muvaffaqiyatli bazaga saqlandi!",
+                    supplierId = supplier.Id,
+                    supplierName = supplier.Name,
+                    supplierDebt = supplier.TotalAmount - supplier.PaidAmount
+                });
+            }
+
             return Ok(new { success = true, message = "Tovar muvaffaqiyatli bazaga saqlandi!" });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { success = false, message = "Tovarni saqlashda xatolik: " + ex.Message });
+            return StatusCode(500, new { success = false, message = "Tovarni saqlashda xatolik: " + (ex.InnerException?.Message ?? ex.Message) });
         }
     }
 

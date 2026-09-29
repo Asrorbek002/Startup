@@ -1351,6 +1351,12 @@
                     <a href="#" class="sidebar-menu-item" onclick="switchTab('debtors', this)">
                         💳 <span>Qarzdor</span>
                     </a>
+                    <a href="#" class="sidebar-menu-item" onclick="switchTab('orders', this)">
+                        📝 <span>Buyurtma</span>
+                    </a>
+                    <a href="#" class="sidebar-menu-item" onclick="switchTab('suppliers', this)">
+                        🏭 <span>Ta'minotchi</span>
+                    </a>
                     <a href="#" class="sidebar-menu-item" onclick="switchTab('telegram', this)">
                         📲 <span>Telegram bot</span>
                     </a>
@@ -1402,14 +1408,23 @@
                         </div>
                     </div>
 
-                    <div class="row mb-4">
-                        <div class="col-12">
+                    <div class="row mb-4 g-3">
+                        <div class="col-md-6">
                             <div class="card shadow-sm p-3 border-start border-danger border-4 d-flex flex-row justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
-                                    <span class="text-muted small">UMUMIY QARZLAR</span>
+                                    <span class="text-muted small">UMUMIY QARZLAR (SIZGA QARZDORLAR)</span>
                                     <h4 class="fw-bold text-danger mt-1 mb-0" id="dashDebtTotal">0 so'm</h4>
                                 </div>
                                 <span class="badge bg-danger-subtle text-danger fs-6" id="dashDebtCount">0 ta qarzdor</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card shadow-sm p-3 border-start border-warning border-4 d-flex flex-row justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <span class="text-muted small">TA'MINOTCHILARGA QARZINGIZ</span>
+                                    <h4 class="fw-bold text-warning mt-1 mb-0" id="dashSupplierDebt">0 so'm</h4>
+                                </div>
+                                <span class="badge bg-warning-subtle text-warning-emphasis fs-6" id="dashSupplierCount">0 ta ta'minotchi</span>
                             </div>
                         </div>
                     </div>
@@ -1501,6 +1516,133 @@
                         <div class="debtors-table-footer d-flex justify-content-between align-items-center px-3 py-2">
                             <span class="fw-semibold text-muted">Jami: <span id="debtorsFooterCount" class="text-dark fw-bold">0</span> ta qarzdor</span>
                             <span class="text-muted small">Qoldiq bo'yicha umumiy qarz: <span id="debtorsFooterRemaining" class="fw-bold text-danger">0 so'm</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUYURTMALAR (AVANS BILAN) BO'LIMI -->
+                <div id="section-orders" class="content-section d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h4 class="fw-bold mb-0">Buyurtmalar <span id="ordersCountBadge" class="badge bg-secondary">0</span></h4>
+                        <div class="d-flex gap-2 align-items-center flex-wrap">
+                            <select class="form-select form-select-sm" id="ordersStatusFilter" style="width:auto;" onchange="renderOrders()">
+                                <option value="">Barcha holatlar</option>
+                                <option value="Yangi">Yangi</option>
+                                <option value="Tayyor">Tayyor</option>
+                                <option value="Topshirilgan">Topshirilgan</option>
+                                <option value="Qarzga o'tkazilgan">Qarzga o'tkazilgan</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm" onclick="openOrderModal()">＋ Yangi buyurtma</button>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3 col-6">
+                            <div class="card shadow-sm p-3 border-start border-primary border-4">
+                                <span class="text-muted small">FAOL BUYURTMALAR</span>
+                                <h4 class="fw-bold text-dark mt-1" id="ordActiveCount">0 ta</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="card shadow-sm p-3 border-start border-info border-4">
+                                <span class="text-muted small">JAMI SUMMA</span>
+                                <h4 class="fw-bold text-dark mt-1" id="ordActiveTotal">0 so'm</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="card shadow-sm p-3 border-start border-success border-4">
+                                <span class="text-muted small">OLINGAN AVANS / TO'LOV</span>
+                                <h4 class="fw-bold text-dark mt-1" id="ordActivePaid">0 so'm</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="card shadow-sm p-3 border-start border-danger border-4">
+                                <span class="text-muted small">QOLGAN (TO'LANISHI KERAK)</span>
+                                <h4 class="fw-bold text-danger mt-1" id="ordActiveLeft">0 so'm</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Sana</th>
+                                            <th>Mijoz</th>
+                                            <th>Buyurtma</th>
+                                            <th>Muddat</th>
+                                            <th>Summa</th>
+                                            <th>To'langan (avans)</th>
+                                            <th>Qoldiq</th>
+                                            <th>Holat</th>
+                                            <th class="text-center" style="width:60px;">Amal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ordersTableBody">
+                                        <tr><td colspan="10" class="text-center text-muted py-4">Hozircha buyurtmalar mavjud emas</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TA'MINOTCHILAR VA ULARGA QARZ BO'LIMI -->
+                <div id="section-suppliers" class="content-section d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h4 class="fw-bold mb-0">Ta'minotchilar <span id="suppliersCountBadge" class="badge bg-secondary">0</span></h4>
+                        <button class="btn btn-primary btn-sm" onclick="openSupplierModal()">＋ Ta'minotchi qo'shish</button>
+                    </div>
+
+                    <div class="alert alert-light border small py-2">
+                        Bu yerda <b>siz ta'minotchilarga</b> qarzingiz ko'rinadi. Ta'minotchi "Tovar Qabul qilish" bo'limida tovar kiritilganda yoziladi.
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <div class="card shadow-sm p-3 border-start border-danger border-4">
+                                <span class="text-muted small">JAMI QARZINGIZ (TA'MINOTCHILARGA)</span>
+                                <h4 class="fw-bold text-danger mt-1" id="supTotalDebt">0 so'm</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card shadow-sm p-3 border-start border-warning border-4">
+                                <span class="text-muted small">QARZI BOR TA'MINOTCHILAR</span>
+                                <h4 class="fw-bold text-dark mt-1" id="supActiveCount">0 ta</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card shadow-sm p-3 border-start border-success border-4">
+                                <span class="text-muted small">TO'LANGAN SUMMA</span>
+                                <h4 class="fw-bold text-dark mt-1" id="supPaidTotal">0 so'm</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Ta'minotchi</th>
+                                            <th>Telefon</th>
+                                            <th>Olingan tovar summasi</th>
+                                            <th>To'langan</th>
+                                            <th>Qarzingiz</th>
+                                            <th>Holat</th>
+                                            <th class="text-center" style="width:60px;">Amal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="suppliersTableBody">
+                                        <tr><td colspan="8" class="text-center text-muted py-4">Hozircha ta'minotchilar mavjud emas</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1645,6 +1787,37 @@
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label small" data-i18n="sell_price">Sotish narxi</label>
                                                 <input type="number" step="0.01" class="form-control" id="prodSellPrice" placeholder="so'mda" required>
+                                            </div>
+                                        </div>
+                                        <hr class="my-3">
+                                        <div class="fw-semibold small mb-2">🏭 Ta'minotchi (kimdan olindi) <span class="text-muted fw-normal">— ixtiyoriy</span></div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label small">Ta'minotchi nomi</label>
+                                                <input type="text" class="form-control" id="prodSupplierName" list="supplierNamesList" placeholder="Ro'yxatdan tanlang yoki yangi nom yozing" autocomplete="off" oninput="onSupplierInput()">
+                                                <datalist id="supplierNamesList"></datalist>
+                                                <div class="form-text" id="prodSupplierHint"></div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label small">Ta'minotchi telefoni</label>
+                                                <input type="text" class="form-control" id="prodSupplierPhone" placeholder="+998 90 123 45 67">
+                                            </div>
+                                        </div>
+                                        <div class="row d-none" id="prodSupplierPayRow">
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label small">Tovar jami summasi</label>
+                                                <input type="text" class="form-control" id="prodTotalCost" readonly>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label small">Hozir to'landi</label>
+                                                <div class="input-group">
+                                                    <input type="number" step="0.01" min="0" class="form-control" id="prodPaidNow" placeholder="0">
+                                                    <button type="button" class="btn btn-outline-secondary" onclick="fillPaidFull()" title="To'liq to'landi">To'liq</button>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label small">Qolgan qarz (ta'minotchiga)</label>
+                                                <input type="text" class="form-control fw-bold" id="prodDebtLeft" readonly>
                                             </div>
                                         </div>
                                         <button type="submit" class="btn btn-success w-100" data-i18n="btn_save_product">Tovarni Omborga Qabul Qilish</button>
@@ -2512,6 +2685,8 @@
 
                 if (sectionId === 'sales') fetchSales();
                 if (sectionId === 'debtors') fetchDebtors();
+                if (sectionId === 'orders') fetchOrders();
+                if (sectionId === 'suppliers' || sectionId === 'products') fetchSuppliers();
                 if (sectionId === 'telegram') loadTelegramSettings();
                 if (sectionId === 'workshop') loadWorkshop();
                 if (sectionId === 'workshop-history' || sectionId === 'workshop-stock') loadWorkshop();
@@ -2666,6 +2841,7 @@
                 await fetchProducts();
                 await fetchSales();
                 await fetchDebtors();
+                try { await fetchSuppliers(); await fetchOrders(); } catch (e) { console.error(e); }
 
                 // Xodimlar real vaqtda sotayotgan savdolarni boshliq kabinetida avtomatik yangilab turish
                 setInterval(fetchSales, 15000);
@@ -3038,21 +3214,21 @@
                     const rowClass = isDropped ? "table-danger" : "";
                     const priceCell = isDropped
                         ? `<span class="fw-bold text-danger">${Number(s.salePrice).toLocaleString()} so'm</span>
-                                                                               <div class="small text-danger">−${Number(listed - s.salePrice).toLocaleString()} so'm/dona</div>`
+                                                                                       <div class="small text-danger">−${Number(listed - s.salePrice).toLocaleString()} so'm/dona</div>`
                         : `${Number(s.salePrice).toLocaleString()} so'm`;
                     tbody.innerHTML += `
-                                                                                                                <tr class="${rowClass}">
-                                                                                                                    <td>${idx + 1}</td>
-                                                                                                                    <td>${dateFormatted}</td>
-                                                                                                                    <td>${s.employeeName || "-"}</td>
-                                                                                                                    <td>${s.productName}${isDropped ? ' <span class="badge bg-danger">narx pasaytirilgan</span>' : ''}</td>
-                                                                                                                    <td>${s.quantity}</td>
-                                                                                                                    <td>${listed ? Number(listed).toLocaleString() + " so'm" : "—"}</td>
-                                                                                                                    <td>${priceCell}</td>
-                                                                                                                    <td class="fw-bold">${Number(s.totalSum).toLocaleString()} so'm</td>
-                                                                                                                    <td class="fw-bold text-success">${Number(s.profit).toLocaleString()} so'm</td>
-                                                                                                                </tr>
-                                                                                                            `;
+                                                                                                                        <tr class="${rowClass}">
+                                                                                                                            <td>${idx + 1}</td>
+                                                                                                                            <td>${dateFormatted}</td>
+                                                                                                                            <td>${s.employeeName || "-"}</td>
+                                                                                                                            <td>${s.productName}${isDropped ? ' <span class="badge bg-danger">narx pasaytirilgan</span>' : ''}</td>
+                                                                                                                            <td>${s.quantity}</td>
+                                                                                                                            <td>${listed ? Number(listed).toLocaleString() + " so'm" : "—"}</td>
+                                                                                                                            <td>${priceCell}</td>
+                                                                                                                            <td class="fw-bold">${Number(s.totalSum).toLocaleString()} so'm</td>
+                                                                                                                            <td class="fw-bold text-success">${Number(s.profit).toLocaleString()} so'm</td>
+                                                                                                                        </tr>
+                                                                                                                    `;
                     totalSum += s.totalSum;
                     totalProfit += s.profit;
                 });
@@ -3218,16 +3394,16 @@
                     const originalIdx = productsList.indexOf(p);
                     const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
                     tbody.innerHTML += `
-                                                                                                                <tr style="cursor: pointer;" onclick="showProductDetails(${originalIdx})">
-                                                                                                                    <td><strong>${i + 1}</strong></td>
-                                                                                                                    <td>${p.name}</td>
-                                                                                                                    <td>${p.quantity}</td>
-                                                                                                                    <td><span class="badge bg-info text-dark">${p.unit}</span></td>
-                                                                                                                    <td>${p.buyPrice} so'm</td>
-                                                                                                                    <td>${p.sellPrice} so'm</td>
-                                                                                                                    <td class="text-muted small">${dateFormatted}</td>
-                                                                                                                </tr>
-                                                                                                            `;
+                                                                                                                        <tr style="cursor: pointer;" onclick="showProductDetails(${originalIdx})">
+                                                                                                                            <td><strong>${i + 1}</strong></td>
+                                                                                                                            <td>${p.name}</td>
+                                                                                                                            <td>${p.quantity}</td>
+                                                                                                                            <td><span class="badge bg-info text-dark">${p.unit}</span></td>
+                                                                                                                            <td>${p.buyPrice} so'm</td>
+                                                                                                                            <td>${p.sellPrice} so'm</td>
+                                                                                                                            <td class="text-muted small">${dateFormatted}</td>
+                                                                                                                        </tr>
+                                                                                                                    `;
                 });
             }
 
@@ -3531,26 +3707,26 @@
                         ? `<img src="${el.imageUrl}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">`
                         : `<span class="text-muted">—</span>`;
                     tbody.innerHTML += `
-                                                                                                                <tr>
-                                                                                                                    <td><strong>${idx + 1}</strong></td>
-                                                                                                                    <td>${imgCell}</td>
-                                                                                                                    <td>${el.name}</td>
-                                                                                                                    <td>${el.length}</td>
-                                                                                                                    <td><span class="badge bg-info text-dark">${el.unit}</span></td>
-                                                                                                                    <td>${Number(el.buyPrice || 0).toLocaleString()} so'm</td>
-                                                                                                                    <td>${Number(el.sellPrice || 0).toLocaleString()} so'm</td>
-                                                                                                                    <td class="text-muted small">${dateFormatted}</td>
-                                                                                                                    <td class="text-center">
-                                                                                                                        <div class="dropdown">
-                                                                                                                            <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
-                                                                                                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                                                                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteElement(${el.id}); return false;">🗑️ ${translations[currentLang].btn_delete}</a></li>
-                                                                                                                                <li><a class="dropdown-item" href="#" onclick="editElement(${el.id}); return false;">✏️ ${translations[currentLang].btn_edit}</a></li>
-                                                                                                                            </ul>
-                                                                                                                        </div>
-                                                                                                                    </td>
-                                                                                                                </tr>
-                                                                                                            `;
+                                                                                                                        <tr>
+                                                                                                                            <td><strong>${idx + 1}</strong></td>
+                                                                                                                            <td>${imgCell}</td>
+                                                                                                                            <td>${el.name}</td>
+                                                                                                                            <td>${el.length}</td>
+                                                                                                                            <td><span class="badge bg-info text-dark">${el.unit}</span></td>
+                                                                                                                            <td>${Number(el.buyPrice || 0).toLocaleString()} so'm</td>
+                                                                                                                            <td>${Number(el.sellPrice || 0).toLocaleString()} so'm</td>
+                                                                                                                            <td class="text-muted small">${dateFormatted}</td>
+                                                                                                                            <td class="text-center">
+                                                                                                                                <div class="dropdown">
+                                                                                                                                    <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">⋮</button>
+                                                                                                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                                                                                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteElement(${el.id}); return false;">🗑️ ${translations[currentLang].btn_delete}</a></li>
+                                                                                                                                        <li><a class="dropdown-item" href="#" onclick="editElement(${el.id}); return false;">✏️ ${translations[currentLang].btn_edit}</a></li>
+                                                                                                                                    </ul>
+                                                                                                                                </div>
+                                                                                                                            </td>
+                                                                                                                        </tr>
+                                                                                                                    `;
                 });
 
                 renderElementsPagination();
@@ -3567,9 +3743,9 @@
 
                 const addPageItem = (label, page, disabled, active) => {
                     paginationEl.innerHTML += `
-                                                                                                                <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
-                                                                                                                    <a class="page-link" href="#" onclick="goToElementsPage(${page}); return false;">${label}</a>
-                                                                                                                </li>`;
+                                                                                                                        <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
+                                                                                                                            <a class="page-link" href="#" onclick="goToElementsPage(${page}); return false;">${label}</a>
+                                                                                                                        </li>`;
                 };
 
                 addPageItem('«', currentElementsPage - 1, currentElementsPage === 1, false);
@@ -3633,10 +3809,10 @@
                 toastEl.setAttribute("aria-live", "assertive");
                 toastEl.setAttribute("aria-atomic", "true");
                 toastEl.innerHTML = `
-                                                                                                            <div class="d-flex">
-                                                                                                                <div class="toast-body">${message}</div>
-                                                                                                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                                                                                                            </div>`;
+                                                                                                                    <div class="d-flex">
+                                                                                                                        <div class="toast-body">${message}</div>
+                                                                                                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                                                                                                    </div>`;
                 container.appendChild(toastEl);
 
                 const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
@@ -3661,6 +3837,31 @@
 
                 const shopId = localStorage.getItem("currentShopId") || "18";
 
+                // --- Ta'minotchi (ixtiyoriy): kimdan olindi va qancha to'landi ---
+                let supplierQuery = "";
+                let hasSupplier = false;
+                const supplierName = (document.getElementById("prodSupplierName")?.value || "").trim();
+                if (supplierName) {
+                    hasSupplier = true;
+                    const totalCost = Math.round(quantity * buyPrice * 100) / 100;
+                    const paidNow = parseFloat(document.getElementById("prodPaidNow")?.value) || 0;
+                    if (paidNow < 0 || paidNow > totalCost + 0.005) {
+                        showToast("To'langan summa noto'g'ri (tovar summasidan oshmasligi kerak)!", false);
+                        return;
+                    }
+                    const qp = new URLSearchParams();
+                    const knownSupplier = suppliersList.find(x => x.name.toLowerCase() === supplierName.toLowerCase());
+                    if (knownSupplier) {
+                        qp.set("supplierId", knownSupplier.id);
+                    } else {
+                        qp.set("supplierName", supplierName);
+                        const sp = (document.getElementById("prodSupplierPhone")?.value || "").trim();
+                        if (sp) qp.set("supplierPhone", sp);
+                    }
+                    qp.set("paidAmount", Math.min(paidNow, totalCost));
+                    supplierQuery = "?" + qp.toString();
+                }
+
                 const newProduct = {
                     name: productName,
                     unit: unit,
@@ -3670,7 +3871,7 @@
                 };
 
                 try {
-                    const response = await fetch(`/api/shop-cabinet/${shopId}/products`, {
+                    const response = await fetch(`/api/shop-cabinet/${shopId}/products${supplierQuery}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(newProduct)
@@ -3681,9 +3882,15 @@
 
                     if (response.ok) {
                         await fetchProducts();
-                        showToast(currentLang === 'uz' ? "Tovar muvaffaqiyatli qabul qilindi!" : "Товар успешно принят!", true);
+                        let okMsg = currentLang === 'uz' ? "Tovar muvaffaqiyatli qabul qilindi!" : "Товар успешно принят!";
+                        if (hasSupplier && result && typeof result.supplierDebt === "number") {
+                            okMsg += ` ${result.supplierName}: qarzingiz ${formatSom(result.supplierDebt)} so'm`;
+                        }
+                        showToast(okMsg, true);
                         e.target.reset();
                         document.getElementById("prodUnit").value = "";
+                        if (hasSupplier) await fetchSuppliers();
+                        onSupplierInput();
                     } else {
                         const errMsg = (result && result.message) ? result.message : "Xatolik yuz berdi!";
                         showToast(errMsg, false);
@@ -3706,14 +3913,14 @@
                 listContainer.innerHTML = "";
                 productsList.forEach((p, idx) => {
                     listContainer.innerHTML += `
-                                                                                                                <li class="list-group-item d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="showProductDetails(${idx})">
-                                                                                                                    <div>
-                                                                                                                        <strong>${p.name}</strong><br>
-                                                                                                                        <small class="text-muted">Miqdor: ${p.quantity} ${p.unit} | Narx: ${p.sellPrice} so'm</small>
-                                                                                                                    </div>
-                                                                                                                    <span class="badge bg-primary rounded-pill">#${idx + 1}</span>
-                                                                                                                </li>
-                                                                                                            `;
+                                                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center" style="cursor: pointer;" onclick="showProductDetails(${idx})">
+                                                                                                                            <div>
+                                                                                                                                <strong>${p.name}</strong><br>
+                                                                                                                                <small class="text-muted">Miqdor: ${p.quantity} ${p.unit} | Narx: ${p.sellPrice} so'm</small>
+                                                                                                                            </div>
+                                                                                                                            <span class="badge bg-primary rounded-pill">#${idx + 1}</span>
+                                                                                                                        </li>
+                                                                                                                    `;
                 });
             }
 
@@ -3724,14 +3931,14 @@
                 const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleString() : '-';
 
                 document.getElementById("productDetailsBody").innerHTML = `
-                                                                                                            <table class="table table-borderless mb-0">
-                                                                                                                <tr><td class="text-muted">Nomi</td><td class="text-end fw-bold">${p.name}</td></tr>
-                                                                                                                <tr><td class="text-muted">Qabul qilingan miqdor</td><td class="text-end fw-bold">${p.quantity} ${p.unit}</td></tr>
-                                                                                                                <tr><td class="text-muted">Kelish narxi</td><td class="text-end">${p.buyPrice} so'm</td></tr>
-                                                                                                                <tr><td class="text-muted">Sotish narxi</td><td class="text-end">${p.sellPrice} so'm</td></tr>
-                                                                                                                <tr><td class="text-muted">Qabul qilingan sana/vaqt</td><td class="text-end">${dateFormatted}</td></tr>
-                                                                                                            </table>
-                                                                                                        `;
+                                                                                                                    <table class="table table-borderless mb-0">
+                                                                                                                        <tr><td class="text-muted">Nomi</td><td class="text-end fw-bold">${p.name}</td></tr>
+                                                                                                                        <tr><td class="text-muted">Qabul qilingan miqdor</td><td class="text-end fw-bold">${p.quantity} ${p.unit}</td></tr>
+                                                                                                                        <tr><td class="text-muted">Kelish narxi</td><td class="text-end">${p.buyPrice} so'm</td></tr>
+                                                                                                                        <tr><td class="text-muted">Sotish narxi</td><td class="text-end">${p.sellPrice} so'm</td></tr>
+                                                                                                                        <tr><td class="text-muted">Qabul qilingan sana/vaqt</td><td class="text-end">${dateFormatted}</td></tr>
+                                                                                                                    </table>
+                                                                                                                `;
 
                 const modalEl = document.getElementById('productDetailsModal');
                 let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
@@ -3816,30 +4023,30 @@
                 }
 
                 tbody.innerHTML = rows.map(({ staff, idx }, i) => `
-                                    <tr>
-                                        <td class="text-muted">${i + 1}</td>
-                                        <td class="fw-semibold">${wsEsc(staff.firstname)} ${wsEsc(staff.lastname)}</td>
-                                        <td>${wsEsc(staff.login)}</td>
-                                        <td>${wsEsc(staff.phone) || "—"}</td>
-                                        <td>${wsRoleBadge(staff.role)}</td>
-                                        <td>
-                                            ${staff.password
+                                            <tr>
+                                                <td class="text-muted">${i + 1}</td>
+                                                <td class="fw-semibold">${wsEsc(staff.firstname)} ${wsEsc(staff.lastname)}</td>
+                                                <td>${wsEsc(staff.login)}</td>
+                                                <td>${wsEsc(staff.phone) || "—"}</td>
+                                                <td>${wsRoleBadge(staff.role)}</td>
+                                                <td>
+                                                    ${staff.password
                         ? `<code class="fs-6 text-dark">${wsEsc(staff.password)}</code>`
                         : `<span class="text-muted" style="letter-spacing:2px;" title="Server parolni qaytarmayapti">••••••</span>`}
-                                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 ms-1" title="Parolni o'zgartirish"
-                                                    onclick="requestStaffAction('edit', ${idx}, { focusPass: true })">🔑</button>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
-                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                    <li><a class="dropdown-item py-2" href="#" onclick="requestStaffAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item py-2 text-danger" href="#" onclick="requestStaffAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>`).join("");
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 ms-1" title="Parolni o'zgartirish"
+                                                            onclick="requestStaffAction('edit', ${idx}, { focusPass: true })">🔑</button>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                            <li><a class="dropdown-item py-2" href="#" onclick="requestStaffAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li><a class="dropdown-item py-2 text-danger" href="#" onclick="requestStaffAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>`).join("");
             }
 
             function renderReportsStaffTable() {
@@ -3856,28 +4063,28 @@
                     const paid = staff.paid || 0;
                     const remaining = Math.max(staff.salary - paid, 0);
                     tbody.innerHTML += `
-                                                                                                                <tr>
-                                                                                                                    <td><strong>${idx + 1}</strong></td>
-                                                                                                                    <td>${staff.firstname}${wsRoleBadge(staff.role)}</td>
-                                                                                                                    <td>${staff.lastname}</td>
-                                                                                                                    <td>${staff.phone}</td>
-                                                                                                                    <td>${staff.login}</td>
-                                                                                                                    <td class="fw-bold text-success">${staff.salary.toLocaleString()} so'm</td>
-                                                                                                                    <td class="fw-bold text-primary" style="cursor:pointer; text-decoration:underline;" onclick="showPaymentHistory(${idx})" title="To'lovlar tarixini ko'rish">${paid.toLocaleString()} so'm</td>
-                                                                                                                    <td class="fw-bold ${remaining > 0 ? 'text-danger' : 'text-success'}">${remaining.toLocaleString()} so'm</td>
-                                                                                                                    <td class="text-center">
-                                                                                                                        <div class="dropdown">
-                                                                                                                            <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
-                                                                                                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                                                                                                <li><a class="dropdown-item py-2" href="#" onclick="executeAction('pay', ${idx}); return false;">💵 To'lov</a></li>
-                                                                                                                                <li><a class="dropdown-item py-2" href="#" onclick="executeAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
-                                                                                                                                <li><hr class="dropdown-divider"></li>
-                                                                                                                                <li><a class="dropdown-item py-2 text-danger" href="#" onclick="executeAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
-                                                                                                                            </ul>
-                                                                                                                        </div>
-                                                                                                                    </td>
-                                                                                                                </tr>
-                                                                                                            `;
+                                                                                                                        <tr>
+                                                                                                                            <td><strong>${idx + 1}</strong></td>
+                                                                                                                            <td>${staff.firstname}${wsRoleBadge(staff.role)}</td>
+                                                                                                                            <td>${staff.lastname}</td>
+                                                                                                                            <td>${staff.phone}</td>
+                                                                                                                            <td>${staff.login}</td>
+                                                                                                                            <td class="fw-bold text-success">${staff.salary.toLocaleString()} so'm</td>
+                                                                                                                            <td class="fw-bold text-primary" style="cursor:pointer; text-decoration:underline;" onclick="showPaymentHistory(${idx})" title="To'lovlar tarixini ko'rish">${paid.toLocaleString()} so'm</td>
+                                                                                                                            <td class="fw-bold ${remaining > 0 ? 'text-danger' : 'text-success'}">${remaining.toLocaleString()} so'm</td>
+                                                                                                                            <td class="text-center">
+                                                                                                                                <div class="dropdown">
+                                                                                                                                    <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                                                                                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                                                                                                        <li><a class="dropdown-item py-2" href="#" onclick="executeAction('pay', ${idx}); return false;">💵 To'lov</a></li>
+                                                                                                                                        <li><a class="dropdown-item py-2" href="#" onclick="executeAction('edit', ${idx}); return false;">✏️ Tahrirlash</a></li>
+                                                                                                                                        <li><hr class="dropdown-divider"></li>
+                                                                                                                                        <li><a class="dropdown-item py-2 text-danger" href="#" onclick="executeAction('delete', ${idx}); return false;">🗑️ O'chirish</a></li>
+                                                                                                                                    </ul>
+                                                                                                                                </div>
+                                                                                                                            </td>
+                                                                                                                        </tr>
+                                                                                                                    `;
                 });
             }
 
@@ -4017,34 +4224,34 @@
                                 ? `<div class="text-muted small mt-1">📝 ${p.note}</div>`
                                 : "";
                             return `
-                                                                                                                <tr>
-                                                                                                                    <td>
-                                                                                                                        <div>${dateFormatted}</div>
-                                                                                                                        ${noteRow}
-                                                                                                                    </td>
-                                                                                                                    <td class="text-end fw-bold text-success">${p.amount.toLocaleString()} so'm</td>
-                                                                                                                </tr>
-                                                                                                            `;
+                                                                                                                        <tr>
+                                                                                                                            <td>
+                                                                                                                                <div>${dateFormatted}</div>
+                                                                                                                                ${noteRow}
+                                                                                                                            </td>
+                                                                                                                            <td class="text-end fw-bold text-success">${p.amount.toLocaleString()} so'm</td>
+                                                                                                                        </tr>
+                                                                                                                    `;
                         })
                         .join("");
 
                     bodyEl.innerHTML = `
-                                                                                                        <table class="table table-sm table-hover align-middle mb-0">
-                                                                                                            <thead class="table-light">
-                                                                                                                <tr>
-                                                                                                                    <th>Sana</th>
-                                                                                                                    <th class="text-end">Miqdor</th>
-                                                                                                                </tr>
-                                                                                                            </thead>
-                                                                                                            <tbody>${rows}</tbody>
-                                                                                                            <tfoot>
-                                                                                                                <tr class="table-light">
-                                                                                                                    <td class="fw-bold">Jami to'langan</td>
-                                                                                                                    <td class="text-end fw-bold text-success">${(staff.paid || 0).toLocaleString()} so'm</td>
-                                                                                                                </tr>
-                                                                                                            </tfoot>
-                                                                                                        </table>
-                                                                                                    `;
+                                                                                                                <table class="table table-sm table-hover align-middle mb-0">
+                                                                                                                    <thead class="table-light">
+                                                                                                                        <tr>
+                                                                                                                            <th>Sana</th>
+                                                                                                                            <th class="text-end">Miqdor</th>
+                                                                                                                        </tr>
+                                                                                                                    </thead>
+                                                                                                                    <tbody>${rows}</tbody>
+                                                                                                                    <tfoot>
+                                                                                                                        <tr class="table-light">
+                                                                                                                            <td class="fw-bold">Jami to'langan</td>
+                                                                                                                            <td class="text-end fw-bold text-success">${(staff.paid || 0).toLocaleString()} so'm</td>
+                                                                                                                        </tr>
+                                                                                                                    </tfoot>
+                                                                                                                </table>
+                                                                                                            `;
                 }
             }
 
@@ -4211,11 +4418,11 @@
                 box.innerHTML = list.length === 0
                     ? `<div class="text-muted small py-1">Mos element yo'q</div>`
                     : list.map(e => `
-                                            <div class="form-check">
-                                                <input class="form-check-input staff-el-cb" type="checkbox" value="${e.id}" id="staffEl_${e.id}"
-                                                       ${all || selectedIds.includes(e.id) ? "checked" : ""} onchange="staffElSyncAll()">
-                                                <label class="form-check-label" for="staffEl_${e.id}">${wsEsc(e.name)} <span class="text-muted small">(${wsEsc(e.unit)})</span></label>
-                                            </div>`).join("");
+                                                    <div class="form-check">
+                                                        <input class="form-check-input staff-el-cb" type="checkbox" value="${e.id}" id="staffEl_${e.id}"
+                                                               ${all || selectedIds.includes(e.id) ? "checked" : ""} onchange="staffElSyncAll()">
+                                                        <label class="form-check-label" for="staffEl_${e.id}">${wsEsc(e.name)} <span class="text-muted small">(${wsEsc(e.unit)})</span></label>
+                                                    </div>`).join("");
                 document.getElementById("staffElementsHint").textContent =
                     wsRoleOf(role) === "Pechat" ? "Pechat xodimi uchun faqat metrdagi elementlar ko'rsatilgan." : "";
                 staffElSyncAll();
@@ -4389,10 +4596,10 @@
                 tbody.innerHTML = wsStock.map(s => {
                     const out = s.stock <= 0;
                     return `<tr>
-                                            <td>${wsEsc(s.name)}</td>
-                                            <td class="text-end fw-bold ${out ? "text-danger" : "text-success"}">${wsNum(s.stock)} ${wsEsc(s.unit)}${out ? ' <span class="badge bg-danger">Tugagan</span>' : ""}</td>
-                                            <td class="text-end">${wsNum(s.usedTotal)} ${wsEsc(s.unit)}</td>
-                                        </tr>`;
+                                                    <td>${wsEsc(s.name)}</td>
+                                                    <td class="text-end fw-bold ${out ? "text-danger" : "text-success"}">${wsNum(s.stock)} ${wsEsc(s.unit)}${out ? ' <span class="badge bg-danger">Tugagan</span>' : ""}</td>
+                                                    <td class="text-end">${wsNum(s.usedTotal)} ${wsEsc(s.unit)}</td>
+                                                </tr>`;
                 }).join("");
             }
 
@@ -4492,14 +4699,14 @@
                         ? `<span class="badge bg-secondary">Bekor qilingan</span>`
                         : `<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="wsCancelUsage(${u.id})">↩ Bekor</button>`;
                     return `<tr class="${u.isCancelled ? "text-muted" : ""}">
-                                            <td class="small">${new Date(u.createdAt).toLocaleString()}</td>
-                                            <td>${wsEsc(u.employeeName)}${wsRoleBadge(u.employeeRole)}</td>
-                                            <td>${wsEsc(u.elementName)}</td>
-                                            <td class="text-end fw-bold ${u.isCancelled ? "text-decoration-line-through" : ""}">${wsNum(u.quantity)} ${wsEsc(u.unit)}</td>
-                                            <td class="text-end">${u.outputCount ?? "-"}</td>
-                                            <td>${wsEsc(u.note || "")}${cancelInfo}</td>
-                                            <td class="text-center">${action}</td>
-                                        </tr>`;
+                                                    <td class="small">${new Date(u.createdAt).toLocaleString()}</td>
+                                                    <td>${wsEsc(u.employeeName)}${wsRoleBadge(u.employeeRole)}</td>
+                                                    <td>${wsEsc(u.elementName)}</td>
+                                                    <td class="text-end fw-bold ${u.isCancelled ? "text-decoration-line-through" : ""}">${wsNum(u.quantity)} ${wsEsc(u.unit)}</td>
+                                                    <td class="text-end">${u.outputCount ?? "-"}</td>
+                                                    <td>${wsEsc(u.note || "")}${cancelInfo}</td>
+                                                    <td class="text-center">${action}</td>
+                                                </tr>`;
                 }).join("");
             }
 
@@ -4648,11 +4855,11 @@
                 tbody.innerHTML = qlShown.map((s, i) => {
                     const out = Number(s.stock) <= 0;
                     return `<tr>
-                                            <td class="text-center text-muted">${i + 1}</td>
-                                            <td class="fw-semibold">${wsEsc(s.name)}</td>
-                                            <td class="text-end fw-bold fs-6 ${out ? "text-danger" : "text-success"}">${wsNum(s.stock)}</td>
-                                            <td class="text-center"><span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border px-3 py-2">${wsEsc(s.unit)}</span></td>
-                                        </tr>`;
+                                                    <td class="text-center text-muted">${i + 1}</td>
+                                                    <td class="fw-semibold">${wsEsc(s.name)}</td>
+                                                    <td class="text-end fw-bold fs-6 ${out ? "text-danger" : "text-success"}">${wsNum(s.stock)}</td>
+                                                    <td class="text-center"><span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border px-3 py-2">${wsEsc(s.unit)}</span></td>
+                                                </tr>`;
                 }).join("");
             }
 
@@ -4852,27 +5059,27 @@
                     });
                     const phoneLink = debtEsc(d.phone).replace(/\s/g, "");
                     return `
-                                                                <tr>
-                                                                    <td>${i + 1}</td>
-                                                                    <td>${dt}</td>
-                                                                    <td class="fw-semibold">${debtEsc(d.name)}</td>
-                                                                    <td><a href="tel:${d.phone.replace(/\s/g, "")}" class="text-decoration-none">${debtEsc(d.phone)}</a></td>
-                                                                    <td>${formatSom(d.amount)} so'm</td>
-                                                                    <td class="text-success" style="cursor:pointer;text-decoration:underline;" onclick="showDebtorPaymentHistory(${d.id})" title="To'lovlar tarixini ko'rish">${formatSom(d.paidAmount)} so'm</td>
-                                                                    <td class="fw-bold ${left > 0 ? 'text-danger' : 'text-success'}">${formatSom(left)} so'm</td>
-                                                                    <td>${badge}</td>
-                                                                    <td class="text-center">
-                                                                        <div class="dropdown">
-                                                                            <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold debtor-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
-                                                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm debtor-dropdown-menu">
-                                                                                <li><a class="dropdown-item py-2" href="#" ${left <= 0 ? 'style="pointer-events:none;opacity:.45;"' : ''} onclick="openPayDebtor(${d.id}); return false;">💵 To'lov</a></li>
-                                                                                <li><a class="dropdown-item py-2" href="#" onclick="openEditDebtor(${d.id}); return false;">✏️ Tahrirlash</a></li>
-                                                                                <li><hr class="dropdown-divider"></li>
-                                                                                <li><a class="dropdown-item py-2 text-danger" href="#" onclick="deleteDebtor(${d.id}); return false;">🗑️ O'chirish</a></li>
-                                                                            </ul>
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>`;
+                                                                        <tr>
+                                                                            <td>${i + 1}</td>
+                                                                            <td>${dt}</td>
+                                                                            <td class="fw-semibold">${debtEsc(d.name)}</td>
+                                                                            <td><a href="tel:${d.phone.replace(/\s/g, "")}" class="text-decoration-none">${debtEsc(d.phone)}</a></td>
+                                                                            <td>${formatSom(d.amount)} so'm</td>
+                                                                            <td class="text-success" style="cursor:pointer;text-decoration:underline;" onclick="showDebtorPaymentHistory(${d.id})" title="To'lovlar tarixini ko'rish">${formatSom(d.paidAmount)} so'm</td>
+                                                                            <td class="fw-bold ${left > 0 ? 'text-danger' : 'text-success'}">${formatSom(left)} so'm</td>
+                                                                            <td>${badge}</td>
+                                                                            <td class="text-center">
+                                                                                <div class="dropdown">
+                                                                                    <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold debtor-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm debtor-dropdown-menu">
+                                                                                        <li><a class="dropdown-item py-2" href="#" ${left <= 0 ? 'style="pointer-events:none;opacity:.45;"' : ''} onclick="openPayDebtor(${d.id}); return false;">💵 To'lov</a></li>
+                                                                                        <li><a class="dropdown-item py-2" href="#" onclick="openEditDebtor(${d.id}); return false;">✏️ Tahrirlash</a></li>
+                                                                                        <li><hr class="dropdown-divider"></li>
+                                                                                        <li><a class="dropdown-item py-2 text-danger" href="#" onclick="deleteDebtor(${d.id}); return false;">🗑️ O'chirish</a></li>
+                                                                                    </ul>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>`;
                 }).join("");
             }
 
@@ -4976,10 +5183,10 @@
                 }).join("");
 
                 bodyEl.innerHTML = `
-                                                            <table class="table table-sm mb-0">
-                                                                <thead><tr><th>#</th><th>Sana / Vaqt</th><th>Kim to'lagan</th><th>Izoh</th><th class="text-end">Summasi</th></tr></thead>
-                                                                <tbody>${rows}</tbody>
-                                                            </table>`;
+                                                                    <table class="table table-sm mb-0">
+                                                                        <thead><tr><th>#</th><th>Sana / Vaqt</th><th>Kim to'lagan</th><th>Izoh</th><th class="text-end">Summasi</th></tr></thead>
+                                                                        <tbody>${rows}</tbody>
+                                                                    </table>`;
             }
 
             function openEditDebtor(id) {
@@ -5128,5 +5335,609 @@
             </div>
         </div>
 
+        <!-- ===== BUYURTMA MODALLARI ===== -->
+        <div class="modal fade" id="orderModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="orderModalTitle">Yangi buyurtma</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="orderEditId">
+                        <div class="mb-2"><label class="form-label">Mijoz ismi</label><input id="orderCustomer" class="form-control" placeholder="Masalan: Aziz Karimov"></div>
+                        <div class="mb-2"><label class="form-label">Telefon raqami</label><input id="orderPhone" class="form-control" placeholder="+998 90 123 45 67"></div>
+                        <div class="mb-2"><label class="form-label">Nima buyurtma qilindi</label><textarea id="orderDesc" rows="2" class="form-control" placeholder="Masalan: Peshtaxta 2x3 m, 5 dona"></textarea></div>
+                        <div class="row">
+                            <div class="col-6 mb-2"><label class="form-label">Buyurtma summasi (so'm)</label><input id="orderTotal" type="number" min="1" class="form-control" oninput="orderPreview()"></div>
+                            <div class="col-6 mb-2" id="orderAdvanceWrap"><label class="form-label">Avans (oldindan to'lov)</label><input id="orderAdvance" type="number" min="0" class="form-control" placeholder="0" oninput="orderPreview()"></div>
+                        </div>
+                        <div class="mb-2"><label class="form-label">Topshirish muddati <span class="text-muted small">(ixtiyoriy)</span></label><input id="orderDue" type="date" class="form-control"></div>
+                        <div class="alert alert-light border py-2 mb-0" id="orderPreviewBox">Qolgan summa: <b id="orderLeftPreview">0 so'm</b></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                        <button type="button" class="btn btn-primary" onclick="saveOrder()">Saqlash</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="payOrderModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Buyurtma uchun to'lov</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="payOrderId">
+                        <p class="mb-2"><b id="payOrderInfo"></b></p>
+                        <label class="form-label">To'lov summasi (so'm)</label>
+                        <div class="input-group mb-2">
+                            <input id="payOrderAmount" type="number" min="1" class="form-control">
+                            <button type="button" class="btn btn-outline-secondary" onclick="fillOrderPaymentFull()">To'liq</button>
+                        </div>
+                        <label class="form-label">Izoh (ixtiyoriy)</label>
+                        <input id="payOrderNote" class="form-control" placeholder="Masalan: ikkinchi to'lov">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                        <button type="button" class="btn btn-success" onclick="submitOrderPayment()">To'lash</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="orderHistoryModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">To'lovlar tarixi — <span id="orderHistoryName"></span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="orderHistoryBody"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TA'MINOTCHI MODALLARI ===== -->
+        <div class="modal fade" id="supplierModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="supplierModalTitle">Yangi ta'minotchi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="supEditId">
+                        <div class="mb-2"><label class="form-label">Ta'minotchi nomi</label><input id="supName" class="form-control" placeholder="Masalan: Ali Metall"></div>
+                        <div class="mb-2"><label class="form-label">Telefon raqami</label><input id="supPhone" class="form-control" placeholder="+998 90 123 45 67"></div>
+                        <div class="mb-2" id="supInitDebtWrap"><label class="form-label">Boshlang'ich qarz (so'm) <span class="text-muted small">— ixtiyoriy</span></label><input id="supInitDebt" type="number" min="0" class="form-control" placeholder="0"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                        <button type="button" class="btn btn-primary" onclick="saveSupplier()">Saqlash</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="paySupplierModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ta'minotchiga to'lov</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="supPayId">
+                        <p class="mb-2"><b id="supPayInfo"></b></p>
+                        <label class="form-label">To'lov summasi (so'm)</label>
+                        <div class="input-group mb-2">
+                            <input id="supPayAmount" type="number" min="1" class="form-control">
+                            <button type="button" class="btn btn-outline-secondary" onclick="fillSupplierPaymentFull()">To'liq</button>
+                        </div>
+                        <label class="form-label">Izoh (ixtiyoriy)</label>
+                        <input id="supPayNote" class="form-control" placeholder="Masalan: qarzning bir qismi">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                        <button type="button" class="btn btn-success" onclick="submitSupplierPayment()">To'lash</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="supplierHistoryModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ta'minotchi tarixi — <span id="supplierHistoryName"></span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="supplierHistoryBody"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // ===================================================================
+            //  BUYURTMALAR (AVANS BILAN) va TA'MINOTCHILAR (ularga qarz)
+            // ===================================================================
+            let ordersList = [];
+            let suppliersList = [];
+            const ORDER_DEBT_STATUS = "Qarzga o'tkazilgan";
+
+            function osShopId() { return localStorage.getItem("currentShopId") || "18"; }
+
+            function osFmtDT(v) {
+                if (!v) return "—";
+                return new Date(v).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            }
+
+            // "2026-10-05T00:00:00Z" -> "05.10.2026" (sana qismini o'zini olamiz, vaqt zonasi siljitmasin)
+            function osFmtDate(v) {
+                if (!v) return "—";
+                const p = String(v).slice(0, 10).split("-");
+                return p.length === 3 ? `${p[2]}.${p[1]}.${p[0]}` : "—";
+            }
+
+            function osModal(id) { return bootstrap.Modal.getOrCreateInstance(document.getElementById(id)); }
+            function osHide(id) { bootstrap.Modal.getInstance(document.getElementById(id))?.hide(); }
+            function osVal(id) { return (document.getElementById(id)?.value ?? "").toString(); }
+            function osSet(id, v) { const el = document.getElementById(id); if (el) el.value = v; }
+            function osText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+
+            async function osApi(url, method, body) {
+                try {
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: { "Content-Type": "application/json" },
+                        body: body === undefined ? undefined : JSON.stringify(body)
+                    });
+                    let data = null;
+                    try { data = await res.json(); } catch (e) { }
+                    return { ok: res.ok, data: data };
+                } catch (e) {
+                    console.error("So'rov xatosi:", e);
+                    showToast("Server bilan bog'lanishda xatolik!", false);
+                    return { ok: false, data: null, network: true };
+                }
+            }
+
+            function osFail(r, fallback) {
+                if (r.network) return;
+                showToast((r.data && r.data.message) ? r.data.message : fallback, false);
+            }
+
+            // =========================== BUYURTMALAR ===========================
+            async function fetchOrders() {
+                const r = await osApi(`/api/shop-cabinet/${osShopId()}/orders`, "GET");
+                if (r.ok && Array.isArray(r.data)) ordersList = r.data;
+                renderOrders();
+            }
+
+            function orderStatusBadge(o) {
+                switch (o.status) {
+                    case "Yangi": return '<span class="badge bg-primary">Yangi</span>';
+                    case "Tayyor": return '<span class="badge bg-info text-dark">Tayyor</span>';
+                    case "Topshirilgan": return '<span class="badge bg-success">Topshirilgan</span>';
+                    case ORDER_DEBT_STATUS: return '<span class="badge bg-danger">Qarzga o\'tkazilgan</span>';
+                    default: return `<span class="badge bg-secondary">${debtEsc(o.status)}</span>`;
+                }
+            }
+
+            function renderOrders() {
+                const active = ordersList.filter(o => o.status === "Yangi" || o.status === "Tayyor");
+                osText("ordActiveCount", active.length + " ta");
+                osText("ordActiveTotal", formatSom(active.reduce((s, o) => s + o.totalAmount, 0)) + " so'm");
+                osText("ordActivePaid", formatSom(active.reduce((s, o) => s + o.paidAmount, 0)) + " so'm");
+                osText("ordActiveLeft", formatSom(active.reduce((s, o) => s + o.remaining, 0)) + " so'm");
+                osText("ordersCountBadge", ordersList.length);
+
+                const tbody = document.getElementById("ordersTableBody");
+                if (!tbody) return;
+
+                const filter = osVal("ordersStatusFilter");
+                const shown = filter ? ordersList.filter(o => o.status === filter) : ordersList;
+
+                if (shown.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">Hozircha buyurtmalar mavjud emas</td></tr>`;
+                    return;
+                }
+
+                const today = new Date().toISOString().slice(0, 10);
+
+                tbody.innerHTML = shown.map((o, i) => {
+                    const isDebt = o.status === ORDER_DEBT_STATUS;
+                    const isDone = o.status === "Topshirilgan";
+                    const left = o.remaining;
+                    const canPay = !isDebt && left > 0;
+                    const pct = o.totalAmount > 0 ? Math.min(100, Math.round(o.paidAmount / o.totalAmount * 100)) : 0;
+                    const dueStr = o.dueDate ? String(o.dueDate).slice(0, 10) : "";
+                    const overdue = dueStr && dueStr < today && !isDone && !isDebt;
+                    const dis = (cond) => cond ? ' style="pointer-events:none;opacity:.45;"' : '';
+                    const phone = o.customerPhone
+                        ? `<div class="small"><a href="tel:${debtEsc(o.customerPhone).replace(/\s/g, "")}" class="text-decoration-none">${debtEsc(o.customerPhone)}</a></div>` : "";
+
+                    return `
+                                <tr>
+                                    <td>${i + 1}</td>
+                                    <td class="small">${osFmtDT(o.createdAt)}</td>
+                                    <td><div class="fw-semibold">${debtEsc(o.customerName)}</div>${phone}</td>
+                                    <td class="small" style="max-width:220px;white-space:normal;">${o.description ? debtEsc(o.description) : '<span class="text-muted">—</span>'}</td>
+                                    <td class="small ${overdue ? 'text-danger fw-bold' : ''}">${osFmtDate(o.dueDate)}${overdue ? '<div>muddati o\'tgan</div>' : ''}</td>
+                                    <td>${formatSom(o.totalAmount)} so'm</td>
+                                    <td style="min-width:130px;">
+                                        <span class="text-success" style="cursor:pointer;text-decoration:underline;" onclick="showOrderPayments(${o.id})" title="To'lovlar tarixi">${formatSom(o.paidAmount)} so'm</span>
+                                        <div class="progress mt-1" style="height:4px;"><div class="progress-bar bg-success" style="width:${pct}%"></div></div>
+                                    </td>
+                                    <td class="fw-bold ${left > 0 ? 'text-danger' : 'text-success'}">${isDebt ? `<span class="text-muted small">Qarzdorda: ${formatSom(o.transferredAmount)} so'm</span>` : formatSom(left) + " so'm"}</td>
+                                    <td>${orderStatusBadge(o)}</td>
+                                    <td class="text-center">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold debtor-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm debtor-dropdown-menu">
+                                                <li><a class="dropdown-item py-2" href="#"${dis(!canPay)} onclick="openPayOrder(${o.id}); return false;">💵 To'lov qabul qilish</a></li>
+                                                <li><a class="dropdown-item py-2 text-danger" href="#"${dis(!canPay)} onclick="transferOrderToDebtor(${o.id}); return false;">➡️ Qolganini Qarzdorga o'tkazish</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item py-2" href="#"${dis(isDebt || o.status === "Tayyor" || isDone)} onclick="setOrderStatus(${o.id}, 'Tayyor'); return false;">✅ Tayyor deb belgilash</a></li>
+                                                <li><a class="dropdown-item py-2" href="#"${dis(isDebt || isDone)} onclick="setOrderStatus(${o.id}, 'Topshirilgan'); return false;">📦 Topshirildi</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item py-2" href="#"${dis(isDebt)} onclick="openOrderModal(${o.id}); return false;">✏️ Tahrirlash</a></li>
+                                                <li><a class="dropdown-item py-2 text-danger" href="#"${dis(isDebt)} onclick="deleteOrder(${o.id}); return false;">🗑️ O'chirish</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>`;
+                }).join("");
+            }
+
+            function orderPreview() {
+                const total = parseFloat(osVal("orderTotal")) || 0;
+                const adv = document.getElementById("orderAdvanceWrap").classList.contains("d-none") ? 0 : (parseFloat(osVal("orderAdvance")) || 0);
+                const left = total - adv;
+                const box = document.getElementById("orderLeftPreview");
+                box.textContent = formatSom(Math.max(0, left)) + " so'm";
+                box.className = left < 0 ? "text-danger" : "";
+                if (left < 0) box.textContent += " (avans summadan oshib ketdi!)";
+            }
+
+            function openOrderModal(id) {
+                const o = id ? ordersList.find(x => x.id === id) : null;
+                osSet("orderEditId", o ? o.id : "");
+                osText("orderModalTitle", o ? "Buyurtmani tahrirlash" : "Yangi buyurtma");
+                osSet("orderCustomer", o ? o.customerName : "");
+                osSet("orderPhone", o ? o.customerPhone : "");
+                osSet("orderDesc", o ? (o.description || "") : "");
+                osSet("orderTotal", o ? o.totalAmount : "");
+                osSet("orderAdvance", "");
+                osSet("orderDue", o && o.dueDate ? String(o.dueDate).slice(0, 10) : "");
+                // Avans faqat yangi buyurtmada kiritiladi; keyingi to'lovlar "To'lov qabul qilish" orqali
+                document.getElementById("orderAdvanceWrap").classList.toggle("d-none", !!o);
+                orderPreview();
+                osModal("orderModal").show();
+            }
+
+            async function saveOrder() {
+                const id = osVal("orderEditId");
+                const customerName = osVal("orderCustomer").trim();
+                const customerPhone = osVal("orderPhone").trim();
+                const description = osVal("orderDesc").trim();
+                const totalAmount = parseFloat(osVal("orderTotal"));
+                const advanceAmount = id ? 0 : (parseFloat(osVal("orderAdvance")) || 0);
+                const due = osVal("orderDue");
+
+                if (!customerName) { showToast("Mijoz ismini kiriting!", false); return; }
+                if (isNaN(totalAmount) || totalAmount <= 0) { showToast("Buyurtma summasini kiriting!", false); return; }
+                if (advanceAmount < 0 || advanceAmount > totalAmount) { showToast("Avans summasi noto'g'ri!", false); return; }
+
+                const body = { customerName, customerPhone, description, totalAmount, dueDate: due ? due + "T00:00:00" : null };
+                let r;
+                if (id) {
+                    r = await osApi(`/api/shop-cabinet/${osShopId()}/orders/${id}`, "PUT", body);
+                } else {
+                    body.advanceAmount = advanceAmount;
+                    r = await osApi(`/api/shop-cabinet/${osShopId()}/orders`, "POST", body);
+                }
+                if (!r.ok) { osFail(r, "Buyurtmani saqlashda xatolik!"); return; }
+
+                osHide("orderModal");
+                await fetchOrders();
+                showToast(id ? "Buyurtma yangilandi" : (advanceAmount > 0 ? "Buyurtma va avans saqlandi" : "Buyurtma saqlandi"), true);
+            }
+
+            function openPayOrder(id) {
+                const o = ordersList.find(x => x.id === id);
+                if (!o) return;
+                osSet("payOrderId", id);
+                osText("payOrderInfo", `${o.customerName} (qoldiq: ${formatSom(o.remaining)} so'm)`);
+                osSet("payOrderAmount", "");
+                document.getElementById("payOrderAmount").max = o.remaining;
+                osSet("payOrderNote", "");
+                osModal("payOrderModal").show();
+            }
+
+            function fillOrderPaymentFull() {
+                const o = ordersList.find(x => x.id === parseInt(osVal("payOrderId")));
+                if (o) osSet("payOrderAmount", o.remaining);
+            }
+
+            async function submitOrderPayment() {
+                const id = parseInt(osVal("payOrderId"));
+                const amount = parseFloat(osVal("payOrderAmount"));
+                const note = osVal("payOrderNote").trim();
+                if (isNaN(amount) || amount <= 0) { showToast("To'lov summasini kiriting!", false); return; }
+
+                const r = await osApi(`/api/shop-cabinet/${osShopId()}/orders/${id}/payments`, "POST",
+                    { amount, paidByName: "Boshliq", note: note || null });
+                if (!r.ok) { osFail(r, "To'lovni saqlashda xatolik!"); return; }
+
+                osHide("payOrderModal");
+                await fetchOrders();
+                showToast("To'lov qabul qilindi", true);
+            }
+
+            async function showOrderPayments(id) {
+                const o = ordersList.find(x => x.id === id);
+                osText("orderHistoryName", o ? o.customerName : "");
+                const bodyEl = document.getElementById("orderHistoryBody");
+                bodyEl.innerHTML = `<p class="text-center text-muted py-3 mb-0">Yuklanmoqda...</p>`;
+                osModal("orderHistoryModal").show();
+
+                const r = await osApi(`/api/shop-cabinet/${osShopId()}/orders/${id}/payments`, "GET");
+                const payments = (r.ok && Array.isArray(r.data)) ? r.data : [];
+                if (payments.length === 0) {
+                    bodyEl.innerHTML = `<p class="text-center text-muted py-3 mb-0">Hozircha to'lovlar mavjud emas</p>`;
+                    return;
+                }
+                const rows = payments.map((p, i) => `<tr><td>${i + 1}</td><td>${osFmtDT(p.paidAt)}</td><td>${debtEsc(p.paidByName || "Boshliq")}</td><td>${p.note ? debtEsc(p.note) : '<span class="text-muted">—</span>'}</td><td class="text-end fw-bold">${formatSom(p.amount)} so'm</td></tr>`).join("");
+                bodyEl.innerHTML = `<table class="table table-sm mb-0"><thead><tr><th>#</th><th>Sana / Vaqt</th><th>Kim qabul qilgan</th><th>Izoh</th><th class="text-end">Summasi</th></tr></thead><tbody>${rows}</tbody></table>`;
+            }
+
+            async function setOrderStatus(id, status) {
+                const r = await osApi(`/api/shop-cabinet/${osShopId()}/orders/${id}/status`, "POST", { status });
+                if (!r.ok) { osFail(r, "Holatni o'zgartirishda xatolik!"); return; }
+                await fetchOrders();
+                showToast("Holat yangilandi: " + status, true);
+            }
+
+            // Qolgan summani bir tugma bilan "Qarzdor" bo'limiga o'tkazish
+            async function transferOrderToDebtor(id) {
+                const o = ordersList.find(x => x.id === id);
+                if (!o) return;
+                if (!confirm(`"${o.customerName}" buyurtmasining qolgan ${formatSom(o.remaining)} so'mi "Qarzdor" bo'limiga o'tkaziladi.\n\nDavom etasizmi?`)) return;
+
+                const r = await osApi(`/api/shop-cabinet/${osShopId()}/orders/${id}/transfer-to-debtor`, "POST");
+                if (!r.ok) { osFail(r, "Qarzdorga o'tkazishda xatolik!"); return; }
+
+                await fetchOrders();
+                if (typeof fetchDebtors === "function") await fetchDebtors();
+                showToast(`${formatSom(r.data.transferred)} so'm "${r.data.debtorName}" qarzdorga o'tkazildi`, true);
+            }
+
+            async function deleteOrder(id) {
+                const o = ordersList.find(x => x.id === id);
+                if (!o) return;
+                if (!confirm(`"${o.customerName}" buyurtmasi va uning to'lovlar tarixi o'chiriladi.\n\nDavom etasizmi?`)) return;
+                const r = await osApi(`/api/shop-cabinet/${osShopId()}/orders/${id}`, "DELETE");
+                if (!r.ok) { osFail(r, "O'chirishda xatolik!"); return; }
+                await fetchOrders();
+                showToast("Buyurtma o'chirildi", true);
+            }
+
+            // =========================== TA'MINOTCHILAR ===========================
+            async function fetchSuppliers() {
+                const r = await osApi(`/api/shop-cabinet/${osShopId()}/suppliers`, "GET");
+                if (r.ok && Array.isArray(r.data)) suppliersList = r.data;
+                renderSuppliers();
+            }
+
+            function renderSuppliers() {
+                const totalDebt = suppliersList.reduce((s, x) => s + x.remaining, 0);
+                const paid = suppliersList.reduce((s, x) => s + x.paidAmount, 0);
+                const activeCount = suppliersList.filter(x => x.remaining > 0).length;
+
+                osText("supTotalDebt", formatSom(totalDebt) + " so'm");
+                osText("supActiveCount", activeCount + " ta");
+                osText("supPaidTotal", formatSom(paid) + " so'm");
+                osText("suppliersCountBadge", suppliersList.length);
+                osText("dashSupplierDebt", formatSom(totalDebt) + " so'm");
+                osText("dashSupplierCount", activeCount + " ta ta'minotchi");
+
+                // "Tovar qabul qilish" formasidagi ta'minotchilar ro'yxati
+                const dl = document.getElementById("supplierNamesList");
+                if (dl) dl.innerHTML = suppliersList.map(s => `<option value="${debtEsc(s.name)}"></option>`).join("");
+                if (typeof onSupplierInput === "function") onSupplierInput();
+
+                const tbody = document.getElementById("suppliersTableBody");
+                if (!tbody) return;
+                if (suppliersList.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Hozircha ta'minotchilar mavjud emas</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = suppliersList.map((s, i) => {
+                    const left = s.remaining;
+                    const badge = left <= 0
+                        ? '<span class="badge bg-success">Qarz yo\'q</span>'
+                        : (s.paidAmount > 0 ? '<span class="badge bg-warning text-dark">Qisman to\'langan</span>' : '<span class="badge bg-danger">Qarzdorsiz</span>');
+                    const phone = s.phone ? `<a href="tel:${debtEsc(s.phone).replace(/\s/g, "")}" class="text-decoration-none">${debtEsc(s.phone)}</a>` : '<span class="text-muted">—</span>';
+                    return `
+                                <tr>
+                                    <td>${i + 1}</td>
+                                    <td class="fw-semibold">${debtEsc(s.name)}</td>
+                                    <td>${phone}</td>
+                                    <td>${formatSom(s.totalAmount)} so'm</td>
+                                    <td class="text-success">${formatSom(s.paidAmount)} so'm</td>
+                                    <td class="fw-bold ${left > 0 ? 'text-danger' : 'text-success'}">${formatSom(left)} so'm</td>
+                                    <td>${badge}</td>
+                                    <td class="text-center">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light border-0 px-2 py-0 fw-bold debtor-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 18px;">⋮</button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm debtor-dropdown-menu">
+                                                <li><a class="dropdown-item py-2" href="#" ${left <= 0 ? 'style="pointer-events:none;opacity:.45;"' : ''} onclick="openPaySupplier(${s.id}); return false;">💵 To'lov qilish</a></li>
+                                                <li><a class="dropdown-item py-2" href="#" onclick="showSupplierHistory(${s.id}); return false;">📜 Tarix</a></li>
+                                                <li><a class="dropdown-item py-2" href="#" onclick="openSupplierModal(${s.id}); return false;">✏️ Tahrirlash</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item py-2 text-danger" href="#" onclick="deleteSupplier(${s.id}); return false;">🗑️ O'chirish</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>`;
+                }).join("");
+            }
+
+            function openSupplierModal(id) {
+                const s = id ? suppliersList.find(x => x.id === id) : null;
+                osSet("supEditId", s ? s.id : "");
+                osText("supplierModalTitle", s ? "Ta'minotchini tahrirlash" : "Yangi ta'minotchi");
+                osSet("supName", s ? s.name : "");
+                osSet("supPhone", s ? s.phone : "");
+                osSet("supInitDebt", "");
+                document.getElementById("supInitDebtWrap").classList.toggle("d-none", !!s);
+                osModal("supplierModal").show();
+            }
+
+            async function saveSupplier() {
+                const id = osVal("supEditId");
+                const name = osVal("supName").trim();
+                const phone = osVal("supPhone").trim();
+                const initialDebt = id ? 0 : (parseFloat(osVal("supInitDebt")) || 0);
+                if (!name) { showToast("Ta'minotchi nomini kiriting!", false); return; }
+                if (initialDebt < 0) { showToast("Qarz summasi noto'g'ri!", false); return; }
+
+                const r = id
+                    ? await osApi(`/api/shop-cabinet/${osShopId()}/suppliers/${id}`, "PUT", { name, phone })
+                    : await osApi(`/api/shop-cabinet/${osShopId()}/suppliers`, "POST", { name, phone, initialDebt });
+                if (!r.ok) { osFail(r, "Ta'minotchini saqlashda xatolik!"); return; }
+
+                osHide("supplierModal");
+                await fetchSuppliers();
+                showToast(id ? "Ta'minotchi yangilandi" : `"${name}" ta'minotchilar ro'yxatiga qo'shildi`, true);
+            }
+
+            function openPaySupplier(id) {
+                const s = suppliersList.find(x => x.id === id);
+                if (!s) return;
+                osSet("supPayId", id);
+                osText("supPayInfo", `${s.name} (qarzingiz: ${formatSom(s.remaining)} so'm)`);
+                osSet("supPayAmount", "");
+                document.getElementById("supPayAmount").max = s.remaining;
+                osSet("supPayNote", "");
+                osModal("paySupplierModal").show();
+            }
+
+            function fillSupplierPaymentFull() {
+                const s = suppliersList.find(x => x.id === parseInt(osVal("supPayId")));
+                if (s) osSet("supPayAmount", s.remaining);
+            }
+
+            async function submitSupplierPayment() {
+                const id = parseInt(osVal("supPayId"));
+                const amount = parseFloat(osVal("supPayAmount"));
+                const note = osVal("supPayNote").trim();
+                if (isNaN(amount) || amount <= 0) { showToast("To'lov summasini kiriting!", false); return; }
+
+                const r = await osApi(`/api/shop-cabinet/${osShopId()}/suppliers/${id}/payments`, "POST", { amount, note: note || null });
+                if (!r.ok) { osFail(r, "To'lovni saqlashda xatolik!"); return; }
+
+                osHide("paySupplierModal");
+                await fetchSuppliers();
+                showToast("Ta'minotchiga to'lov yozildi", true);
+            }
+
+            async function showSupplierHistory(id) {
+                const s = suppliersList.find(x => x.id === id);
+                osText("supplierHistoryName", s ? s.name : "");
+                const bodyEl = document.getElementById("supplierHistoryBody");
+                bodyEl.innerHTML = `<p class="text-center text-muted py-3 mb-0">Yuklanmoqda...</p>`;
+                osModal("supplierHistoryModal").show();
+
+                const r = await osApi(`/api/shop-cabinet/${osShopId()}/suppliers/${id}/history`, "GET");
+                const items = (r.ok && Array.isArray(r.data)) ? r.data : [];
+                if (items.length === 0) {
+                    bodyEl.innerHTML = `<p class="text-center text-muted py-3 mb-0">Hozircha yozuvlar mavjud emas</p>`;
+                    return;
+                }
+
+                const rows = items.map((it, i) => {
+                    if (it.type === "purchase") {
+                        const left = it.total - it.paid;
+                        const qty = it.quantity > 0 ? `${it.quantity} ${debtEsc(it.unit)}` : "—";
+                        return `<tr><td>${i + 1}</td><td>${osFmtDT(it.date)}</td><td>📦 ${debtEsc(it.title)}</td><td>${qty}</td><td class="text-end">${formatSom(it.total)} so'm</td><td class="text-end text-success">${formatSom(it.paid)} so'm</td><td class="text-end ${left > 0 ? 'text-danger fw-bold' : ''}">${formatSom(left)} so'm</td></tr>`;
+                    }
+                    return `<tr class="table-success"><td>${i + 1}</td><td>${osFmtDT(it.date)}</td><td>💵 To'lov${it.note ? ' — ' + debtEsc(it.note) : ''}</td><td>—</td><td class="text-end">—</td><td class="text-end text-success fw-bold">${formatSom(it.paid)} so'm</td><td class="text-end">—</td></tr>`;
+                }).join("");
+
+                bodyEl.innerHTML = `<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>#</th><th>Sana / Vaqt</th><th>Tafsilot</th><th>Miqdor</th><th class="text-end">Jami summa</th><th class="text-end">To'langan</th><th class="text-end">Qarz</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+            }
+
+            async function deleteSupplier(id) {
+                const s = suppliersList.find(x => x.id === id);
+                if (!s) return;
+                const debtNote = s.remaining > 0 ? `\n\nDIQQAT: unga ${formatSom(s.remaining)} so'm qarzingiz bor, u ham o'chib ketadi!` : "";
+                if (!confirm(`"${s.name}" ta'minotchisi va uning butun tarixi o'chiriladi.${debtNote}\n\nDavom etasizmi?`)) return;
+                const r = await osApi(`/api/shop-cabinet/${osShopId()}/suppliers/${id}`, "DELETE");
+                if (!r.ok) { osFail(r, "O'chirishda xatolik!"); return; }
+                await fetchSuppliers();
+                showToast("Ta'minotchi o'chirildi", true);
+            }
+
+            // ============ "TOVAR QABUL QILISH" FORMASIDAGI TA'MINOTCHI QISMI ============
+            function prodTotalNow() {
+                const q = parseFloat(osVal("prodQuantity")) || 0;
+                const b = parseFloat(osVal("prodBuyPrice")) || 0;
+                return Math.round(q * b * 100) / 100;
+            }
+
+            function recalcProductTotals() {
+                const total = prodTotalNow();
+                const paid = parseFloat(osVal("prodPaidNow")) || 0;
+                const left = Math.max(0, total - paid);
+                osSet("prodTotalCost", total ? formatSom(total) + " so'm" : "");
+                const leftEl = document.getElementById("prodDebtLeft");
+                if (leftEl) {
+                    leftEl.value = formatSom(left) + " so'm";
+                    leftEl.classList.toggle("text-danger", left > 0);
+                    leftEl.classList.toggle("text-success", left <= 0);
+                }
+            }
+
+            function onSupplierInput() {
+                const nameEl = document.getElementById("prodSupplierName");
+                if (!nameEl) return;
+                const name = nameEl.value.trim();
+                const found = name ? suppliersList.find(s => s.name.toLowerCase() === name.toLowerCase()) : null;
+
+                document.getElementById("prodSupplierPayRow").classList.toggle("d-none", !name);
+
+                const phoneEl = document.getElementById("prodSupplierPhone");
+                if (found) {
+                    phoneEl.value = found.phone || "";
+                    phoneEl.disabled = true;
+                } else {
+                    phoneEl.disabled = false;
+                }
+
+                const hint = document.getElementById("prodSupplierHint");
+                if (!name) hint.textContent = "";
+                else if (found) hint.textContent = `Mavjud ta'minotchi. Hozirgi qarzingiz: ${formatSom(found.remaining)} so'm`;
+                else hint.textContent = "Yangi ta'minotchi sifatida yoziladi";
+
+                recalcProductTotals();
+            }
+
+            function fillPaidFull() {
+                osSet("prodPaidNow", prodTotalNow() || "");
+                recalcProductTotals();
+            }
+
+            ["prodQuantity", "prodBuyPrice", "prodPaidNow"].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener("input", recalcProductTotals);
+            });
+        </script>
     </body>
 </html>

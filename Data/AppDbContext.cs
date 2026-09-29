@@ -19,4 +19,9 @@ public class AppDbContext : DbContext // <--- ": DbContext" meros olishi shart!
     public DbSet<SaleEditLog> SaleEditLogs => Set<SaleEditLog>(); // <--- Savdo tahrirlash tarixi jadvali qo'shildi
     public DbSet<TelegramSettings> TelegramSettings => Set<TelegramSettings>(); // <--- Telegram bot sozlamalari
     public DbSet<MaterialUsage> MaterialUsages => Set<MaterialUsage>(); // <--- Sex xodimlari material sarfi
+    public DbSet<Order> Orders => Set<Order>(); // <--- Buyurtmalar (avans bilan)
+    public DbSet<OrderPayment> OrderPayments => Set<OrderPayment>(); // <--- Buyurtma to'lovlari tarixi
+    public DbSet<Supplier> Suppliers => Set<Supplier>(); // <--- Ta'minotchilar
+    public DbSet<SupplierPurchase> SupplierPurchases => Set<SupplierPurchase>(); // <--- Ta'minotchidan olingan tovarlar
+    public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>(); // <--- Ta'minotchilarga to'lovlar
 }
