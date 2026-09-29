@@ -1360,8 +1360,8 @@
                     <a href="#" class="sidebar-menu-item" onclick="switchTab('workshop-history', this)">
                         🧾 <span>Sarf tarixi</span>
                     </a>
-                    <a href="#" class="sidebar-menu-item" onclick="switchTab('workshop-stock', this)">
-                        📦 <span>Ombor qoldig'i</span>
+                    <a href="#" class="sidebar-menu-item" onclick="switchTab('stock-left', this)">
+                        📦 <span>Qoldiqlar</span>
                     </a>
                 </div>
 
@@ -1888,6 +1888,36 @@
                                     </tr>
                                 </thead>
                                 <tbody id="wsStockBody">
+                                    <tr><td colspan="3" class="text-center text-muted py-3">Yuklanmoqda...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5.4 QOLDIQLAR: faqat qolgan mahsulotlar va qancha qolgani -->
+                <div id="section-stock-left" class="content-section d-none">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white fw-bold d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                            <span>📦 Qoldiqlar <span class="small text-muted fw-normal" id="qlCount"></span></span>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" id="qlShowEmpty" onchange="qlRender()">
+                                    <label class="form-check-label small" for="qlShowEmpty">Tugaganlarni ham ko'rsatish</label>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="qlLoad()">↻ Yangilash</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive" style="max-height: 75vh; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th style="width: 60px;">№</th>
+                                        <th>Mahsulot</th>
+                                        <th class="text-end">Qoldiq</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="qlBody">
                                     <tr><td colspan="3" class="text-center text-muted py-3">Yuklanmoqda...</td></tr>
                                 </tbody>
                             </table>
@@ -2449,6 +2479,7 @@
                 if (sectionId === 'telegram') loadTelegramSettings();
                 if (sectionId === 'workshop') loadWorkshop();
                 if (sectionId === 'workshop-history' || sectionId === 'workshop-stock') loadWorkshop();
+                if (sectionId === 'stock-left') qlLoad();
                 if (sectionId === 'staff' && !document.getElementById("editingStaffIndex").value) renderStaffElementPicker(null);
             }
 
@@ -4482,6 +4513,42 @@
                 } finally {
                     btn.disabled = false;
                 }
+            }
+
+            // ===== QOLDIQLAR (faqat qolgan mahsulotlar) =====
+            let qlAll = [];
+
+            async function qlLoad() {
+                try {
+                    const res = await fetch(`/api/shop-cabinet/${wsShopId()}/materials/stock`);
+                    qlAll = res.ok ? await res.json() : [];
+                } catch (err) {
+                    console.error("Qoldiqlarni olishda xatolik:", err);
+                    qlAll = [];
+                }
+                qlRender();
+            }
+
+            function qlRender() {
+                const showEmpty = document.getElementById("qlShowEmpty").checked;
+                const rows = qlAll
+                    .filter(s => showEmpty || Number(s.stock) > 0)
+                    .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+
+                document.getElementById("qlCount").textContent = rows.length ? `(${rows.length} ta)` : "";
+                const tbody = document.getElementById("qlBody");
+                if (rows.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">Qolgan mahsulot yo'q</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = rows.map((s, i) => {
+                    const out = Number(s.stock) <= 0;
+                    return `<tr>
+                                            <td class="text-muted">${i + 1}</td>
+                                            <td>${wsEsc(s.name)}</td>
+                                            <td class="text-end fw-bold ${out ? "text-danger" : "text-success"}">${wsNum(s.stock)} ${wsEsc(s.unit)}${out ? ' <span class="badge bg-danger">Tugagan</span>' : ""}</td>
+                                        </tr>`;
+                }).join("");
             }
 
             // --- QARZDORLAR ---
