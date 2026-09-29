@@ -1731,6 +1731,126 @@
         html[data-bs-theme="dark"] .topbar-user .meta .shop {
             color: var(--accent);
         }
+
+        /* ---------- buyurtmalar (sotuvchi) ---------- */
+        .ord-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 16px 18px 0;
+        }
+
+        .ord-stat {
+            background: var(--base);
+            border: 1px solid var(--line);
+            border-left: 4px solid var(--steel);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+            .ord-stat.s2 {
+                border-left-color: #1f9bb5;
+            }
+
+            .ord-stat.s3 {
+                border-left-color: var(--good);
+            }
+
+            .ord-stat.s4 {
+                border-left-color: var(--bad);
+            }
+
+            .ord-stat span {
+                display: block;
+                font-size: 10.5px;
+                font-weight: 700;
+                color: var(--ink-soft);
+                letter-spacing: .03em;
+            }
+
+            .ord-stat b {
+                display: block;
+                margin-top: 4px;
+                font-size: 16px;
+            }
+
+            .ord-stat.s4 b {
+                color: var(--bad);
+            }
+
+        .ord-toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            padding: 16px 18px 0;
+        }
+
+            .ord-toolbar select {
+                width: auto;
+                padding: 8px 30px 8px 11px;
+                font-size: 13px;
+            }
+
+        .ord-pill {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+            .ord-pill.new {
+                background: #E3EEF6;
+                color: var(--steel);
+            }
+
+            .ord-pill.ready {
+                background: var(--warn-soft);
+                color: var(--warn);
+            }
+
+            .ord-pill.done {
+                background: var(--good-soft);
+                color: var(--good);
+            }
+
+            .ord-pill.debt {
+                background: var(--bad-soft);
+                color: var(--bad);
+            }
+
+        .ord-bar {
+            height: 4px;
+            border-radius: 4px;
+            background: var(--base-2);
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+            .ord-bar i {
+                display: block;
+                height: 100%;
+                background: var(--good);
+            }
+
+        .row-menu-dropdown button:disabled {
+            opacity: .45;
+            cursor: default;
+        }
+
+        .row-menu-dropdown hr {
+            border: 0;
+            border-top: 1px solid var(--line);
+            margin: 0;
+        }
+
+        @media (max-width:860px) {
+            .ord-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1797,6 +1917,9 @@
                 </button>
                 <button class="nav-btn" id="navDebtors" onclick="setView('debtors')">
                     <span class="ic">💳</span> Qarzdorlar
+                </button>
+                <button class="nav-btn" id="navOrders" onclick="setView('orders')">
+                    <span class="ic">📦</span> Buyurtma
                 </button>
                 <button class="nav-btn" id="navWork" onclick="setView('work')" style="display:none;">
                     <span class="ic">🛠️</span> Material sarfi
@@ -1873,6 +1996,48 @@
                             <tr><td colspan="8" class="muted">Hozircha qarzdorlar mavjud emas</td></tr>
                         </tbody>
                         <tfoot id="employeeDebtorsFoot"></tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel wide" id="view-orders" style="display:none;">
+                <div class="panel-head">📦 Buyurtmalar <span id="ordCountBadge" style="font-weight:600;color:var(--ink-soft);">0</span></div>
+                <div class="msg-box" id="ordMessage" style="margin:12px 18px 0;"></div>
+                <div class="ord-stats">
+                    <div class="ord-stat"><span>FAOL BUYURTMALAR</span><b id="ordActiveCount">0 ta</b></div>
+                    <div class="ord-stat s2"><span>JAMI SUMMA</span><b id="ordActiveTotal">0 so'm</b></div>
+                    <div class="ord-stat s3"><span>OLINGAN AVANS / TO'LOV</span><b id="ordActivePaid">0 so'm</b></div>
+                    <div class="ord-stat s4"><span>QOLGAN (TO'LANISHI KERAK)</span><b id="ordActiveLeft">0 so'm</b></div>
+                </div>
+                <div class="ord-toolbar">
+                    <select id="ordStatusFilter" onchange="ordRender()">
+                        <option value="">Barcha holatlar</option>
+                        <option value="Yangi">Yangi</option>
+                        <option value="Tayyor">Tayyor</option>
+                        <option value="Topshirilgan">Topshirilgan</option>
+                        <option value="Qarzga o'tkazilgan">Qarzga o'tkazilgan</option>
+                    </select>
+                    <button class="btn-primary" style="flex:none;" onclick="ordOpenForm()">＋ Yangi buyurtma</button>
+                </div>
+                <div class="table-scroll">
+                    <table class="sales-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Sana</th>
+                                <th>Mijoz</th>
+                                <th>Buyurtma</th>
+                                <th>Muddat</th>
+                                <th class="num">Summa</th>
+                                <th class="num">To'langan (avans)</th>
+                                <th class="num">Qoldiq</th>
+                                <th>Holat</th>
+                                <th>Amal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordTableBody">
+                            <tr><td colspan="10" class="muted">Hozircha buyurtmalar mavjud emas</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -2136,6 +2301,83 @@
         </div>
     </div>
 
+    <!-- ---------- buyurtma modallari (sotuvchi) ---------- -->
+    <div class="modal-overlay" id="ordFormOverlay">
+        <div class="modal-box" style="width:min(460px, 100%);">
+            <h3 id="ordFormTitle">📦 Yangi buyurtma</h3>
+            <input type="hidden" id="ordEditId">
+            <label class="field-label">Mijoz ismi</label>
+            <input type="text" class="wk-text" id="ordCustomer" placeholder="Masalan: Aziz Karimov">
+            <label class="field-label" style="margin-top:10px;">Telefon raqami</label>
+            <input type="text" class="wk-text" id="ordPhone" placeholder="+998 90 123 45 67">
+            <label class="field-label" style="margin-top:10px;">Nima buyurtma qilindi</label>
+            <textarea id="ordDesc" rows="2" placeholder="Masalan: Peshtaxta 2x3 m, 5 dona"></textarea>
+            <div style="display:flex;gap:10px;margin-top:10px;">
+                <div style="flex:1;">
+                    <label class="field-label">Buyurtma summasi (so'm)</label>
+                    <input type="number" min="1" step="1" id="ordTotal" oninput="ordPreview()">
+                </div>
+                <div style="flex:1;" id="ordAdvanceWrap">
+                    <label class="field-label">Avans (oldindan to'lov)</label>
+                    <input type="number" min="0" step="1" id="ordAdvance" placeholder="0" oninput="ordPreview()">
+                </div>
+            </div>
+            <label class="field-label" style="margin-top:10px;">Topshirish muddati (ixtiyoriy)</label>
+            <input type="date" class="wk-text" id="ordDue">
+            <div class="edit-total"><span>Qolgan summa</span><b id="ordLeftPreview">0 so'm</b></div>
+            <div class="modal-err" id="ordFormError"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="ordCloseForm()">Bekor qilish</button>
+                <button class="btn-primary" id="ordFormSaveBtn" onclick="ordSave()">Saqlash</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="ordPayOverlay">
+        <div class="modal-box">
+            <h3>💵 Buyurtma uchun to'lov</h3>
+            <input type="hidden" id="ordPayId">
+            <div id="ordPayInfo" style="margin-bottom:10px;font-weight:600;"></div>
+            <label class="field-label">To'lov summasi (so'm)</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <input type="number" min="1" step="1" id="ordPayAmount" placeholder="Masalan: 100000">
+                <button class="btn-secondary" style="flex:none;" onclick="ordPayFull()">To'liq</button>
+            </div>
+            <label class="field-label" style="margin-top:10px;">Izoh (ixtiyoriy)</label>
+            <textarea id="ordPayNote" rows="2" placeholder="Masalan: ikkinchi to'lov"></textarea>
+            <div class="modal-err" id="ordPayError"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="ordClosePay()">Bekor qilish</button>
+                <button class="btn-primary" id="ordPaySaveBtn" onclick="ordSubmitPay()">To'lash</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="ordHistoryOverlay">
+        <div class="modal-box" style="width:min(520px, 100%);">
+            <h3>🧾 To'lovlar tarixi — <span id="ordHistoryName"></span></h3>
+            <div class="table-scroll" style="max-height:360px;">
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Sana / Vaqt</th>
+                            <th>Kim qabul qilgan</th>
+                            <th>Izoh</th>
+                            <th class="num">Summasi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordHistoryBody">
+                        <tr><td colspan="5" class="muted">Yuklanmoqda...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="ordCloseHistory()">Yopish</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let productsList = [];
 
@@ -2236,6 +2478,8 @@
             document.getElementById("view-history").style.display = view === "history" ? "" : "none";
             document.getElementById("view-debtors").style.display = view === "debtors" ? "" : "none";
             document.getElementById("view-work").style.display = view === "work" ? "" : "none";
+            document.getElementById("view-orders").style.display = view === "orders" ? "" : "none";
+            document.getElementById("navOrders").classList.toggle("active", view === "orders");
             document.getElementById("navWork").classList.toggle("active", view === "work");
             document.getElementById("view-report").style.display = view === "report" ? "" : "none";
             document.getElementById("navReport").classList.toggle("active", view === "report");
@@ -2249,6 +2493,12 @@
                 startDebtorsPolling();
             } else {
                 stopDebtorsPolling();
+            }
+            if (view === "orders") {
+                ordFetch();
+                ordStartPolling();
+            } else {
+                ordStopPolling();
             }
         }
 
@@ -2301,6 +2551,7 @@
             document.getElementById("navSell").style.display = isWorker ? "none" : "";
             document.getElementById("navHistory").style.display = isWorker ? "none" : "";
             document.getElementById("navDebtors").style.display = isWorker ? "none" : "";
+            document.getElementById("navOrders").style.display = isWorker ? "none" : "";
             document.getElementById("navWork").style.display = isWorker ? "" : "none";
             document.getElementById("navReport").style.display = isWorker ? "" : "none";
             document.getElementById("wkOutputWrap").style.display = employeeRole === "Pechat" ? "" : "none";
@@ -2375,10 +2626,10 @@
             tbody.innerHTML = wkStock.map(s => {
                 const out = s.stock <= 0;
                 return `<tr>
-                                            <td>${wkEsc(s.name)}</td>
-                                            <td class="num ${out ? "wk-low" : "wk-ok"}">${wkNum(s.stock)} ${wkEsc(s.unit)}${out ? " (tugagan)" : ""}</td>
-                                            <td class="num">${wkNum(mine[s.elementId] || 0)} ${wkEsc(s.unit)}</td>
-                                        </tr>`;
+                                                <td>${wkEsc(s.name)}</td>
+                                                <td class="num ${out ? "wk-low" : "wk-ok"}">${wkNum(s.stock)} ${wkEsc(s.unit)}${out ? " (tugagan)" : ""}</td>
+                                                <td class="num">${wkNum(mine[s.elementId] || 0)} ${wkEsc(s.unit)}</td>
+                                            </tr>`;
             }).join("");
         }
 
@@ -2415,13 +2666,13 @@
                 const cancelInfo = u.isCancelled
                     ? `<div class="muted">Bekor: ${wkEsc(u.cancelReason || "")}</div>` : "";
                 return `<tr>
-                                            <td>${new Date(u.createdAt).toLocaleString()}</td>
-                                            <td>${wkEsc(u.elementName)}</td>
-                                            <td class="num ${u.isCancelled ? "wk-cancelled" : ""}">${wkNum(u.quantity)} ${wkEsc(u.unit)}</td>
-                                            <td class="num">${u.outputCount ?? "-"}</td>
-                                            <td>${wkEsc(u.note || "")}${cancelInfo}</td>
-                                            <td>${action}</td>
-                                        </tr>`;
+                                                <td>${new Date(u.createdAt).toLocaleString()}</td>
+                                                <td>${wkEsc(u.elementName)}</td>
+                                                <td class="num ${u.isCancelled ? "wk-cancelled" : ""}">${wkNum(u.quantity)} ${wkEsc(u.unit)}</td>
+                                                <td class="num">${u.outputCount ?? "-"}</td>
+                                                <td>${wkEsc(u.note || "")}${cancelInfo}</td>
+                                                <td>${action}</td>
+                                            </tr>`;
             }).join("");
         }
 
@@ -2673,11 +2924,11 @@
             document.getElementById("rpSumBody").innerHTML = sum.length === 0
                 ? msgRow("Bu davrda sarf yozilmagan", isPrint ? 4 : 3)
                 : sum.map(s => `<tr>
-                            <td>${wkEsc(s.name)}</td>
-                            <td class="num">${s.count}</td>
-                            <td class="num">${wkNum(s.qty)} ${wkEsc(s.unit)}</td>
-                            ${isPrint ? `<td class="num">${s.out || "-"}</td>` : ""}
-                        </tr>`).join("");
+                                <td>${wkEsc(s.name)}</td>
+                                <td class="num">${s.count}</td>
+                                <td class="num">${wkNum(s.qty)} ${wkEsc(s.unit)}</td>
+                                ${isPrint ? `<td class="num">${s.out || "-"}</td>` : ""}
+                            </tr>`).join("");
 
             // --- jadval: batafsil ---
             document.getElementById("rpDetHead").innerHTML =
@@ -2685,21 +2936,21 @@
             document.getElementById("rpDetBody").innerHTML = rows.length === 0
                 ? msgRow("Bu davrda sarf yozilmagan", cols)
                 : rows.map(u => `<tr>
-                            <td>${rpFmtDate(u.createdAt)}</td>
-                            <td>${wkEsc(u.elementName)}</td>
-                            <td class="num">${wkNum(u.quantity)} ${wkEsc(u.unit)}</td>
-                            ${isPrint ? `<td class="num">${u.outputCount ?? "-"}</td>` : ""}
-                            <td>${wkEsc(u.note || "")}</td>
-                        </tr>`).join("");
+                                <td>${rpFmtDate(u.createdAt)}</td>
+                                <td>${wkEsc(u.elementName)}</td>
+                                <td class="num">${wkNum(u.quantity)} ${wkEsc(u.unit)}</td>
+                                ${isPrint ? `<td class="num">${u.outputCount ?? "-"}</td>` : ""}
+                                <td>${wkEsc(u.note || "")}</td>
+                            </tr>`).join("");
 
             const totalText = Object.keys(byUnit).map(unit => `${wkNum(byUnit[unit])} ${wkEsc(unit)}`).join(" • ") || "0";
             document.getElementById("rpDetFoot").innerHTML = rows.length === 0 ? "" :
                 `<tr style="font-weight:700;">
-                        <td colspan="2">Jami (${rows.length} ta yozuv)</td>
-                        <td class="num">${totalText}</td>
-                        ${isPrint ? `<td class="num">${totalOut}</td>` : ""}
-                        <td></td>
-                    </tr>`;
+                            <td colspan="2">Jami (${rows.length} ta yozuv)</td>
+                            <td class="num">${totalText}</td>
+                            ${isPrint ? `<td class="num">${totalOut}</td>` : ""}
+                            <td></td>
+                        </tr>`;
 
             // Server eng ko'pi bilan 500 ta yozuv qaytaradi — foydalanuvchi bilishi kerak
             const noteEl = document.querySelector(".rp-note");
@@ -3033,17 +3284,17 @@
                     : `<span class="ph">📦</span>`;
                 const low = p.availableStock <= 0 ? "low" : "";
                 return `
-                                                                      <div class="product-card" data-product-id="${p.id}">
-                                                                        <div class="thumb">${thumb}</div>
-                                                                        <div class="body">
-                                                                          <div class="pname">${p.name}</div>
-                                                                          <div class="pstock ${low}">Omborda: ${p.availableStock} ${p.unit}</div>
-                                                                          <div class="pstock" style="color:var(--ink);font-weight:700;font-size:14px;">${Number(p.elementSellPrice).toLocaleString()} so'm</div>
-                                                                          <button type="button" class="btn-card-sell" ${p.availableStock <= 0 ? "disabled" : ""}
-                                                                                  onclick="openCartModal(${p.id})">🛒 Sotish</button>
-                                                                        </div>
-                                                                      </div>
-                                                                    `;
+                                                                          <div class="product-card" data-product-id="${p.id}">
+                                                                            <div class="thumb">${thumb}</div>
+                                                                            <div class="body">
+                                                                              <div class="pname">${p.name}</div>
+                                                                              <div class="pstock ${low}">Omborda: ${p.availableStock} ${p.unit}</div>
+                                                                              <div class="pstock" style="color:var(--ink);font-weight:700;font-size:14px;">${Number(p.elementSellPrice).toLocaleString()} so'm</div>
+                                                                              <button type="button" class="btn-card-sell" ${p.availableStock <= 0 ? "disabled" : ""}
+                                                                                      onclick="openCartModal(${p.id})">🛒 Sotish</button>
+                                                                            </div>
+                                                                          </div>
+                                                                        `;
             }).join("");
         }
 
@@ -3088,25 +3339,25 @@
                     ? `<button class="btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="openDebtorPayModal(${d.id})">💵 To'lov</button>`
                     : `<span class="muted">—</span>`;
                 return `
-                                                                <tr>
-                                                                    <td class="idx-cell">${i + 1}</td>
-                                                                    <td>${d.name}</td>
-                                                                    <td><a href="tel:${(d.phone || "").replace(/\s/g, "")}" style="color:var(--steel);text-decoration:none;">${d.phone || "—"}</a></td>
-                                                                    <td class="num">${Number(d.amount).toLocaleString()} so'm</td>
-                                                                    <td class="num" style="cursor:pointer;text-decoration:underline;color:var(--good);" onclick="showDebtorPaymentHistory(${d.id})" title="To'lovlar tarixini ko'rish">${Number(d.paidAmount).toLocaleString()} so'm</td>
-                                                                    <td class="num" style="font-weight:700;color:${remaining > 0 ? 'var(--bad)' : 'var(--good)'};">${Number(remaining).toLocaleString()} so'm</td>
-                                                                    <td><span class="status-pill ${pillClass}">${pillText}</span></td>
-                                                                    <td>${payBtn}</td>
-                                                                </tr>`;
+                                                                    <tr>
+                                                                        <td class="idx-cell">${i + 1}</td>
+                                                                        <td>${d.name}</td>
+                                                                        <td><a href="tel:${(d.phone || "").replace(/\s/g, "")}" style="color:var(--steel);text-decoration:none;">${d.phone || "—"}</a></td>
+                                                                        <td class="num">${Number(d.amount).toLocaleString()} so'm</td>
+                                                                        <td class="num" style="cursor:pointer;text-decoration:underline;color:var(--good);" onclick="showDebtorPaymentHistory(${d.id})" title="To'lovlar tarixini ko'rish">${Number(d.paidAmount).toLocaleString()} so'm</td>
+                                                                        <td class="num" style="font-weight:700;color:${remaining > 0 ? 'var(--bad)' : 'var(--good)'};">${Number(remaining).toLocaleString()} so'm</td>
+                                                                        <td><span class="status-pill ${pillClass}">${pillText}</span></td>
+                                                                        <td>${payBtn}</td>
+                                                                    </tr>`;
             }).join("");
 
             foot.innerHTML = `
-                                                            <tr>
-                                                                <td colspan="5">Jami: ${filtered.length} ta qarzdor</td>
-                                                                <td class="num">${Number(totalRemaining).toLocaleString()} so'm</td>
-                                                                <td></td>
-                                                                <td></td>
-                                                            </tr>`;
+                                                                <tr>
+                                                                    <td colspan="5">Jami: ${filtered.length} ta qarzdor</td>
+                                                                    <td class="num">${Number(totalRemaining).toLocaleString()} so'm</td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                </tr>`;
         }
 
         /* ---- xodim tomonidan qarzdorga to'lov qilish ---- */
@@ -3202,13 +3453,13 @@
                 const who = p.paidByName || (p.employeeId ? "Xodim" : "Boshliq");
                 const note = p.note ? p.note : `<span class="muted">—</span>`;
                 return `
-                                                                <tr>
-                                                                    <td class="idx-cell">${i + 1}</td>
-                                                                    <td>${dt}</td>
-                                                                    <td>${who}</td>
-                                                                    <td>${note}</td>
-                                                                    <td class="num">${Number(p.amount).toLocaleString()} so'm</td>
-                                                                </tr>`;
+                                                                    <tr>
+                                                                        <td class="idx-cell">${i + 1}</td>
+                                                                        <td>${dt}</td>
+                                                                        <td>${who}</td>
+                                                                        <td>${note}</td>
+                                                                        <td class="num">${Number(p.amount).toLocaleString()} so'm</td>
+                                                                    </tr>`;
             }).join("");
         }
 
@@ -3433,29 +3684,29 @@
                 total += lineTotal;
 
                 return `
-                                                                      <div class="sale-row" data-cart-id="${item.cartId}">
-                                                                        <button type="button" class="row-remove" onclick="removeFromCart(${item.cartId})" title="O'chirish">−</button>
-                                                                        <div class="row-top">
-                                                                          <div>
-                                                                            <label class="field-label">${product.name}</label>
-                                                                            <div class="row-avail" style="font-size:11.5px;color:var(--ink-soft);">Omborda: ${available} ${product.unit}</div>
+                                                                          <div class="sale-row" data-cart-id="${item.cartId}">
+                                                                            <button type="button" class="row-remove" onclick="removeFromCart(${item.cartId})" title="O'chirish">−</button>
+                                                                            <div class="row-top">
+                                                                              <div>
+                                                                                <label class="field-label">${product.name}</label>
+                                                                                <div class="row-avail" style="font-size:11.5px;color:var(--ink-soft);">Omborda: ${available} ${product.unit}</div>
+                                                                              </div>
+                                                                              <div>
+                                                                                <label class="field-label">Miqdori</label>
+                                                                                <input type="number" min="1" step="1" value="${item.qty}" data-cart-id="${item.cartId}" data-field="qty" oninput="onCartQtyChange(${item.cartId}, this.value)">
+                                                                              </div>
+                                                                            </div>
+                                                                            <div class="row-top" style="margin-top:8px;">
+                                                                              <div>
+                                                                                <label class="field-label">Narxi (so'm)</label>
+                                                                                <input type="number" min="0" step="1" value="${item.price}" data-cart-id="${item.cartId}" data-field="price" oninput="onCartPriceChange(${item.cartId}, this.value)">
+                                                                              </div>
+                                                                              <div></div>
+                                                                            </div>
+                                                                            <div class="row-hints">${isOver ? `<div class="row-hint low">Miqdor noto'g'ri yoki omborda yetarli emas!</div>` : ""}${isPriceLow ? `<div class="row-hint low">⚠️ Belgilangan narxdan past (${Number(product.elementSellPrice).toLocaleString()} so'm) — boshliqqa qayd etiladi</div>` : ""}</div>
+                                                                            <div class="row-linetotal"><span>Jami</span><b>${Number(lineTotal).toLocaleString()} so'm</b></div>
                                                                           </div>
-                                                                          <div>
-                                                                            <label class="field-label">Miqdori</label>
-                                                                            <input type="number" min="1" step="1" value="${item.qty}" data-cart-id="${item.cartId}" data-field="qty" oninput="onCartQtyChange(${item.cartId}, this.value)">
-                                                                          </div>
-                                                                        </div>
-                                                                        <div class="row-top" style="margin-top:8px;">
-                                                                          <div>
-                                                                            <label class="field-label">Narxi (so'm)</label>
-                                                                            <input type="number" min="0" step="1" value="${item.price}" data-cart-id="${item.cartId}" data-field="price" oninput="onCartPriceChange(${item.cartId}, this.value)">
-                                                                          </div>
-                                                                          <div></div>
-                                                                        </div>
-                                                                        <div class="row-hints">${isOver ? `<div class="row-hint low">Miqdor noto'g'ri yoki omborda yetarli emas!</div>` : ""}${isPriceLow ? `<div class="row-hint low">⚠️ Belgilangan narxdan past (${Number(product.elementSellPrice).toLocaleString()} so'm) — boshliqqa qayd etiladi</div>` : ""}</div>
-                                                                        <div class="row-linetotal"><span>Jami</span><b>${Number(lineTotal).toLocaleString()} so'm</b></div>
-                                                                      </div>
-                                                                    `;
+                                                                        `;
             }).join("");
 
             document.getElementById("cartModalTotal").textContent = Number(total).toLocaleString() + " so'm";
@@ -3633,35 +3884,35 @@
                     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
                 const menu = s.id != null ? `
-                                                                      <div class="row-menu">
-                                                                        <button class="kebab-btn" onclick="toggleRowMenu('${s.id}', event)">⋮</button>
-                                                                        <div class="row-menu-dropdown" id="menu-${s.id}">
-                                                                          <button onclick="openEditFlow('${s.id}')">✏️ Tahrirlash</button>
-                                                                        </div>
-                                                                      </div>` : "";
+                                                                          <div class="row-menu">
+                                                                            <button class="kebab-btn" onclick="toggleRowMenu('${s.id}', event)">⋮</button>
+                                                                            <div class="row-menu-dropdown" id="menu-${s.id}">
+                                                                              <button onclick="openEditFlow('${s.id}')">✏️ Tahrirlash</button>
+                                                                            </div>
+                                                                          </div>` : "";
                 return `
-                                                                      <tr>
-                                                                        <td class="idx-cell">${i + 1}</td>
-                                                                        <td>${s.employeeName}</td>
-                                                                        <td>${s.productName}</td>
-                                                                        <td>${dateFormatted}</td>
-                                                                        <td class="num">${s.quantity}</td>
-                                                                        <td class="num">${Number(s.unitPrice).toLocaleString()} so'm</td>
-                                                                        <td class="num">${Number(s.totalSum).toLocaleString()} so'm</td>
-                                                                        <td>${menu}</td>
-                                                                      </tr>`;
+                                                                          <tr>
+                                                                            <td class="idx-cell">${i + 1}</td>
+                                                                            <td>${s.employeeName}</td>
+                                                                            <td>${s.productName}</td>
+                                                                            <td>${dateFormatted}</td>
+                                                                            <td class="num">${s.quantity}</td>
+                                                                            <td class="num">${Number(s.unitPrice).toLocaleString()} so'm</td>
+                                                                            <td class="num">${Number(s.totalSum).toLocaleString()} so'm</td>
+                                                                            <td>${menu}</td>
+                                                                          </tr>`;
             }).join("");
 
             const totalQty = list.reduce((a, s) => a + s.quantity, 0);
             const totalSum = list.reduce((a, s) => a + s.totalSum, 0);
             foot.innerHTML = `
-                                                                    <tr>
-                                                                      <td colspan="4">Jami</td>
-                                                                      <td class="num">${totalQty}</td>
-                                                                      <td></td>
-                                                                      <td class="num">${Number(totalSum).toLocaleString()} so'm</td>
-                                                                      <td></td>
-                                                                    </tr>`;
+                                                                        <tr>
+                                                                          <td colspan="4">Jami</td>
+                                                                          <td class="num">${totalQty}</td>
+                                                                          <td></td>
+                                                                          <td class="num">${Number(totalSum).toLocaleString()} so'm</td>
+                                                                          <td></td>
+                                                                        </tr>`;
         }
 
         /* ---- row kebab menu ---- */
@@ -3725,9 +3976,9 @@
         function openEditModal(sale) {
             const select = document.getElementById("editProductSelect");
             select.innerHTML = productsList.map(p => `
-                                                                    <option value="${p.id}" ${p.id == sale.productId ? "selected" : (p.name === sale.productName && !sale.productId ? "selected" : "")}>
-                                                                      ${p.name} — ${Number(p.elementSellPrice).toLocaleString()} so'm
-                                                                    </option>`).join("");
+                                                                        <option value="${p.id}" ${p.id == sale.productId ? "selected" : (p.name === sale.productName && !sale.productId ? "selected" : "")}>
+                                                                          ${p.name} — ${Number(p.elementSellPrice).toLocaleString()} so'm
+                                                                        </option>`).join("");
 
             document.getElementById("editQtyInput").value = sale.quantity;
             document.getElementById("editError").textContent = "";
@@ -3780,6 +4031,326 @@
                 errEl.textContent = "Server bilan bog'lanishda xatolik yuz berdi.";
             }
             btn.disabled = false; btn.textContent = "Saqlash";
+        }
+
+        /* ================= BUYURTMALAR (sotuvchi) =================
+           Boshliq kabineti bilan bir xil API: /api/shop-cabinet/{shopId}/orders  */
+        let ordList = [];
+        let ordPollTimer = null;
+        const ORD_DEBT = "Qarzga o'tkazilgan";
+
+        function ordEsc(t) { const d = document.createElement("div"); d.textContent = t ?? ""; return d.innerHTML; }
+        function ordSom(n) { return Number(n || 0).toLocaleString(); }
+        function ordShop() { return localStorage.getItem("currentShopId"); }
+        function ordEl(id) { return document.getElementById(id); }
+
+        function ordFmtDT(v) {
+            if (!v) return "—";
+            return new Date(v).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+        // "2026-10-05T00:00:00Z" -> "05.10.2026"
+        function ordFmtDate(v) {
+            if (!v) return "—";
+            const p = String(v).slice(0, 10).split("-");
+            return p.length === 3 ? `${p[2]}.${p[1]}.${p[0]}` : "—";
+        }
+
+        function ordMsg(type, text) {
+            const el = ordEl("ordMessage");
+            showMessage(el, type, text);
+            clearTimeout(ordMsg._t);
+            ordMsg._t = setTimeout(() => el.classList.remove("show"), 5000);
+        }
+
+        async function ordApi(url, method, body) {
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { "Content-Type": "application/json" },
+                    body: body === undefined ? undefined : JSON.stringify(body)
+                });
+                let data = null;
+                try { data = await res.json(); } catch (e) { }
+                return { ok: res.ok, data: data };
+            } catch (e) {
+                console.error("Buyurtma so'rovi xatosi:", e);
+                ordMsg("err", "Server bilan bog'lanishda xatolik!");
+                return { ok: false, data: null, network: true };
+            }
+        }
+
+        function ordFail(r, fallback) {
+            if (r.network) return;
+            ordMsg("err", (r.data && r.data.message) ? r.data.message : fallback);
+        }
+
+        async function ordFetch() {
+            const r = await ordApi(`/api/shop-cabinet/${ordShop()}/orders`, "GET");
+            if (r.ok && Array.isArray(r.data)) ordList = r.data;
+            ordRender();
+        }
+
+        function ordPill(o) {
+            switch (o.status) {
+                case "Yangi": return '<span class="ord-pill new">Yangi</span>';
+                case "Tayyor": return '<span class="ord-pill ready">Tayyor</span>';
+                case "Topshirilgan": return '<span class="ord-pill done">Topshirilgan</span>';
+                case ORD_DEBT: return '<span class="ord-pill debt">Qarzga o\'tkazilgan</span>';
+                default: return `<span class="ord-pill new">${ordEsc(o.status)}</span>`;
+            }
+        }
+
+        function ordRender() {
+            const active = ordList.filter(o => o.status === "Yangi" || o.status === "Tayyor");
+            ordEl("ordActiveCount").textContent = active.length + " ta";
+            ordEl("ordActiveTotal").textContent = ordSom(active.reduce((a, o) => a + o.totalAmount, 0)) + " so'm";
+            ordEl("ordActivePaid").textContent = ordSom(active.reduce((a, o) => a + o.paidAmount, 0)) + " so'm";
+            ordEl("ordActiveLeft").textContent = ordSom(active.reduce((a, o) => a + o.remaining, 0)) + " so'm";
+            ordEl("ordCountBadge").textContent = ordList.length;
+
+            const tbody = ordEl("ordTableBody");
+            if (!tbody) return;
+
+            const filter = ordEl("ordStatusFilter").value;
+            const shown = filter ? ordList.filter(o => o.status === filter) : ordList;
+
+            if (shown.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="muted">Hozircha buyurtmalar mavjud emas</td></tr>`;
+                return;
+            }
+
+            const today = new Date().toISOString().slice(0, 10);
+
+            tbody.innerHTML = shown.map((o, i) => {
+                const isDebt = o.status === ORD_DEBT;
+                const isDone = o.status === "Topshirilgan";
+                const left = o.remaining;
+                const canPay = !isDebt && left > 0;
+                const pct = o.totalAmount > 0 ? Math.min(100, Math.round(o.paidAmount / o.totalAmount * 100)) : 0;
+                const dueStr = o.dueDate ? String(o.dueDate).slice(0, 10) : "";
+                const overdue = dueStr && dueStr < today && !isDone && !isDebt;
+                const dis = (c) => c ? " disabled" : "";
+                const phone = o.customerPhone
+                    ? `<div style="font-size:12px;"><a href="tel:${ordEsc(o.customerPhone).replace(/\s/g, "")}" style="color:var(--steel);text-decoration:none;">${ordEsc(o.customerPhone)}</a></div>` : "";
+
+                return `
+                    <tr>
+                        <td class="idx-cell">${i + 1}</td>
+                        <td style="font-size:12px;">${ordFmtDT(o.createdAt)}</td>
+                        <td><div style="font-weight:600;">${ordEsc(o.customerName)}</div>${phone}</td>
+                        <td style="font-size:12.5px;max-width:220px;white-space:normal;">${o.description ? ordEsc(o.description) : '<span style="color:var(--ink-soft);">—</span>'}</td>
+                        <td style="font-size:12.5px;${overdue ? 'color:var(--bad);font-weight:700;' : ''}">${ordFmtDate(o.dueDate)}${overdue ? '<div>muddati o\'tgan</div>' : ''}</td>
+                        <td class="num">${ordSom(o.totalAmount)} so'm</td>
+                        <td class="num" style="min-width:130px;">
+                            <span style="cursor:pointer;text-decoration:underline;color:var(--good);" onclick="ordShowHistory(${o.id})" title="To'lovlar tarixi">${ordSom(o.paidAmount)} so'm</span>
+                            <div class="ord-bar"><i style="width:${pct}%"></i></div>
+                        </td>
+                        <td class="num" style="font-weight:700;color:${left > 0 ? 'var(--bad)' : 'var(--good)'};">${isDebt ? `<span style="font-size:12px;font-weight:600;color:var(--ink-soft);">Qarzdorda: ${ordSom(o.transferredAmount)} so'm</span>` : ordSom(left) + " so'm"}</td>
+                        <td>${ordPill(o)}</td>
+                        <td>
+                            <div class="row-menu">
+                                <button class="kebab-btn" onclick="ordToggleMenu(${o.id}, event)">⋮</button>
+                                <div class="row-menu-dropdown" id="ordmenu-${o.id}">
+                                    <button${dis(!canPay)} onclick="ordOpenPay(${o.id})">💵 To'lov qabul qilish</button>
+                                    <button${dis(!canPay)} style="color:var(--bad);" onclick="ordTransfer(${o.id})">➡️ Qolganini Qarzdorga o'tkazish</button>
+                                    <hr>
+                                    <button${dis(isDebt || o.status === "Tayyor" || isDone)} onclick="ordSetStatus(${o.id}, 'Tayyor')">✅ Tayyor deb belgilash</button>
+                                    <button${dis(isDebt || isDone)} onclick="ordSetStatus(${o.id}, 'Topshirilgan')">📦 Topshirildi</button>
+                                    <hr>
+                                    <button${dis(isDebt)} onclick="ordOpenForm(${o.id})">✏️ Tahrirlash</button>
+                                    <button${dis(isDebt)} style="color:var(--bad);" onclick="ordDelete(${o.id})">🗑️ O'chirish</button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>`;
+            }).join("");
+        }
+
+        /* ---- ⋮ menyu (jadval qirqib qo'ymasligi uchun "fixed" joylashadi) ---- */
+        function ordToggleMenu(id, e) {
+            e.stopPropagation();
+            const dd = ordEl("ordmenu-" + id);
+            const wasOpen = dd && dd.classList.contains("show");
+            closeAllRowMenus();
+            if (!dd || wasOpen) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            dd.style.position = "fixed";
+            dd.style.right = "auto";
+            dd.classList.add("show");
+            let top = rect.bottom + 4;
+            if (top + dd.offsetHeight > window.innerHeight - 8) top = Math.max(8, rect.top - dd.offsetHeight - 4);
+            dd.style.top = top + "px";
+            dd.style.left = Math.max(8, rect.right - dd.offsetWidth) + "px";
+        }
+
+        /* ---- yangi / tahrirlash ---- */
+        function ordPreview() {
+            const total = parseFloat(ordEl("ordTotal").value) || 0;
+            const adv = ordEl("ordAdvanceWrap").style.display === "none" ? 0 : (parseFloat(ordEl("ordAdvance").value) || 0);
+            const left = total - adv;
+            const box = ordEl("ordLeftPreview");
+            box.textContent = ordSom(Math.max(0, left)) + " so'm" + (left < 0 ? " (avans summadan oshib ketdi!)" : "");
+            box.style.color = left < 0 ? "var(--bad)" : "";
+        }
+
+        function ordOpenForm(id) {
+            const o = id ? ordList.find(x => x.id === id) : null;
+            ordEl("ordEditId").value = o ? o.id : "";
+            ordEl("ordFormTitle").textContent = o ? "✏️ Buyurtmani tahrirlash" : "📦 Yangi buyurtma";
+            ordEl("ordCustomer").value = o ? o.customerName : "";
+            ordEl("ordPhone").value = o ? (o.customerPhone || "") : "";
+            ordEl("ordDesc").value = o ? (o.description || "") : "";
+            ordEl("ordTotal").value = o ? o.totalAmount : "";
+            ordEl("ordAdvance").value = "";
+            ordEl("ordDue").value = o && o.dueDate ? String(o.dueDate).slice(0, 10) : "";
+            // Avans faqat yangi buyurtmada; keyingi to'lovlar "To'lov qabul qilish" orqali
+            ordEl("ordAdvanceWrap").style.display = o ? "none" : "";
+            ordEl("ordFormError").textContent = "";
+            ordPreview();
+            ordEl("ordFormOverlay").classList.add("show");
+        }
+
+        function ordCloseForm() { ordEl("ordFormOverlay").classList.remove("show"); }
+
+        async function ordSave() {
+            const id = ordEl("ordEditId").value;
+            const customerName = ordEl("ordCustomer").value.trim();
+            const customerPhone = ordEl("ordPhone").value.trim();
+            const description = ordEl("ordDesc").value.trim();
+            const totalAmount = parseFloat(ordEl("ordTotal").value);
+            const advanceAmount = id ? 0 : (parseFloat(ordEl("ordAdvance").value) || 0);
+            const due = ordEl("ordDue").value;
+            const errEl = ordEl("ordFormError");
+            const btn = ordEl("ordFormSaveBtn");
+
+            if (!customerName) { errEl.textContent = "Mijoz ismini kiriting!"; return; }
+            if (isNaN(totalAmount) || totalAmount <= 0) { errEl.textContent = "Buyurtma summasini kiriting!"; return; }
+            if (advanceAmount < 0 || advanceAmount > totalAmount) { errEl.textContent = "Avans summasi noto'g'ri!"; return; }
+
+            const body = { customerName, customerPhone, description, totalAmount, dueDate: due ? due + "T00:00:00" : null };
+            btn.disabled = true; btn.textContent = "Saqlanmoqda...";
+            let r;
+            if (id) {
+                r = await ordApi(`/api/shop-cabinet/${ordShop()}/orders/${id}`, "PUT", body);
+            } else {
+                body.advanceAmount = advanceAmount;
+                r = await ordApi(`/api/shop-cabinet/${ordShop()}/orders`, "POST", body);
+            }
+            btn.disabled = false; btn.textContent = "Saqlash";
+            if (!r.ok) { errEl.textContent = (r.data && r.data.message) || "Buyurtmani saqlashda xatolik!"; return; }
+
+            ordCloseForm();
+            await ordFetch();
+            ordMsg("ok", id ? "Buyurtma yangilandi" : (advanceAmount > 0 ? "Buyurtma va avans saqlandi" : "Buyurtma saqlandi"));
+        }
+
+        /* ---- to'lov qabul qilish ---- */
+        function ordOpenPay(id) {
+            const o = ordList.find(x => x.id === id);
+            if (!o) return;
+            closeAllRowMenus();
+            ordEl("ordPayId").value = id;
+            ordEl("ordPayInfo").textContent = `${o.customerName} (qoldiq: ${ordSom(o.remaining)} so'm)`;
+            ordEl("ordPayAmount").value = "";
+            ordEl("ordPayAmount").max = o.remaining;
+            ordEl("ordPayNote").value = "";
+            ordEl("ordPayError").textContent = "";
+            ordEl("ordPayOverlay").classList.add("show");
+        }
+
+        function ordClosePay() { ordEl("ordPayOverlay").classList.remove("show"); }
+
+        function ordPayFull() {
+            const o = ordList.find(x => x.id === parseInt(ordEl("ordPayId").value));
+            if (o) ordEl("ordPayAmount").value = o.remaining;
+        }
+
+        async function ordSubmitPay() {
+            const id = parseInt(ordEl("ordPayId").value);
+            const amount = parseFloat(ordEl("ordPayAmount").value);
+            const note = ordEl("ordPayNote").value.trim();
+            const errEl = ordEl("ordPayError");
+            const btn = ordEl("ordPaySaveBtn");
+            if (isNaN(amount) || amount <= 0) { errEl.textContent = "To'lov summasini to'g'ri kiriting."; return; }
+
+            const who = localStorage.getItem("employeeName") || "Xodim";
+            btn.disabled = true; btn.textContent = "Saqlanmoqda...";
+            const r = await ordApi(`/api/shop-cabinet/${ordShop()}/orders/${id}/payments`, "POST",
+                { amount, paidByName: who, note: note || null });
+            btn.disabled = false; btn.textContent = "To'lash";
+            if (!r.ok) { errEl.textContent = (r.data && r.data.message) || "To'lovni saqlashda xatolik!"; return; }
+
+            ordClosePay();
+            await ordFetch();
+            ordMsg("ok", "To'lov qabul qilindi");
+        }
+
+        /* ---- to'lovlar tarixi ---- */
+        async function ordShowHistory(id) {
+            const o = ordList.find(x => x.id === id);
+            ordEl("ordHistoryName").textContent = o ? o.customerName : "";
+            const bodyEl = ordEl("ordHistoryBody");
+            bodyEl.innerHTML = `<tr><td colspan="5" class="muted">Yuklanmoqda...</td></tr>`;
+            ordEl("ordHistoryOverlay").classList.add("show");
+
+            const r = await ordApi(`/api/shop-cabinet/${ordShop()}/orders/${id}/payments`, "GET");
+            const payments = (r.ok && Array.isArray(r.data)) ? r.data : [];
+            if (payments.length === 0) {
+                bodyEl.innerHTML = `<tr><td colspan="5" class="muted">Hozircha to'lovlar mavjud emas</td></tr>`;
+                return;
+            }
+            bodyEl.innerHTML = payments.map((p, i) => `
+                    <tr>
+                        <td class="idx-cell">${i + 1}</td>
+                        <td>${ordFmtDT(p.paidAt)}</td>
+                        <td>${ordEsc(p.paidByName || "Boshliq")}</td>
+                        <td>${p.note ? ordEsc(p.note) : '<span class="muted" style="padding:0;">—</span>'}</td>
+                        <td class="num">${ordSom(p.amount)} so'm</td>
+                    </tr>`).join("");
+        }
+
+        function ordCloseHistory() { ordEl("ordHistoryOverlay").classList.remove("show"); }
+
+        /* ---- holat, qarzdorga o'tkazish, o'chirish ---- */
+        async function ordSetStatus(id, status) {
+            const r = await ordApi(`/api/shop-cabinet/${ordShop()}/orders/${id}/status`, "POST", { status });
+            if (!r.ok) { ordFail(r, "Holatni o'zgartirishda xatolik!"); return; }
+            await ordFetch();
+            ordMsg("ok", "Holat yangilandi: " + status);
+        }
+
+        async function ordTransfer(id) {
+            const o = ordList.find(x => x.id === id);
+            if (!o) return;
+            if (!confirm(`"${o.customerName}" buyurtmasining qolgan ${ordSom(o.remaining)} so'mi "Qarzdor" bo'limiga o'tkaziladi.\n\nDavom etasizmi?`)) return;
+            const r = await ordApi(`/api/shop-cabinet/${ordShop()}/orders/${id}/transfer-to-debtor`, "POST");
+            if (!r.ok) { ordFail(r, "Qarzdorga o'tkazishda xatolik!"); return; }
+            await ordFetch();
+            try { await fetchDebtors(); } catch (e) { console.error(e); }
+            ordMsg("ok", `${ordSom(r.data.transferred)} so'm "${r.data.debtorName}" qarzdorga o'tkazildi`);
+        }
+
+        async function ordDelete(id) {
+            const o = ordList.find(x => x.id === id);
+            if (!o) return;
+            if (!confirm(`"${o.customerName}" buyurtmasi va uning to'lovlar tarixi o'chiriladi.\n\nDavom etasizmi?`)) return;
+            const r = await ordApi(`/api/shop-cabinet/${ordShop()}/orders/${id}`, "DELETE");
+            if (!r.ok) { ordFail(r, "O'chirishda xatolik!"); return; }
+            await ordFetch();
+            ordMsg("ok", "Buyurtma o'chirildi");
+        }
+
+        /* ---- boshliq kiritgan o'zgarishlar ham ko'rinib turishi uchun davriy yangilanish ---- */
+        function ordStartPolling() {
+            ordStopPolling();
+            ordPollTimer = setInterval(() => {
+                // menyu yoki oyna ochiq bo'lsa, jadval qayta chizilib xalaqit bermasin
+                if (document.querySelector(".row-menu-dropdown.show, .modal-overlay.show")) return;
+                ordFetch();
+            }, 8000);
+        }
+        function ordStopPolling() {
+            if (ordPollTimer) { clearInterval(ordPollTimer); ordPollTimer = null; }
         }
 
         function logout() {
