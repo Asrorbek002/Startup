@@ -5511,6 +5511,18 @@
                 showToast((r.data && r.data.message) ? r.data.message : fallback, false);
             }
 
+            // ⋮ menyusi jadval (overflow) ichida qirqilib qolmasligi uchun: menyuni "fixed" joylashtiramiz.
+            function osFixDropdowns(tbodyId) {
+                const tb = document.getElementById(tbodyId);
+                if (!tb) return;
+                tb.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(btn => {
+                    bootstrap.Dropdown.getInstance(btn)?.dispose();
+                    new bootstrap.Dropdown(btn, {
+                        popperConfig: (def) => Object.assign({}, def, { strategy: "fixed" })
+                    });
+                });
+            }
+
             // =========================== BUYURTMALAR ===========================
             async function fetchOrders() {
                 const r = await osApi(`/api/shop-cabinet/${osShopId()}/orders`, "GET");
@@ -5592,6 +5604,7 @@
                                     </td>
                                 </tr>`;
                 }).join("");
+                osFixDropdowns("ordersTableBody");
             }
 
             function orderPreview() {
@@ -5787,6 +5800,7 @@
                                     </td>
                                 </tr>`;
                 }).join("");
+                osFixDropdowns("suppliersTableBody");
             }
 
             function openSupplierModal(id) {
