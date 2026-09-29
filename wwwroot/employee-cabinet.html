@@ -2017,7 +2017,7 @@
                         <option value="Topshirilgan">Topshirilgan</option>
                         <option value="Qarzga o'tkazilgan">Qarzga o'tkazilgan</option>
                     </select>
-                    <button class="btn-primary" style="flex:none;" onclick="ordOpenForm()">＋ Yangi buyurtma</button>
+                    <button class="btn-primary" id="ordNewBtn" style="flex:none;" onclick="ordOpenForm()">＋ Yangi buyurtma</button>
                 </div>
                 <div class="table-scroll">
                     <table class="sales-table">
@@ -2551,7 +2551,7 @@
             document.getElementById("navSell").style.display = isWorker ? "none" : "";
             document.getElementById("navHistory").style.display = isWorker ? "none" : "";
             document.getElementById("navDebtors").style.display = isWorker ? "none" : "";
-            document.getElementById("navOrders").style.display = isWorker ? "none" : "";
+            document.getElementById("navOrders").style.display = employeeRole === "Usta" ? "none" : "";
             document.getElementById("navWork").style.display = isWorker ? "" : "none";
             document.getElementById("navReport").style.display = isWorker ? "" : "none";
             document.getElementById("wkOutputWrap").style.display = employeeRole === "Pechat" ? "" : "none";
@@ -4111,6 +4111,9 @@
             const tbody = ordEl("ordTableBody");
             if (!tbody) return;
 
+            const isPrint = employeeRole === "Pechat";
+            ordEl("ordNewBtn").style.display = isPrint ? "none" : "";
+
             const filter = ordEl("ordStatusFilter").value;
             const shown = filter ? ordList.filter(o => o.status === filter) : ordList;
 
@@ -4151,6 +4154,9 @@
                             <div class="row-menu">
                                 <button class="kebab-btn" onclick="ordToggleMenu(${o.id}, event)">⋮</button>
                                 <div class="row-menu-dropdown" id="ordmenu-${o.id}">
+                                    ${isPrint ? `
+                                    <button${dis(isDebt || o.status === "Tayyor" || isDone)} onclick="ordSetStatus(${o.id}, 'Tayyor')">✅ Tayyor deb belgilash</button>
+                                    ` : `
                                     <button${dis(!canPay)} onclick="ordOpenPay(${o.id})">💵 To'lov qabul qilish</button>
                                     <button${dis(!canPay)} style="color:var(--bad);" onclick="ordTransfer(${o.id})">➡️ Qolganini Qarzdorga o'tkazish</button>
                                     <hr>
@@ -4159,6 +4165,7 @@
                                     <hr>
                                     <button${dis(isDebt)} onclick="ordOpenForm(${o.id})">✏️ Tahrirlash</button>
                                     <button${dis(isDebt)} style="color:var(--bad);" onclick="ordDelete(${o.id})">🗑️ O'chirish</button>
+                                    `}
                                 </div>
                             </div>
                         </td>
