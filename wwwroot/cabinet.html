@@ -1897,30 +1897,36 @@
 
                 <!-- 5.4 QOLDIQLAR: faqat qolgan mahsulotlar va qancha qolgani -->
                 <div id="section-stock-left" class="content-section d-none">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-white fw-bold d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                            <span>📦 Qoldiqlar <span class="small text-muted fw-normal" id="qlCount"></span></span>
-                            <div class="d-flex flex-wrap align-items-center gap-2">
+                    <div class="card shadow-sm overflow-hidden">
+                        <div class="card-header bg-white d-flex flex-wrap gap-2 justify-content-between align-items-center py-3">
+                            <span class="fw-bold fs-6">📦 Qoldiqlar</span>
+                            <div class="d-flex flex-wrap align-items-center gap-3">
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input" type="checkbox" id="qlShowEmpty" onchange="qlRender()">
                                     <label class="form-check-label small" for="qlShowEmpty">Tugaganlarni ham ko'rsatish</label>
                                 </div>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" onclick="qlLoad()">↻ Yangilash</button>
+                                <button type="button" class="btn btn-success btn-sm" onclick="qlExportExcel()">⬇ Excel</button>
                             </div>
                         </div>
-                        <div class="table-responsive" style="max-height: 75vh; overflow-y: auto;">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light sticky-top">
+                        <div class="table-responsive" style="max-height: 68vh; overflow-y: auto;">
+                            <table class="table table-striped table-hover table-bordered align-middle mb-0">
+                                <thead class="table-dark sticky-top">
                                     <tr>
-                                        <th style="width: 60px;">№</th>
+                                        <th class="text-center" style="width: 70px;">№</th>
                                         <th>Mahsulot</th>
-                                        <th class="text-end">Qoldiq</th>
+                                        <th class="text-end" style="width: 200px;">Qoldiq</th>
+                                        <th class="text-center" style="width: 220px;">O'lchov birligi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="qlBody">
-                                    <tr><td colspan="3" class="text-center text-muted py-3">Yuklanmoqda...</td></tr>
+                                    <tr><td colspan="4" class="text-center text-muted py-4">Yuklanmoqda...</td></tr>
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="card-footer bg-body-tertiary d-flex justify-content-between align-items-center py-3">
+                            <span class="fw-semibold text-muted">Jami:</span>
+                            <span class="fw-bold fs-6" id="qlTotal">0 ta element</span>
                         </div>
                     </div>
                 </div>
@@ -4517,6 +4523,7 @@
 
             // ===== QOLDIQLAR (faqat qolgan mahsulotlar) =====
             let qlAll = [];
+            let qlShown = [];
 
             async function qlLoad() {
                 try {
@@ -4529,26 +4536,170 @@
                 qlRender();
             }
 
+            // "Metr (m)" kabi birlikdan faqat son ko'rsatiladi, birlik alohida ustunda
             function qlRender() {
                 const showEmpty = document.getElementById("qlShowEmpty").checked;
-                const rows = qlAll
+                qlShown = qlAll
                     .filter(s => showEmpty || Number(s.stock) > 0)
                     .sort((a, b) => String(a.name).localeCompare(String(b.name)));
 
-                document.getElementById("qlCount").textContent = rows.length ? `(${rows.length} ta)` : "";
+                document.getElementById("qlTotal").textContent = `${qlShown.length} ta element`;
                 const tbody = document.getElementById("qlBody");
-                if (rows.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">Qolgan mahsulot yo'q</td></tr>`;
+                if (qlShown.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Qolgan mahsulot yo'q</td></tr>`;
                     return;
                 }
-                tbody.innerHTML = rows.map((s, i) => {
+                tbody.innerHTML = qlShown.map((s, i) => {
                     const out = Number(s.stock) <= 0;
                     return `<tr>
-                                            <td class="text-muted">${i + 1}</td>
-                                            <td>${wsEsc(s.name)}</td>
-                                            <td class="text-end fw-bold ${out ? "text-danger" : "text-success"}">${wsNum(s.stock)} ${wsEsc(s.unit)}${out ? ' <span class="badge bg-danger">Tugagan</span>' : ""}</td>
+                                            <td class="text-center text-muted">${i + 1}</td>
+                                            <td class="fw-semibold">${wsEsc(s.name)}</td>
+                                            <td class="text-end fw-bold fs-6 ${out ? "text-danger" : "text-success"}">${wsNum(s.stock)}</td>
+                                            <td class="text-center"><span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border px-3 py-2">${wsEsc(s.unit)}</span></td>
                                         </tr>`;
                 }).join("");
+            }
+
+            // ---- Excel (.xlsx) yasovchi (tashqi kutubxonasiz) ----
+            function qxCrc32(bytes) {
+                if (!qxCrc32.t) {
+                    qxCrc32.t = new Uint32Array(256);
+                    for (let n = 0; n < 256; n++) {
+                        let c = n;
+                        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+                        qxCrc32.t[n] = c >>> 0;
+                    }
+                }
+                let crc = 0xFFFFFFFF;
+                for (let i = 0; i < bytes.length; i++) crc = qxCrc32.t[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+                return (crc ^ 0xFFFFFFFF) >>> 0;
+            }
+
+            // Siqilmagan (store) ZIP yig'uvchi
+            function qxZip(files) {
+                const enc = new TextEncoder();
+                const chunks = [];
+                const central = [];
+                let offset = 0;
+                const u16 = v => [v & 255, (v >>> 8) & 255];
+                const u32 = v => [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255];
+
+                files.forEach(f => {
+                    const name = enc.encode(f.name);
+                    const data = enc.encode(f.content);
+                    const crc = qxCrc32(data);
+                    const local = new Uint8Array([
+                        ...u32(0x04034b50), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21),
+                        ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), ...u16(0)
+                    ]);
+                    chunks.push(local, name, data);
+                    central.push({ name, crc, size: data.length, offset });
+                    offset += local.length + name.length + data.length;
+                });
+
+                const centralStart = offset;
+                central.forEach(c => {
+                    const head = new Uint8Array([
+                        ...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21),
+                        ...u32(c.crc), ...u32(c.size), ...u32(c.size), ...u16(c.name.length), ...u16(0), ...u16(0),
+                        ...u16(0), ...u16(0), ...u32(0), ...u32(c.offset)
+                    ]);
+                    chunks.push(head, c.name);
+                    offset += head.length + c.name.length;
+                });
+                const end = new Uint8Array([
+                    ...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(central.length), ...u16(central.length),
+                    ...u32(offset - centralStart), ...u32(centralStart), ...u16(0)
+                ]);
+                chunks.push(end);
+                return new Blob(chunks, { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            }
+
+            function qxXmlEsc(s) {
+                return String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]))
+                    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+            }
+
+            function qxColName(i) {
+                let s = "";
+                for (i++; i > 0; i = Math.floor((i - 1) / 26)) s = String.fromCharCode(65 + (i - 1) % 26) + s;
+                return s;
+            }
+
+            // cell: matn | son | { v: qiymat, b: true (qalin) }
+            function qxSheetXml(rows, widths) {
+                const cols = widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("");
+                const body = rows.map((row, r) => {
+                    const cells = row.map((cell, c) => {
+                        const obj = (cell !== null && typeof cell === "object") ? cell : { v: cell };
+                        const ref = qxColName(c) + (r + 1);
+                        const style = obj.b ? ` s="1"` : "";
+                        if (obj.v === "" || obj.v === null || obj.v === undefined) return "";
+                        if (typeof obj.v === "number") return `<c r="${ref}"${style}><v>${obj.v}</v></c>`;
+                        return `<c r="${ref}"${style} t="inlineStr"><is><t xml:space="preserve">${qxXmlEsc(obj.v)}</t></is></c>`;
+                    }).join("");
+                    return `<row r="${r + 1}">${cells}</row>`;
+                }).join("");
+                return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>${cols}</cols><sheetData>${body}</sheetData></worksheet>`;
+            }
+
+            function qxBuildXlsx(sheets) {
+                const files = [
+                    {
+                        name: "[Content_Types].xml",
+                        content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`
+                    },
+                    {
+                        name: "_rels/.rels",
+                        content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`
+                    },
+                    {
+                        name: "xl/workbook.xml",
+                        content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s, i) => `<sheet name="${qxXmlEsc(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("")}</sheets></workbook>`
+                    },
+                    {
+                        name: "xl/_rels/workbook.xml.rels",
+                        content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("")}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`
+                    },
+                    {
+                        name: "xl/styles.xml",
+                        content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`
+                    }
+                ];
+                sheets.forEach((s, i) => files.push({ name: `xl/worksheets/sheet${i + 1}.xml`, content: qxSheetXml(s.rows, s.widths) }));
+                return qxZip(files);
+            }
+
+
+            function qlExportExcel() {
+                if (qlShown.length === 0) {
+                    showToast("Yuklab olish uchun ma'lumot yo'q!", false);
+                    return;
+                }
+                const B = v => ({ v: v, b: true });
+                const now = new Date();
+                const pad = n => String(n).padStart(2, "0");
+                const stamp = `${pad(now.getDate())}.${pad(now.getMonth() + 1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+                const rows = [
+                    [B("Ombordagi qoldiqlar")],
+                    ["Sana:", stamp],
+                    [],
+                    [B("№"), B("Mahsulot"), B("Qoldiq"), B("O'lchov birligi")]
+                ];
+                qlShown.forEach((s, i) => rows.push([i + 1, s.name, Math.round(Number(s.stock) * 1000) / 1000, s.unit]));
+                rows.push([]);
+                rows.push([B("Jami:"), B(`${qlShown.length} ta element`)]);
+
+                const blob = qxBuildXlsx([{ name: "Qoldiqlar", rows: rows, widths: [6, 40, 16, 22] }]);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `qoldiqlar_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 2000);
             }
 
             // --- QARZDORLAR ---
