@@ -2125,6 +2125,15 @@
             document.getElementById("popNameText").textContent = employeeName || "-";
             document.getElementById("popShop").textContent = shopName || "—";
 
+            // Yuqori chap burchakdagi "MyHisob" o'rniga shu savdo nuqtasining nomi ko'rsatiladi
+            if (shopName) {
+                const brandText = document.querySelector(".brand-text");
+                if (brandText) brandText.textContent = shopName;
+                const brandLink = document.querySelector(".brand-my");
+                if (brandLink) brandLink.setAttribute("aria-label", shopName);
+                document.title = shopName;
+            }
+
             setupEmployeeAvatar(initial);
 
             await initEmployeeRole();
