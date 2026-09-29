@@ -1841,27 +1841,43 @@
                 <div id="section-workshop-history" class="content-section d-none">
                     <div class="card shadow-sm">
                         <div class="card-header bg-white fw-bold d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                            <span>🧾 Sarf tarixi</span>
+                            <div class="d-flex flex-column">
+                                <span>🧾 Sarf tarixi</span>
+                                <span class="small text-muted fw-normal" id="wsFilterBadge"></span>
+                            </div>
                             <div class="d-flex flex-wrap align-items-center gap-2">
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
+                                            id="wsFilterDropdownBtn" data-bs-toggle="dropdown"
+                                            data-bs-auto-close="outside" aria-expanded="false">
+                                        🔍 Filtrlash
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 320px;" aria-labelledby="wsFilterDropdownBtn">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="fw-bold small text-muted text-uppercase">Sana bo'yicha filtr</span>
+                                            <a href="#" class="small text-decoration-none" onclick="wsResetFilterTmp(event)">Tozalash</a>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <label class="form-label small text-muted mb-1">Boshlanish sanasi (dan)</label>
+                                            <input type="date" id="wsFilterFromTmp" class="form-control form-control-sm">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small text-muted mb-1">Tugash sanasi (gacha)</label>
+                                            <input type="date" id="wsFilterToTmp" class="form-control form-control-sm">
+                                        </div>
+
+                                        <div class="d-flex justify-content-between gap-2">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="wsCancelFilterDropdown()">Orqaga</button>
+                                            <button type="button" class="btn btn-primary btn-sm flex-fill" onclick="wsSaveFilter()">Saqlash</button>
+                                        </div>
+                                    </div>
+                                </div>
                                 <select class="form-select form-select-sm" id="wsFilterEmployee" style="width: auto;" onchange="wsLoadUsages()"></select>
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input" type="checkbox" id="wsShowCancelled" onchange="wsRenderUsages()">
                                     <label class="form-check-label small" for="wsShowCancelled">Bekor qilinganlar</label>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="px-3 py-2 border-bottom bg-body-tertiary d-flex flex-wrap align-items-center gap-2">
-                            <div class="btn-group btn-group-sm" role="group" aria-label="Tez tanlash">
-                                <button type="button" class="btn btn-primary" data-ws-range="all" onclick="wsQuickRange('all')">Barchasi</button>
-                                <button type="button" class="btn btn-outline-primary" data-ws-range="today" onclick="wsQuickRange('today')">Bugun</button>
-                                <button type="button" class="btn btn-outline-primary" data-ws-range="week" onclick="wsQuickRange('week')">7 kun</button>
-                                <button type="button" class="btn btn-outline-primary" data-ws-range="month" onclick="wsQuickRange('month')">Shu oy</button>
-                            </div>
-                            <div class="d-flex align-items-center gap-2 ms-lg-auto">
-                                <span class="small text-muted">Dan</span>
-                                <input type="date" class="form-control form-control-sm" id="wsDateFrom" style="width: auto;" onchange="wsDateChanged()">
-                                <span class="small text-muted">Gacha</span>
-                                <input type="date" class="form-control form-control-sm" id="wsDateTo" style="width: auto;" onchange="wsDateChanged()">
                             </div>
                         </div>
                         <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
@@ -4380,63 +4396,75 @@
                 }).join("");
             }
 
-            // Sana filtri: input qiymatlaridan mahalliy vaqtdagi { start, end(kiritilmaydi) }
-            function wsUsagePeriod() {
-                const f = document.getElementById("wsDateFrom").value;
-                const t = document.getElementById("wsDateTo").value;
-                let start = null, end = null;
-                if (f) { const [y, m, d] = f.split("-").map(Number); start = new Date(y, m - 1, d); }
-                if (t) { const [y, m, d] = t.split("-").map(Number); end = new Date(y, m - 1, d + 1); }
-                return { start, end };
+            // --- SARF TARIXI: SANA FILTRI (Savdo bo'limidagi kabi: ichiga kirib "Saqlash" bosiladi) ---
+            let wsFilterFrom = "";
+            let wsFilterTo = "";
+
+            function wsGetFilterDropdown() {
+                const btn = document.getElementById("wsFilterDropdownBtn");
+                if (!btn || typeof bootstrap === "undefined") return null;
+                return bootstrap.Dropdown.getInstance(btn) || new bootstrap.Dropdown(btn);
             }
 
-            function wsDateInput(d) {
-                const pad = n => String(n).padStart(2, "0");
-                return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+            // Panel ochilganda maydonlar joriy amaldagi filtr bilan to'ldiriladi
+            document.addEventListener("shown.bs.dropdown", (e) => {
+                if (e.target && e.target.id === "wsFilterDropdownBtn") {
+                    document.getElementById("wsFilterFromTmp").value = wsFilterFrom;
+                    document.getElementById("wsFilterToTmp").value = wsFilterTo;
+                }
+            });
+
+            function wsResetFilterTmp(e) {
+                if (e) e.preventDefault();
+                document.getElementById("wsFilterFromTmp").value = "";
+                document.getElementById("wsFilterToTmp").value = "";
             }
 
-            function wsMarkRange(range) {
-                document.querySelectorAll("[data-ws-range]").forEach(b => {
-                    const on = b.dataset.wsRange === range;
-                    b.classList.toggle("btn-primary", on);
-                    b.classList.toggle("btn-outline-primary", !on);
-                });
+            function wsCancelFilterDropdown() {
+                const dropdown = wsGetFilterDropdown();
+                if (dropdown) dropdown.hide();
             }
 
-            function wsQuickRange(range) {
-                const now = new Date();
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                let from = "", to = "";
-                if (range === "today") { from = to = wsDateInput(today); }
-                else if (range === "week") { from = wsDateInput(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6)); to = wsDateInput(today); }
-                else if (range === "month") { from = wsDateInput(new Date(today.getFullYear(), today.getMonth(), 1)); to = wsDateInput(today); }
-                document.getElementById("wsDateFrom").value = from;
-                document.getElementById("wsDateTo").value = to;
-                wsMarkRange(range);
-                wsLoadUsages();
-            }
+            function wsSaveFilter() {
+                const from = document.getElementById("wsFilterFromTmp").value || "";
+                const to = document.getElementById("wsFilterToTmp").value || "";
 
-            // Sanani qo'lda tanlaganda tez tugmalarning belgisi o'chadi
-            function wsDateChanged() {
-                wsMarkRange("");
-                wsLoadUsages();
-            }
-
-            async function wsLoadUsages() {
-                const empId = document.getElementById("wsFilterEmployee").value;
-                const period = wsUsagePeriod();
-
-                if (period.start && period.end && period.start >= period.end) {
+                if (from && to && from > to) {
                     showToast("Boshlanish sanasi tugash sanasidan katta bo'lmasligi kerak!", false);
                     return;
                 }
 
-                // Serverga vaqt "Z"siz yuboriladi (baza UTC saqlaydi); "to" ga server o'zi +1 kun qo'shadi
-                const params = new URLSearchParams();
-                if (empId) params.set("employeeId", empId);
-                if (period.start) params.set("from", period.start.toISOString().slice(0, 19));
-                if (period.end) params.set("to", new Date(period.end.getTime() - 86400000).toISOString().slice(0, 19));
-                const qs = params.toString() ? `?${params.toString()}` : "";
+                wsFilterFrom = from;
+                wsFilterTo = to;
+                wsUpdateFilterBadge();
+                wsRenderUsages();
+
+                const dropdown = wsGetFilterDropdown();
+                if (dropdown) dropdown.hide();
+            }
+
+            function wsUpdateFilterBadge() {
+                const badge = document.getElementById("wsFilterBadge");
+                if (!badge) return;
+                const fmt = v => v ? v.split("-").reverse().join(".") : "...";
+                badge.textContent = (wsFilterFrom || wsFilterTo)
+                    ? `Davr: ${fmt(wsFilterFrom)} - ${fmt(wsFilterTo)}`
+                    : "";
+            }
+
+            // Yozuv sanasi (mahalliy vaqt bo'yicha) tanlangan oraliqqa kiradimi
+            function wsInFilterRange(u) {
+                if (!wsFilterFrom && !wsFilterTo) return true;
+                const d = new Date(u.createdAt);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                if (wsFilterFrom && key < wsFilterFrom) return false;
+                if (wsFilterTo && key > wsFilterTo) return false;
+                return true;
+            }
+
+            async function wsLoadUsages() {
+                const empId = document.getElementById("wsFilterEmployee").value;
+                const qs = empId ? `?employeeId=${empId}` : "";
                 try {
                     const res = await fetch(`/api/shop-cabinet/${wsShopId()}/material-usages${qs}`);
                     wsUsages = res.ok ? await res.json() : [];
@@ -4444,20 +4472,12 @@
                     console.error("Sarf tarixini olishda xatolik:", err);
                     wsUsages = [];
                 }
-
-                // Mahalliy vaqt bo'yicha aniq saralash (vaqt zonasi farqi chegarani buzmasligi uchun)
-                wsUsages = wsUsages.filter(u => {
-                    const ts = new Date(u.createdAt).getTime();
-                    if (period.start && ts < period.start.getTime()) return false;
-                    if (period.end && ts >= period.end.getTime()) return false;
-                    return true;
-                });
                 wsRenderUsages();
             }
 
             function wsRenderUsages() {
                 const showCancelled = document.getElementById("wsShowCancelled").checked;
-                const rows = wsUsages.filter(u => showCancelled || !u.isCancelled);
+                const rows = wsUsages.filter(u => (showCancelled || !u.isCancelled) && wsInFilterRange(u));
                 const tbody = document.getElementById("wsUsageBody");
 
                 if (rows.length === 0) {

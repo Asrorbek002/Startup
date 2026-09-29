@@ -2599,10 +2599,9 @@
             const period = rpGetPeriod();
             const seq = ++rpSeq;
 
-            // Serverga vaqt "Z"siz yuboriladi (baza UTC saqlaydi); "to" ga server o'zi +1 kun qo'shadi
+            // Sana serverga yuborilmaydi (PostgreSQL sanani rad etib, ro'yxat bo'sh chiqishiga sabab bo'lardi);
+            // davr bo'yicha saralash quyida brauzerda, mahalliy vaqt bilan bajariladi
             const params = new URLSearchParams({ employeeId: employeeId });
-            if (period.start) params.set("from", period.start.toISOString().slice(0, 19));
-            if (period.end) params.set("to", new Date(period.end.getTime() - 86400000).toISOString().slice(0, 19));
 
             let rows = [];
             let failed = false;
