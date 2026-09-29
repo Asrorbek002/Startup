@@ -1330,35 +1330,29 @@
                     <a href="#" class="sidebar-menu-item active" onclick="switchTab('dashboard', this)">
                         📊 <span data-i18n="tab_dashboard">Boshqaruv Paneli</span>
                     </a>
+                    <a href="#" class="sidebar-menu-item" onclick="switchTab('sales', this)">
+                        🧾 <span data-i18n="tab_sales">Savdo</span>
+                    </a>
+                    <a href="#" class="sidebar-menu-item" onclick="switchTab('orders', this)">
+                        📝 <span>Buyurtma</span>
+                    </a>
+                    <a href="#" class="sidebar-menu-item" onclick="switchTab('debtors', this)">
+                        💳 <span>Qarzdor</span>
+                    </a>
                     <a href="#" class="sidebar-menu-item" onclick="switchTab('elements', this)">
                         📋 <span data-i18n="tab_elements">Element</span>
                     </a>
                     <a href="#" class="sidebar-menu-item" onclick="switchTab('products', this)">
                         📦 <span data-i18n="tab_products">Tovar Qabul qilish</span>
                     </a>
-                    <a href="#" class="sidebar-menu-item" onclick="switchTab('history', this)">
-                        🕒 <span data-i18n="tab_history">Tarix</span>
-                    </a>
-                    <a href="#" class="sidebar-menu-item" onclick="switchTab('reports', this)">
-                        📈 <span data-i18n="tab_reports">Oylik</span>
-                    </a>
-                    <a href="#" class="sidebar-menu-item" onclick="switchTab('staff', this)">
-                        👥 <span data-i18n="tab_staff">Xodim</span>
-                    </a>
-                    <a href="#" class="sidebar-menu-item" onclick="switchTab('sales', this)">
-                        🧾 <span data-i18n="tab_sales">Savdo</span>
-                    </a>
-                    <a href="#" class="sidebar-menu-item" onclick="switchTab('debtors', this)">
-                        💳 <span>Qarzdor</span>
-                    </a>
-                    <a href="#" class="sidebar-menu-item" onclick="switchTab('orders', this)">
-                        📝 <span>Buyurtma</span>
-                    </a>
                     <a href="#" class="sidebar-menu-item" onclick="switchTab('suppliers', this)">
                         🏭 <span>Ta'minotchi</span>
                     </a>
-                    <a href="#" class="sidebar-menu-item" onclick="switchTab('telegram', this)">
-                        📲 <span>Telegram bot</span>
+                    <a href="#" class="sidebar-menu-item" onclick="switchTab('stock-left', this)">
+                        📦 <span>Qoldiqlar</span>
+                    </a>
+                    <a href="#" class="sidebar-menu-item" onclick="switchTab('history', this)">
+                        🕒 <span data-i18n="tab_history">Tarix</span>
                     </a>
                     <a href="#" class="sidebar-menu-item" onclick="switchTab('workshop', this)">
                         🛠️ <span>Sarf</span>
@@ -1366,8 +1360,14 @@
                     <a href="#" class="sidebar-menu-item" onclick="switchTab('workshop-history', this)">
                         🧾 <span>Sarf tarixi</span>
                     </a>
-                    <a href="#" class="sidebar-menu-item" onclick="switchTab('stock-left', this)">
-                        📦 <span>Qoldiqlar</span>
+                    <a href="#" class="sidebar-menu-item" onclick="switchTab('staff', this)">
+                        👥 <span data-i18n="tab_staff">Xodim</span>
+                    </a>
+                    <a href="#" class="sidebar-menu-item" onclick="switchTab('reports', this)">
+                        📈 <span data-i18n="tab_reports">Oylik</span>
+                    </a>
+                    <a href="#" class="sidebar-menu-item" onclick="switchTab('telegram', this)">
+                        📲 <span>Telegram bot</span>
                     </a>
                 </div>
 
@@ -4162,7 +4162,7 @@
                 document.body.classList.remove('modal-open');
 
                 if (actionType === 'edit') {
-                    switchTab('staff', document.querySelectorAll('.sidebar-menu-item')[5]);
+                    switchTab('staff', document.querySelector(".sidebar-menu-item[onclick*=\"'staff'\"]"));
                     editStaff(idx);
                     if (focusPass) setTimeout(() => document.getElementById("staffPassword").focus(), 400);
                     showToast("Xodim ma'lumotlarini tahrirlashingiz mumkin.", true);
