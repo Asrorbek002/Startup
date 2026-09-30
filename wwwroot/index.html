@@ -467,9 +467,29 @@
 
             errorSpan.textContent = "";
 
-            if (login === "admin" && password === "admin_2002") {
-                window.location.href = "admin.html";
-                return;
+            // Admin kirishi serverda tekshiriladi (parol brauzer kodida saqlanmaydi)
+            if (login.toLowerCase() === "admin") {
+                try {
+                    const adminRes = await fetch('/api/admin-auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ login: login, password: password })
+                    });
+                    if (adminRes.ok) {
+                        const adminData = await adminRes.json();
+                        sessionStorage.setItem("adminToken", adminData.token);
+                        window.location.href = "admin.html";
+                        return;
+                    }
+                    if (adminRes.status === 429 || adminRes.status === 503) {
+                        let adminErr = {};
+                        try { adminErr = await adminRes.json(); } catch (e) { }
+                        errorSpan.textContent = adminErr.message || t.errorLogin;
+                        return;
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
             }
 
             try {

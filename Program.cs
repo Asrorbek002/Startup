@@ -55,6 +55,17 @@ builder.Services.AddHostedService<BillingBackgroundService>();
 builder.Services.AddHttpClient<IEmailSender, EmailSender>();
 builder.Services.AddScoped<PasswordResetService>();
 
+// --- Super admin kirishi (parol serverda tekshiriladi) ---
+builder.Services.AddSingleton<AdminAuthService>();
+
+// Render proksi orqasida haqiqiy mijoz IP sini olish uchun (urinishlar limiti to'g'ri ishlashi uchun)
+builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor;
+    o.KnownNetworks.Clear();
+    o.KnownProxies.Clear();
+});
+
 var app = builder.Build();
 
 // Server ishga tushganda mavjud migratsiyalarni bazaga qo'llaydi.
@@ -112,6 +123,7 @@ END $$;
 }
 
 // --- 1. SHU YERGA USEDEFAULTFILES() QO'SHING ---
+app.UseForwardedHeaders();
 app.UseDefaultFiles(); // index.html ni avtomatik ochish uchun
 app.UseStaticFiles();   // wwwroot papkasidagi statik fayllarni ishlatish uchun
 

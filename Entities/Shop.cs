@@ -6,7 +6,8 @@
     public string Phone { get; set; } = string.Empty;
     public string? Email { get; set; }              // Parolni tiklash kodi shu emailga yuboriladi (faqat admin biriktiradi)
     public string Username { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string PasswordHash { get; set; } = string.Empty;   // hech qachon tashqariga (JSON) chiqmaydi
     public string Role { get; set; } = "ShopOwner";
     public decimal Balance { get; set; } = 0;
     public decimal Tariff { get; set; } = 200000; // <-- Mana buni qo'shing

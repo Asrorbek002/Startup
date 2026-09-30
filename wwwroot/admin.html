@@ -523,7 +523,20 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const SECRET_KEY = "MY_SUPER_SECRET_ADMIN_KEY_2026";
+        // Kalit endi kodda emas: kirishda server bergan vaqtinchalik token ishlatiladi
+        const SECRET_KEY = sessionStorage.getItem("adminToken") || "";
+        if (!SECRET_KEY) { window.location.replace("index.html"); }
+
+        // Token muddati tugasa yoki noto'g'ri bo'lsa (401) - kirish sahifasiga qaytaradi
+        const _origFetch = window.fetch.bind(window);
+        window.fetch = async (...args) => {
+            const res = await _origFetch(...args);
+            if (res.status === 401 && String(args[0]).includes('/api/super-admin/')) {
+                sessionStorage.removeItem("adminToken");
+                window.location.replace("index.html");
+            }
+            return res;
+        };
         let shopModal;
         let allShops = [];
         let filteredShops = [];
@@ -1054,6 +1067,7 @@
         }
 
         function logout() {
+            sessionStorage.removeItem("adminToken");
             window.location.href = "index.html";
         }
     </script>

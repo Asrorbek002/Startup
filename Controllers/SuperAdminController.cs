@@ -11,10 +11,12 @@ namespace ShopManagementSystem.Controllers;
 public class SuperAdminController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly AdminAuthService _adminAuth;
 
-    public SuperAdminController(AppDbContext context)
+    public SuperAdminController(AppDbContext context, AdminAuthService adminAuth)
     {
         _context = context;
+        _adminAuth = adminAuth;
     }
 
     // Email: bo'sh bo'lsa null, aks holda kichik harfda va tozalangan holda qaytaradi
@@ -33,7 +35,7 @@ public class SuperAdminController : ControllerBase
     [HttpGet("shops")]
     public async Task<IActionResult> GetAllShops([FromHeader(Name = "Secret-Key")] string secretKey)
     {
-        if (secretKey != "MY_SUPER_SECRET_ADMIN_KEY_2026")
+        if (!_adminAuth.IsValidToken(secretKey))
             return Unauthorized(new { message = "Ruxsat etilmagan kalit! Sizda admin huquqi yo'q." });
 
         var shops = await _context.Shops.ToListAsync();
@@ -43,7 +45,7 @@ public class SuperAdminController : ControllerBase
     [HttpPost("create-shop")]
     public async Task<IActionResult> CreateShop([FromHeader(Name = "Secret-Key")] string secretKey, [FromBody] ShopCreateDto dto)
     {
-        if (secretKey != "MY_SUPER_SECRET_ADMIN_KEY_2026")
+        if (!_adminAuth.IsValidToken(secretKey))
             return Unauthorized(new { message = "Ruxsat etilmagan kalit!" });
 
         if (!IsValidOptionalEmail(dto.Email))
@@ -73,7 +75,7 @@ public class SuperAdminController : ControllerBase
     [HttpPut("update-shop/{id}")]
     public async Task<IActionResult> UpdateShop([FromHeader(Name = "Secret-Key")] string secretKey, int id, [FromBody] ShopCreateDto dto)
     {
-        if (secretKey != "MY_SUPER_SECRET_ADMIN_KEY_2026")
+        if (!_adminAuth.IsValidToken(secretKey))
             return Unauthorized(new { message = "Ruxsat etilmagan kalit!" });
 
         if (!IsValidOptionalEmail(dto.Email))
@@ -104,7 +106,7 @@ public class SuperAdminController : ControllerBase
     [HttpPatch("toggle-status/{id}")]
     public async Task<IActionResult> ToggleShopStatus([FromHeader(Name = "Secret-Key")] string secretKey, int id)
     {
-        if (secretKey != "MY_SUPER_SECRET_ADMIN_KEY_2026")
+        if (!_adminAuth.IsValidToken(secretKey))
             return Unauthorized(new { message = "Ruxsat etilmagan kalit!" });
 
         var shop = await _context.Shops.FindAsync(id);
@@ -127,7 +129,7 @@ public class SuperAdminController : ControllerBase
     [HttpDelete("delete-shop/{id}")]
     public async Task<IActionResult> DeleteShop([FromHeader(Name = "Secret-Key")] string secretKey, int id)
     {
-        if (secretKey != "MY_SUPER_SECRET_ADMIN_KEY_2026")
+        if (!_adminAuth.IsValidToken(secretKey))
             return Unauthorized(new { message = "Ruxsat etilmagan kalit!" });
 
         var shop = await _context.Shops.FindAsync(id);
@@ -144,7 +146,7 @@ public class SuperAdminController : ControllerBase
     [HttpPost("shops/{id}/deposit")]
     public async Task<IActionResult> DepositToShop([FromHeader(Name = "Secret-Key")] string secretKey, int id, [FromBody] DepositDto dto)
     {
-        if (secretKey != "MY_SUPER_SECRET_ADMIN_KEY_2026")
+        if (!_adminAuth.IsValidToken(secretKey))
             return Unauthorized(new { message = "Ruxsat etilmagan kalit!" });
 
         var shop = await _context.Shops.FindAsync(id);
@@ -176,7 +178,7 @@ public class SuperAdminController : ControllerBase
     [HttpGet("shops/{id}/transactions")]
     public async Task<IActionResult> GetShopTransactions([FromHeader(Name = "Secret-Key")] string secretKey, int id)
     {
-        if (secretKey != "MY_SUPER_SECRET_ADMIN_KEY_2026")
+        if (!_adminAuth.IsValidToken(secretKey))
             return Unauthorized(new { message = "Ruxsat etilmagan kalit!" });
 
         var list = (await _context.BalanceTransactions
