@@ -74,8 +74,34 @@ public class ShopCabinetController : ControllerBase
             shop.Status,
             shop.Tariff,
             shop.CreditLimit,
-            shop.NextBillingDate
+            shop.NextBillingDate,
+            avatar = shop.AvatarData
         });
+    }
+
+    // Do'kon profil rasmini serverga saqlash (hamma kompyuterdan kirganda bir xil ko'rinishi uchun)
+    [HttpPut("{shopId}/avatar")]
+    [RequestSizeLimit(600_000)]
+    public async Task<IActionResult> SaveShopAvatar(int shopId, [FromBody] ShopAvatarRequest request)
+    {
+        var statusError = await CheckShopStatusAsync(shopId);
+        if (statusError != null) return statusError;
+
+        var dataUrl = request?.DataUrl ?? string.Empty;
+        if (dataUrl.Length > 400_000 ||
+            !System.Text.RegularExpressions.Regex.IsMatch(dataUrl, @"^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$"))
+        {
+            return BadRequest(new { success = false, message = "Rasm formati noto'g'ri yoki juda katta!" });
+        }
+
+        var shop = await _context.Shops.FindAsync(shopId);
+        if (shop == null)
+            return NotFound(new { success = false, message = "Do'kon topilmadi!" });
+
+        shop.AvatarData = dataUrl;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true });
     }
 
     // Xodim (sotuvchi) tizimga kirishi uchun login API
@@ -1226,6 +1252,11 @@ public class ShopCabinetController : ControllerBase
             return StatusCode(500, new { success = false, message = "Rasmni yuklashda xatolik: " + ex.Message });
         }
     }
+}
+
+public class ShopAvatarRequest
+{
+    public string DataUrl { get; set; } = string.Empty;
 }
 
 public class ShopLoginModel

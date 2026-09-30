@@ -12,4 +12,6 @@
     public string Status { get; set; } = "Faollashtirilgan";
     public decimal CreditLimit { get; set; } = 0;   // Balans qancha minusga tushishi mumkin (masalan 150000 => -150000 gacha ishlaydi)
     public DateTime? NextBillingDate { get; set; }  // Keyingi oylik tarif yechiladigan sana (UTC)
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? AvatarData { get; set; }         // Profil rasmi (kichraytirilgan, data:image/... ko'rinishida) - hamma kompyuterda bir xil
 }

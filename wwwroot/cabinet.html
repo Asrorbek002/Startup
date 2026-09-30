@@ -2956,6 +2956,23 @@
             // Rasm shu brauzerda, do'kon ID si bo'yicha saqlanadi
             const DEFAULT_AVATAR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4.5"/><path d="M3.5 21c0-4.7 3.8-8 8.5-8s8.5 3.3 8.5 8z"/></svg>';
             function avatarKey() { return "shopAvatar_" + (localStorage.getItem("currentShopId") || "0"); }
+            // Rasmni serverga saqlaydi (hamma kompyuterda bir xil ko'rinishi uchun)
+            var avatarMigrated = false;
+            async function saveAvatarToServer(dataUrl, notifyError) {
+                try {
+                    const shopId = localStorage.getItem("currentShopId") || "18";
+                    const res = await fetch(`/api/shop-cabinet/${shopId}/avatar`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ dataUrl: dataUrl })
+                    });
+                    if (!res.ok && notifyError) showToast(currentLang === 'uz' ? "Rasm serverga saqlanmadi!" : "Фото не сохранено на сервере!", false);
+                    return res.ok;
+                } catch (e) {
+                    if (notifyError) showToast(currentLang === 'uz' ? "Rasm serverga saqlanmadi!" : "Фото не сохранено на сервере!", false);
+                    return false;
+                }
+            }
             function applyAvatar(dataUrl) {
                 ["navAvatar", "pcAvatar"].forEach(id => {
                     const el = document.getElementById(id);
@@ -2988,6 +3005,7 @@
                             const dataUrl = c.toDataURL("image/jpeg", 0.85);
                             applyAvatar(dataUrl);
                             try { localStorage.setItem(avatarKey(), dataUrl); } catch (e) { console.error(e); }
+                            saveAvatarToServer(dataUrl, true);
                             showToast(currentLang === 'uz' ? "Profil rasmi yangilandi!" : "Фото профиля обновлено!", true);
                         };
                         img.src = reader.result;
@@ -3036,6 +3054,15 @@
                         balSub.title = (uzLang ? "Bloklanish chegarasi (minus): " : "Порог блокировки (минус): ") + formatSom(data.creditLimit) + " so'm";
                     }
                     fillProfile(data);
+                    // Profil rasmi serverdan olinadi (hamma kompyuterda bir xil)
+                    if (data.avatar) {
+                        applyAvatar(data.avatar);
+                        try { localStorage.setItem(avatarKey(), data.avatar); } catch (e) { }
+                    } else if (!avatarMigrated) {
+                        // Serverda rasm yo'q, lekin shu brauzerda eski rasm bor bo'lsa - bir marta serverga yuklaymiz
+                        avatarMigrated = true;
+                        try { const local = localStorage.getItem(avatarKey()); if (local) saveAvatarToServer(local, false); } catch (e) { }
+                    }
                 } catch (error) {
                     console.error("Balansni olishda xatolik:", error);
                 }

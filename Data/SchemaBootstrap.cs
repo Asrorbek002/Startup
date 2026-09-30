@@ -72,6 +72,36 @@ CREATE TABLE IF NOT EXISTS ""MaterialUsages"" (
         EnsureOrdersAndSuppliers(context, logger);
         EnsureBotDailyLogs(context, logger);
         EnsureBalanceSystem(context, logger);
+        EnsureShopAvatar(context, logger);
+    }
+
+    // "Shops" jadvaliga profil rasmi ustunini ("AvatarData") qo'shadi. Mavjud ma'lumotga tegmaydi.
+    public static void EnsureShopAvatar(AppDbContext context, ILogger logger)
+    {
+        try
+        {
+            if (context.Database.IsNpgsql())
+            {
+                context.Database.ExecuteSqlRaw(@"ALTER TABLE ""Shops"" ADD COLUMN IF NOT EXISTS ""AvatarData"" TEXT NULL;");
+            }
+            else
+            {
+                try
+                {
+                    context.Database.ExecuteSqlRaw(@"ALTER TABLE ""Shops"" ADD COLUMN ""AvatarData"" TEXT NULL;");
+                }
+                catch (Exception ex) when (ex.Message.Contains("duplicate column", StringComparison.OrdinalIgnoreCase))
+                {
+                    // SQLite: ustun oldindan mavjud, muammo yo'q
+                }
+            }
+
+            logger.LogInformation("Shops.AvatarData ustuni tekshirildi.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Shops.AvatarData ustunini qo'shishda xatolik.");
+        }
     }
 
     // Balans tizimi: Shops jadvaliga CreditLimit va NextBillingDate ustunlarini qo'shadi
