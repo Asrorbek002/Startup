@@ -48,6 +48,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<ITelegramService, TelegramService>();
 builder.Services.AddHostedService<TelegramBackgroundService>();
 
+// --- Oylik tarif yechish xizmati ---
+builder.Services.AddHostedService<BillingBackgroundService>();
+
 var app = builder.Build();
 
 // Server ishga tushganda mavjud migratsiyalarni bazaga qo'llaydi.

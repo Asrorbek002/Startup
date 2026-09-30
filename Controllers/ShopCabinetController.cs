@@ -71,7 +71,10 @@ public class ShopCabinetController : ControllerBase
             shop.Region,
             shop.Username,
             shop.Balance,
-            shop.Status
+            shop.Status,
+            shop.Tariff,
+            shop.CreditLimit,
+            shop.NextBillingDate
         });
     }
 

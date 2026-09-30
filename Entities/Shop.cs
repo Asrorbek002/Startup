@@ -10,4 +10,6 @@
     public decimal Balance { get; set; } = 0;
     public decimal Tariff { get; set; } = 200000; // <-- Mana buni qo'shing
     public string Status { get; set; } = "Faollashtirilgan";
+    public decimal CreditLimit { get; set; } = 0;   // Balans qancha minusga tushishi mumkin (masalan 150000 => -150000 gacha ishlaydi)
+    public DateTime? NextBillingDate { get; set; }  // Keyingi oylik tarif yechiladigan sana (UTC)
 }

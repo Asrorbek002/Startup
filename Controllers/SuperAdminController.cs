@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShopManagementSystem.Data;
 using ShopManagementSystem.Entities;
+using ShopManagementSystem.Services;
 
 namespace ShopManagementSystem.Controllers;
 
@@ -41,6 +42,8 @@ public class SuperAdminController : ControllerBase
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             Tariff = dto.Tariff,
             Balance = 0,
+            CreditLimit = dto.CreditLimit ?? 0,                   // limit berilmasa - 0 (minusga ruxsat yo'q)
+            NextBillingDate = DateTime.UtcNow.AddMonths(1),       // birinchi yechish - 1 oydan keyin
             Status = "Faollashtirilgan"
         };
 
@@ -65,6 +68,8 @@ public class SuperAdminController : ControllerBase
         shop.Phone = dto.Phone;
         shop.Username = dto.Username;
         shop.Tariff = dto.Tariff;
+        if (dto.CreditLimit.HasValue) shop.CreditLimit = dto.CreditLimit.Value;   // yuborilmasa eski limit saqlanadi
+        BillingLogic.SyncStatus(shop);                                            // limit o'zgargan bo'lsa bloklash/ochish
 
         if (!string.IsNullOrEmpty(dto.Password))
         {
@@ -129,9 +134,38 @@ public class SuperAdminController : ControllerBase
             return BadRequest(new { message = "Miqdor noto'g'ri!" });
 
         shop.Balance += dto.Amount;
+
+        _context.BalanceTransactions.Add(new BalanceTransaction
+        {
+            ShopId = shop.Id,
+            Type = "topup",
+            Amount = dto.Amount,
+            BalanceAfter = shop.Balance,
+            Note = string.IsNullOrWhiteSpace(dto.Note) ? "Balans to'ldirildi" : dto.Note,
+            CreatedAt = DateTime.UtcNow
+        });
+        BillingLogic.SyncStatus(shop); // balans limit ichiga qaytsa, do'kon avtomatik ochiladi
+
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Balans muvaffaqiyatli to'ldirildi!", newBalance = shop.Balance });
+        return Ok(new { message = "Balans muvaffaqiyatli to'ldirildi!", newBalance = shop.Balance, newStatus = shop.Status });
+    }
+
+    // Do'konning balans tarixi (to'ldirishlar va oylik yechishlar)
+    [HttpGet("shops/{id}/transactions")]
+    public async Task<IActionResult> GetShopTransactions([FromHeader(Name = "Secret-Key")] string secretKey, int id)
+    {
+        if (secretKey != "MY_SUPER_SECRET_ADMIN_KEY_2026")
+            return Unauthorized(new { message = "Ruxsat etilmagan kalit!" });
+
+        var list = (await _context.BalanceTransactions
+            .Where(t => t.ShopId == id)
+            .ToListAsync())
+            .OrderByDescending(t => t.CreatedAt)
+            .Take(200)
+            .ToList();
+
+        return Ok(list);
     }
 }
 
@@ -142,10 +176,12 @@ public class ShopCreateDto
     public string Phone { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public decimal Tariff { get; set; } = 200000;
+    public decimal? CreditLimit { get; set; }   // ixtiyoriy: balans qancha minusga tushishi mumkin
     public string Password { get; set; } = string.Empty;
 }
 
 public class DepositDto
 {
     public decimal Amount { get; set; }
+    public string? Note { get; set; }
 }
