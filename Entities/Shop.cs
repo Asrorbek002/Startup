@@ -4,6 +4,7 @@
     public string Name { get; set; } = string.Empty;
     public string Region { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
+    public string? Email { get; set; }              // Parolni tiklash kodi shu emailga yuboriladi (faqat admin biriktiradi)
     public string Username { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string Role { get; set; } = "ShopOwner";

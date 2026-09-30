@@ -17,6 +17,19 @@ public class SuperAdminController : ControllerBase
         _context = context;
     }
 
+    // Email: bo'sh bo'lsa null, aks holda kichik harfda va tozalangan holda qaytaradi
+    private static string? NormalizeEmail(string? email)
+        => string.IsNullOrWhiteSpace(email) ? null : email.Trim().ToLowerInvariant();
+
+    private static bool IsValidOptionalEmail(string? email)
+    {
+        var e = NormalizeEmail(email);
+        if (e == null) return true;
+        if (e.Length > 200) return false;
+        try { return new System.Net.Mail.MailAddress(e).Address == e; }
+        catch { return false; }
+    }
+
     [HttpGet("shops")]
     public async Task<IActionResult> GetAllShops([FromHeader(Name = "Secret-Key")] string secretKey)
     {
@@ -33,11 +46,15 @@ public class SuperAdminController : ControllerBase
         if (secretKey != "MY_SUPER_SECRET_ADMIN_KEY_2026")
             return Unauthorized(new { message = "Ruxsat etilmagan kalit!" });
 
+        if (!IsValidOptionalEmail(dto.Email))
+            return BadRequest(new { message = "Email manzil noto'g'ri kiritilgan!" });
+
         var shop = new Shop
         {
             Name = dto.Name,
             Region = dto.Region,
             Phone = dto.Phone,
+            Email = NormalizeEmail(dto.Email),
             Username = dto.Username,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             Tariff = dto.Tariff,
@@ -59,6 +76,9 @@ public class SuperAdminController : ControllerBase
         if (secretKey != "MY_SUPER_SECRET_ADMIN_KEY_2026")
             return Unauthorized(new { message = "Ruxsat etilmagan kalit!" });
 
+        if (!IsValidOptionalEmail(dto.Email))
+            return BadRequest(new { message = "Email manzil noto'g'ri kiritilgan!" });
+
         var shop = await _context.Shops.FindAsync(id);
         if (shop == null)
             return NotFound(new { message = "Do'kon topilmadi!" });
@@ -67,6 +87,7 @@ public class SuperAdminController : ControllerBase
         shop.Region = dto.Region;
         shop.Phone = dto.Phone;
         shop.Username = dto.Username;
+        if (dto.Email != null) shop.Email = NormalizeEmail(dto.Email);            // yuborilmasa (null) eski email saqlanadi, bo'sh matn yuborilsa o'chiriladi
         shop.Tariff = dto.Tariff;
         if (dto.CreditLimit.HasValue) shop.CreditLimit = dto.CreditLimit.Value;   // yuborilmasa eski limit saqlanadi
         BillingLogic.SyncStatus(shop);                                            // limit o'zgargan bo'lsa bloklash/ochish
@@ -174,6 +195,7 @@ public class ShopCreateDto
     public string Name { get; set; } = string.Empty;
     public string Region { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
+    public string? Email { get; set; }          // ixtiyoriy: parolni tiklash kodi shu emailga boradi
     public string Username { get; set; } = string.Empty;
     public decimal Tariff { get; set; } = 200000;
     public decimal? CreditLimit { get; set; }   // ixtiyoriy: balans qancha minusga tushishi mumkin

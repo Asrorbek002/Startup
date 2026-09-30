@@ -26,4 +26,5 @@ public class AppDbContext : DbContext // <--- ": DbContext" meros olishi shart!
     public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>(); // <--- Ta'minotchilarga to'lovlar
     public DbSet<BotDailyLog> BotDailyLogs => Set<BotDailyLog>(); // <--- Botga kunlik xabarlar yuborilganini eslab qoladi
     public DbSet<BalanceTransaction> BalanceTransactions => Set<BalanceTransaction>(); // <--- Balans to'ldirish / oylik yechish tarixi
+    public DbSet<PasswordResetCode> PasswordResetCodes => Set<PasswordResetCode>(); // <--- Parolni tiklash kodlari
 }

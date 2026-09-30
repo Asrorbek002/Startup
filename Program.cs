@@ -51,6 +51,10 @@ builder.Services.AddHostedService<TelegramBackgroundService>();
 // --- Oylik tarif yechish xizmati ---
 builder.Services.AddHostedService<BillingBackgroundService>();
 
+// --- Parolni tiklash (email orqali kod) ---
+builder.Services.AddHttpClient<IEmailSender, EmailSender>();
+builder.Services.AddScoped<PasswordResetService>();
+
 var app = builder.Build();
 
 // Server ishga tushganda mavjud migratsiyalarni bazaga qo'llaydi.

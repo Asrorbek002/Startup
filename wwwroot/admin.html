@@ -427,6 +427,11 @@
                             <input type="text" class="form-control" id="shopPhone" placeholder="+998 90 123-45-67" required>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">Email (parolni tiklash uchun)</label>
+                            <input type="email" class="form-control" id="shopEmail" placeholder="egasi@gmail.com" autocomplete="off">
+                            <div class="form-text">Do'kon egasi "Maxfiy so'zni unutdingizmi?" ni bosganda tasdiqlash kodi shu emailga boradi.</div>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Login</label>
                             <input type="text" class="form-control" id="shopUsername" placeholder="Kirish uchun login" oninput="clearLoginError()" required>
                         </div>
@@ -675,34 +680,34 @@
                 let shopUsername = shop.username || '-';
 
                 tbody.innerHTML += `
-                                    <tr>
-                                        <td>${globalIndex}</td>
-                                        <td><b>#${shop.id}</b></td>
-                                        <td><span class="copy-login" onclick="copyToClipboard('${shopUsername}')" title="Nusxalash uchun bosing">${shopUsername}</span></td>
-                                        <td>${shop.name}</td>
-                                        <td>${shop.region || '-'}</td>
-                                        <td>${shop.phone || '-'}</td>
-                                        <td><span class="text-success fw-bold">${shopTariff}</span></td>
-                                        <td>${balanceCell}</td>
-                                        <td class="text-center">${statusBadge}</td>
-                                        <td class="text-center p-1">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light border px-2 py-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 16px; line-height: 1.2;">
-                                                    ⋮
-                                                </button>
-                                                <ul class="dropdown-menu shadow">
-                                                    <li><a class="dropdown-item fw-semibold text-success" href="javascript:void(0);" onclick="openDepositModal(${shop.id})">💰 Balansni to'ldirish</a></li>
-                                                    <li><a class="dropdown-item" href="javascript:void(0);" onclick="openHistoryModal(${shop.id})">📜 Balans tarixi</a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item" href="javascript:void(0);" onclick="openEditModal(${shop.id})">✏️ Tahrirlash</a></li>
-                                                    ${isShopBlocked ? '' : `<li><a class="dropdown-item fw-semibold" href="javascript:void(0);" onclick="toggleShopStatus(${shop.id})">${toggleText}</a></li>`}
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteShop(${shop.id})">🗑️ O'chirish</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                `;
+                                        <tr>
+                                            <td>${globalIndex}</td>
+                                            <td><b>#${shop.id}</b></td>
+                                            <td><span class="copy-login" onclick="copyToClipboard('${shopUsername}')" title="Nusxalash uchun bosing">${shopUsername}</span></td>
+                                            <td>${shop.name}</td>
+                                            <td>${shop.region || '-'}</td>
+                                            <td>${shop.phone || '-'}${shop.email ? `<div class="text-muted" style="font-size:11px;">${shop.email}</div>` : `<div class="text-danger" style="font-size:11px;">Email yo'q</div>`}</td>
+                                            <td><span class="text-success fw-bold">${shopTariff}</span></td>
+                                            <td>${balanceCell}</td>
+                                            <td class="text-center">${statusBadge}</td>
+                                            <td class="text-center p-1">
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-light border px-2 py-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 16px; line-height: 1.2;">
+                                                        ⋮
+                                                    </button>
+                                                    <ul class="dropdown-menu shadow">
+                                                        <li><a class="dropdown-item fw-semibold text-success" href="javascript:void(0);" onclick="openDepositModal(${shop.id})">💰 Balansni to'ldirish</a></li>
+                                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="openHistoryModal(${shop.id})">📜 Balans tarixi</a></li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="openEditModal(${shop.id})">✏️ Tahrirlash</a></li>
+                                                        ${isShopBlocked ? '' : `<li><a class="dropdown-item fw-semibold" href="javascript:void(0);" onclick="toggleShopStatus(${shop.id})">${toggleText}</a></li>`}
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteShop(${shop.id})">🗑️ O'chirish</a></li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
             });
         }
 
@@ -723,24 +728,24 @@
             if (totalPages <= 1) return;
 
             paginationContainer.innerHTML += `
-                                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">‹</a>
-                                </li>
-                            `;
+                                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                                        <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">‹</a>
+                                    </li>
+                                `;
 
             for (let i = 1; i <= totalPages; i++) {
                 paginationContainer.innerHTML += `
-                                    <li class="page-item ${currentPage === i ? 'active' : ''}">
-                                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
-                                    </li>
-                                `;
+                                        <li class="page-item ${currentPage === i ? 'active' : ''}">
+                                            <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                                        </li>
+                                    `;
             }
 
             paginationContainer.innerHTML += `
-                                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">›</a>
-                                </li>
-                            `;
+                                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                                        <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">›</a>
+                                    </li>
+                                `;
         }
 
         function changePage(page) {
@@ -775,6 +780,7 @@
             document.getElementById("shopName").value = shop.name;
             document.getElementById("shopRegion").value = shop.region || '';
             document.getElementById("shopPhone").value = shop.phone || '';
+            document.getElementById("shopEmail").value = shop.email || '';
             document.getElementById("shopUsername").value = shop.username || '';
             document.getElementById("shopUsername").classList.remove("is-invalid");
             document.getElementById("shopTariff").value = shop.tariff || 200000;
@@ -811,6 +817,7 @@
             const name = document.getElementById("shopName").value;
             const region = document.getElementById("shopRegion").value;
             const phone = document.getElementById("shopPhone").value;
+            const email = document.getElementById("shopEmail").value.trim();
             const username = document.getElementById("shopUsername").value.trim();
             const tariff = document.getElementById("shopTariff").value;
             const creditLimit = Number(document.getElementById("shopCreditLimit").value) || 0;
@@ -833,7 +840,7 @@
                 let response = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json', 'Secret-Key': SECRET_KEY },
-                    body: JSON.stringify({ name, region, phone, username, tariff: Number(tariff), creditLimit, password })
+                    body: JSON.stringify({ name, region, phone, email, username, tariff: Number(tariff), creditLimit, password })
                 });
 
                 if (response.ok) {
@@ -1033,12 +1040,12 @@
                     const isTopup = t.type === "topup";
                     const amount = Number(t.amount) || 0;
                     return `<tr>
-                                    <td>${formatAdminDateTime(t.createdAt)}</td>
-                                    <td>${isTopup ? '<span class="badge bg-success">To\'ldirish</span>' : '<span class="badge bg-secondary">Oylik tarif</span>'}</td>
-                                    <td class="text-end fw-bold ${amount < 0 ? 'text-danger' : 'text-success'}">${amount > 0 ? '+' : ''}${amount.toLocaleString('uz-UZ')}</td>
-                                    <td class="text-end">${adminSom(t.balanceAfter)}</td>
-                                    <td>${adminEsc(t.note)}</td>
-                                </tr>`;
+                                        <td>${formatAdminDateTime(t.createdAt)}</td>
+                                        <td>${isTopup ? '<span class="badge bg-success">To\'ldirish</span>' : '<span class="badge bg-secondary">Oylik tarif</span>'}</td>
+                                        <td class="text-end fw-bold ${amount < 0 ? 'text-danger' : 'text-success'}">${amount > 0 ? '+' : ''}${amount.toLocaleString('uz-UZ')}</td>
+                                        <td class="text-end">${adminSom(t.balanceAfter)}</td>
+                                        <td>${adminEsc(t.note)}</td>
+                                    </tr>`;
                 }).join("");
             } catch (err) {
                 console.error(err);

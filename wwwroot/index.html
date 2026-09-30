@@ -207,7 +207,7 @@
             </div>
 
             <div class="text-center mt-3">
-                <a href="#" class="text-decoration-none small text-muted" data-i18n="forgotPassword">Maxfiy so'zni unutdingizmi?</a>
+                <a href="#" class="text-decoration-none small text-muted" data-i18n="forgotPassword" onclick="openForgot(event)">Maxfiy so'zni unutdingizmi?</a>
             </div>
             <hr class="my-4">
 
@@ -223,6 +223,46 @@
                         <i class="bi bi-telegram fs-6 text-info"></i> @TuronApex
                     </a>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parolni tiklash oynasi -->
+    <div class="modal fade" id="forgotModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold" id="fpTitle"></h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="fpStep1">
+                        <p class="text-muted small" id="fpInfo1"></p>
+                        <label class="form-label small text-muted" id="fpLoginLbl"></label>
+                        <input type="text" class="form-control mb-3" id="fpLogin" autocomplete="username">
+                        <button type="button" class="btn btn-primary w-100" id="fpSendBtn" onclick="fpSendCode()"></button>
+                    </div>
+                    <div id="fpStep2" class="d-none">
+                        <p class="text-muted small" id="fpInfo2"></p>
+                        <input type="text" class="form-control text-center fs-4 mb-3" id="fpCode" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000" style="letter-spacing:8px;">
+                        <button type="button" class="btn btn-primary w-100 mb-2" id="fpVerifyBtn" onclick="fpVerify()"></button>
+                        <button type="button" class="btn btn-outline-secondary w-100 btn-sm" id="fpResendBtn" onclick="fpSendCode(true)" disabled></button>
+                    </div>
+                    <div id="fpStep3" class="d-none">
+                        <label class="form-label small text-muted" id="fpNewPassLbl"></label>
+                        <input type="password" class="form-control mb-2" id="fpNewPass" autocomplete="new-password">
+                        <label class="form-label small text-muted" id="fpNewPass2Lbl"></label>
+                        <input type="password" class="form-control mb-3" id="fpNewPass2" autocomplete="new-password">
+                        <button type="button" class="btn btn-success w-100" id="fpSaveBtn" onclick="fpSavePassword()"></button>
+                    </div>
+                    <div id="fpStep4" class="d-none text-center">
+                        <div class="fs-1 text-success">&#10004;</div>
+                        <p class="fw-semibold" id="fpDoneMsg"></p>
+                        <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal" id="fpDoneBtn"></button>
+                    </div>
+                    <div class="small mt-3 fw-semibold" id="fpMsg"></div>
+                </div>
+                <div class="modal-footer justify-content-center text-muted" style="font-size:12px;" id="fpContact"></div>
             </div>
         </div>
     </div>
@@ -265,6 +305,159 @@
 
         document.addEventListener("DOMContentLoaded", () => { applyTranslations(); });
 
+        // ===== Parolni tiklash (email orqali kod) =====
+        const fpText = {
+            uz: {
+                title: "Parolni tiklash", loginLbl: "Login", send: "Kod yuborish", resend: "Kodni qayta yuborish",
+                info1: "Loginingizni kiriting. Admin tomonidan biriktirilgan emailga tasdiqlash kodi yuboriladi.",
+                info2: "Emailga yuborilgan 6 xonali kodni kiriting (5 daqiqa amal qiladi). Xat kelmasa, Spam papkasini ham tekshiring.",
+                verify: "Tasdiqlash", newPass: "Yangi parol (kamida 8 belgi)", newPass2: "Yangi parolni takrorlang", save: "Saqlash",
+                done: "Parol yangilandi. Endi yangi parol bilan kirishingiz mumkin.", close: "Kirishga o'tish",
+                contact: "Email biriktirilmagan bo'lsa yoki kod kelmasa, administratorga murojaat qiling:<br>📞 +998 94 568 12 11 &nbsp; <b>@TuronApex</b>",
+                needLogin: "Loginni kiriting", sent: "Agar login mavjud va unga email biriktirilgan bo'lsa, kod yuborildi.",
+                needCode: "6 xonali kodni kiriting", badCode: "Kod noto'g'ri yoki muddati tugagan.",
+                shortPass: "Parol kamida 8 belgidan iborat bo'lishi kerak", mismatch: "Parollar bir xil emas",
+                expired: "Sessiya muddati tugagan. Qaytadan urinib ko'ring.", server: "Server bilan aloqa yo'q!", wait: "Qayta yuborish"
+            },
+            ru: {
+                title: "Восстановление пароля", loginLbl: "Логин", send: "Отправить код", resend: "Отправить код повторно",
+                info1: "Введите логин. Код подтверждения будет отправлен на email, привязанный администратором.",
+                info2: "Введите 6-значный код из письма (действует 5 минут). Если письма нет, проверьте папку «Спам».",
+                verify: "Подтвердить", newPass: "Новый пароль (минимум 8 символов)", newPass2: "Повторите новый пароль", save: "Сохранить",
+                done: "Пароль обновлён. Теперь вы можете войти с новым паролем.", close: "Перейти ко входу",
+                contact: "Если email не привязан или код не приходит, обратитесь к администратору:<br>📞 +998 94 568 12 11 &nbsp; <b>@TuronApex</b>",
+                needLogin: "Введите логин", sent: "Если логин существует и к нему привязан email, код отправлен.",
+                needCode: "Введите 6-значный код", badCode: "Код неверный или срок его действия истёк.",
+                shortPass: "Пароль должен содержать минимум 8 символов", mismatch: "Пароли не совпадают",
+                expired: "Сессия истекла. Попробуйте снова.", server: "Нет связи с сервером!", wait: "Повторно"
+            }
+        };
+        const fpT = k => fpText[currentLang][k];
+        const fpState = { login: "", token: "", timer: null, modal: null };
+
+        function fpMsg(text, ok) {
+            const el = document.getElementById("fpMsg");
+            el.textContent = text || "";
+            el.className = "small mt-3 fw-semibold " + (ok ? "text-success" : "text-danger");
+        }
+
+        function fpShowStep(n) {
+            for (let i = 1; i <= 4; i++) document.getElementById("fpStep" + i).classList.toggle("d-none", i !== n);
+        }
+
+        function fpApplyLang() {
+            const set = (id, v) => { document.getElementById(id).textContent = v; };
+            set("fpTitle", fpT("title")); set("fpLoginLbl", fpT("loginLbl")); set("fpSendBtn", fpT("send"));
+            set("fpInfo1", fpT("info1")); set("fpInfo2", fpT("info2")); set("fpVerifyBtn", fpT("verify"));
+            set("fpNewPassLbl", fpT("newPass")); set("fpNewPass2Lbl", fpT("newPass2")); set("fpSaveBtn", fpT("save"));
+            set("fpDoneMsg", fpT("done")); set("fpDoneBtn", fpT("close"));
+            document.getElementById("fpContact").innerHTML = fpT("contact");
+            if (!fpState.timer) set("fpResendBtn", fpT("resend"));
+        }
+
+        function fpStartCooldown() {
+            const btn = document.getElementById("fpResendBtn");
+            let left = 60;
+            btn.disabled = true;
+            clearInterval(fpState.timer);
+            btn.textContent = fpT("wait") + " (" + left + ")";
+            fpState.timer = setInterval(() => {
+                left--;
+                if (left <= 0) {
+                    clearInterval(fpState.timer); fpState.timer = null;
+                    btn.disabled = false; btn.textContent = fpT("resend");
+                } else {
+                    btn.textContent = fpT("wait") + " (" + left + ")";
+                }
+            }, 1000);
+        }
+
+        async function fpPost(url, body) {
+            const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+            let data = {};
+            try { data = await r.json(); } catch (e) { }
+            return { ok: r.ok, data };
+        }
+
+        function openForgot(e) {
+            if (e) e.preventDefault();
+            if (!fpState.modal) fpState.modal = new bootstrap.Modal(document.getElementById("forgotModal"));
+            clearInterval(fpState.timer); fpState.timer = null;
+            fpState.token = "";
+            fpApplyLang();
+            fpMsg("");
+            document.getElementById("fpLogin").value = document.getElementById("loginInput").value.trim();
+            document.getElementById("fpCode").value = "";
+            document.getElementById("fpNewPass").value = "";
+            document.getElementById("fpNewPass2").value = "";
+            fpShowStep(1);
+            fpState.modal.show();
+        }
+
+        async function fpSendCode(isResend) {
+            const login = isResend ? fpState.login : document.getElementById("fpLogin").value.trim();
+            if (!login) { fpMsg(fpT("needLogin")); return; }
+            fpMsg("");
+            const btn = document.getElementById(isResend ? "fpResendBtn" : "fpSendBtn");
+            btn.disabled = true;
+            try {
+                await fpPost("/api/auth/forgot", { login });
+                fpState.login = login;
+                fpShowStep(2);
+                fpStartCooldown();
+                fpMsg(fpT("sent"), true);
+                document.getElementById("fpCode").focus();
+            } catch (err) {
+                console.error(err);
+                fpMsg(fpT("server"));
+                if (!isResend) btn.disabled = false;
+            }
+            if (!isResend) btn.disabled = false;
+        }
+
+        async function fpVerify() {
+            const code = document.getElementById("fpCode").value.trim();
+            if (!/^\d{6}$/.test(code)) { fpMsg(fpT("needCode")); return; }
+            fpMsg("");
+            try {
+                const res = await fpPost("/api/auth/verify-code", { login: fpState.login, code });
+                if (res.ok && res.data.resetToken) {
+                    fpState.token = res.data.resetToken;
+                    fpShowStep(3);
+                    fpMsg("");
+                    document.getElementById("fpNewPass").focus();
+                } else {
+                    fpMsg(fpT("badCode"));
+                }
+            } catch (err) {
+                console.error(err);
+                fpMsg(fpT("server"));
+            }
+        }
+
+        async function fpSavePassword() {
+            const p1 = document.getElementById("fpNewPass").value;
+            const p2 = document.getElementById("fpNewPass2").value;
+            if (p1.length < 8) { fpMsg(fpT("shortPass")); return; }
+            if (p1 !== p2) { fpMsg(fpT("mismatch")); return; }
+            fpMsg("");
+            try {
+                const res = await fpPost("/api/auth/reset-password", { resetToken: fpState.token, newPassword: p1 });
+                if (res.ok) {
+                    fpState.token = "";
+                    document.getElementById("loginInput").value = fpState.login;
+                    document.getElementById("passwordInput").value = "";
+                    fpShowStep(4);
+                    fpMsg("");
+                } else {
+                    fpMsg(fpT("expired"));
+                }
+            } catch (err) {
+                console.error(err);
+                fpMsg(fpT("server"));
+            }
+        }
+
         async function handleLogin(event) {
             event.preventDefault();
             const login = document.getElementById("loginInput").value.trim();
@@ -297,7 +490,7 @@
                     return;
                 }
 
-               
+
                 let empResponse = await fetch('/api/shop-cabinet/employee-login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
