@@ -372,6 +372,7 @@
                                     <th>Viloyat</th>
                                     <th>Telefon</th>
                                     <th style="width: 130px;">Tarif</th>
+                                    <th style="width: 170px;">Balans</th>
                                     <th style="width: 140px;" class="text-center">Holati</th>
                                     <th class="text-center" style="width: 60px;">Amallar</th>
                                 </tr>
@@ -384,6 +385,7 @@
                                     <td colspan="2" class="text-end">Jami:</td>
                                     <td colspan="4"></td>
                                     <td id="totalTariffSum" class="text-success">400 000 so'm</td>
+                                    <td id="totalBalanceSum" class="fw-bold">0 so'm</td>
                                     <td colspan="2" id="totalActiveStatusCount" class="text-primary">Faol: 2 ta</td>
                                 </tr>
                             </tfoot>
@@ -433,11 +435,69 @@
                             <input type="number" class="form-control" id="shopTariff" placeholder="Masalan: 200000" value="200000" required>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">Minus limiti (so'mda)</label>
+                            <input type="number" min="0" class="form-control" id="shopCreditLimit" placeholder="Masalan: 0" value="0">
+                            <div class="form-text">Balans shu miqdorgacha minusga tushsa do'kon bloklanadi. 0 bo'lsa - balans 0 dan pastga tushishi bilan bloklanadi.</div>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Maxfiy so'z (Parol)</label>
                             <input type="password" class="form-control" id="shopPassword" placeholder="Parol">
                         </div>
                         <button type="submit" class="btn btn-success w-100" id="saveButtonText">Saqlash va Yaratish</button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balansni to'ldirish oynasi -->
+    <div class="modal fade" id="depositModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">💰 Balansni to'ldirish</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="depositShopId">
+                    <div class="fw-bold fs-6 mb-2" id="depositShopName">—</div>
+                    <div class="row g-2 mb-3 small">
+                        <div class="col-6"><div class="border rounded p-2"><div class="text-muted">Hozirgi balans</div><div class="fw-bold" id="depositCurrent">0</div></div></div>
+                        <div class="col-6"><div class="border rounded p-2"><div class="text-muted">Oylik tarif</div><div class="fw-bold" id="depositTariff">0</div></div></div>
+                        <div class="col-6"><div class="border rounded p-2"><div class="text-muted">Keyingi yechish sanasi</div><div class="fw-bold" id="depositNextDate">—</div></div></div>
+                        <div class="col-6"><div class="border rounded p-2"><div class="text-muted">Minus limiti</div><div class="fw-bold" id="depositLimit">0</div></div></div>
+                    </div>
+
+                    <label class="form-label fw-semibold">Qancha so'm to'ldirasiz?</label>
+                    <input type="number" min="1" class="form-control form-control-lg mb-2" id="depositAmount" placeholder="Masalan: 200000" oninput="updateDepositPreview()">
+                    <div class="d-flex flex-wrap gap-2 mb-3" id="depositQuickBtns"></div>
+
+                    <label class="form-label small text-muted mb-1">Izoh (ixtiyoriy)</label>
+                    <input type="text" class="form-control form-control-sm mb-3" id="depositNote" placeholder="Masalan: Oktabr oyi uchun naqd to'lov">
+
+                    <div class="border rounded p-3 bg-light small" id="depositPreview">Summani kiriting...</div>
+
+                    <button type="button" class="btn btn-success w-100 mt-3" id="depositSubmitBtn" onclick="submitDeposit()">To'ldirish</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balans tarixi oynasi -->
+    <div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="historyTitle">📜 Balans tarixi</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <table class="table table-sm table-striped mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr><th>Sana</th><th>Turi</th><th class="text-end">Summa</th><th class="text-end">Balans</th><th>Izoh</th></tr>
+                        </thead>
+                        <tbody id="historyBody"><tr><td colspan="5" class="text-center text-muted py-3">Yuklanmoqda...</td></tr></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -569,6 +629,11 @@
             document.getElementById("totalTariffSum").innerText = totalSum.toLocaleString('uz-UZ') + " so'm";
             document.getElementById("totalActiveStatusCount").innerText = `Faol: ${activeShops.length} ta`;
 
+            let totalBalance = filteredShops.reduce((sum, shop) => sum + (Number(shop.balance) || 0), 0);
+            let totalBalanceEl = document.getElementById("totalBalanceSum");
+            totalBalanceEl.innerText = totalBalance.toLocaleString('uz-UZ') + " so'm";
+            totalBalanceEl.className = "fw-bold " + (totalBalance < 0 ? "text-danger" : "text-success");
+
             renderTable();
             renderPagination();
         }
@@ -578,7 +643,7 @@
             tbody.innerHTML = "";
 
             if (filteredShops.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-3">Hech qanday ma'lumot topilmadi.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-3">Hech qanday ma'lumot topilmadi.</td></tr>`;
                 return;
             }
 
@@ -590,39 +655,54 @@
                 let globalIndex = start + index + 1;
                 let isShopActive = (shop.status === "Faollashtirilgan" || shop.status === "Faol" || !shop.status);
 
+                let isShopBlocked = (shop.status === "Bloklangan");
+
                 let statusBadge = isShopActive
                     ? `<span class="badge bg-primary px-3 py-2" style="background-color: #3b71ca !important;">Faollashtirilgan</span>`
-                    : `<span class="badge bg-danger px-3 py-2">Faol emas</span>`;
+                    : (isShopBlocked
+                        ? `<span class="badge bg-warning text-dark px-3 py-2" title="Balans minus limitiga yetgan">Bloklangan (balans)</span>`
+                        : `<span class="badge bg-danger px-3 py-2">Faol emas</span>`);
 
                 let toggleText = isShopActive ? "🔴 Vaqtincha o'chirish" : "🟢 Qayta yoqish";
+
+                // Balans ustuni: minus bo'lsa qizil, tagida keyingi yechish sanasi
+                let shopBalanceNum = Number(shop.balance) || 0;
+                let shopBalance = shopBalanceNum.toLocaleString('uz-UZ') + " so'm";
+                let nextBillText = shop.nextBillingDate ? ("Keyingi yechish: " + formatAdminDate(shop.nextBillingDate)) : "";
+                let balanceCell = `<span class="fw-bold ${shopBalanceNum < 0 ? 'text-danger' : 'text-success'}">${shopBalance}</span>` +
+                    (nextBillText ? `<div class="text-muted" style="font-size: 11px;">${nextBillText}</div>` : "");
                 let shopTariff = (Number(shop.tariff) || 200000).toLocaleString('uz-UZ') + " so'm";
                 let shopUsername = shop.username || '-';
 
                 tbody.innerHTML += `
-                                <tr>
-                                    <td>${globalIndex}</td>
-                                    <td><b>#${shop.id}</b></td>
-                                    <td><span class="copy-login" onclick="copyToClipboard('${shopUsername}')" title="Nusxalash uchun bosing">${shopUsername}</span></td>
-                                    <td>${shop.name}</td>
-                                    <td>${shop.region || '-'}</td>
-                                    <td>${shop.phone || '-'}</td>
-                                    <td><span class="text-success fw-bold">${shopTariff}</span></td>
-                                    <td class="text-center">${statusBadge}</td>
-                                    <td class="text-center p-1">
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-light border px-2 py-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 16px; line-height: 1.2;">
-                                                ⋮
-                                            </button>
-                                            <ul class="dropdown-menu shadow">
-                                                <li><a class="dropdown-item" href="javascript:void(0);" onclick="openEditModal(${shop.id})">✏️ Tahrirlash</a></li>
-                                                <li><a class="dropdown-item fw-semibold" href="javascript:void(0);" onclick="toggleShopStatus(${shop.id})">${toggleText}</a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteShop(${shop.id})">🗑️ O'chirish</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `;
+                                    <tr>
+                                        <td>${globalIndex}</td>
+                                        <td><b>#${shop.id}</b></td>
+                                        <td><span class="copy-login" onclick="copyToClipboard('${shopUsername}')" title="Nusxalash uchun bosing">${shopUsername}</span></td>
+                                        <td>${shop.name}</td>
+                                        <td>${shop.region || '-'}</td>
+                                        <td>${shop.phone || '-'}</td>
+                                        <td><span class="text-success fw-bold">${shopTariff}</span></td>
+                                        <td>${balanceCell}</td>
+                                        <td class="text-center">${statusBadge}</td>
+                                        <td class="text-center p-1">
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light border px-2 py-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 16px; line-height: 1.2;">
+                                                    ⋮
+                                                </button>
+                                                <ul class="dropdown-menu shadow">
+                                                    <li><a class="dropdown-item fw-semibold text-success" href="javascript:void(0);" onclick="openDepositModal(${shop.id})">💰 Balansni to'ldirish</a></li>
+                                                    <li><a class="dropdown-item" href="javascript:void(0);" onclick="openHistoryModal(${shop.id})">📜 Balans tarixi</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="javascript:void(0);" onclick="openEditModal(${shop.id})">✏️ Tahrirlash</a></li>
+                                                    ${isShopBlocked ? '' : `<li><a class="dropdown-item fw-semibold" href="javascript:void(0);" onclick="toggleShopStatus(${shop.id})">${toggleText}</a></li>`}
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteShop(${shop.id})">🗑️ O'chirish</a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
             });
         }
 
@@ -643,24 +723,24 @@
             if (totalPages <= 1) return;
 
             paginationContainer.innerHTML += `
-                            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                                <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">‹</a>
-                            </li>
-                        `;
+                                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">‹</a>
+                                </li>
+                            `;
 
             for (let i = 1; i <= totalPages; i++) {
                 paginationContainer.innerHTML += `
-                                <li class="page-item ${currentPage === i ? 'active' : ''}">
-                                    <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
-                                </li>
-                            `;
+                                    <li class="page-item ${currentPage === i ? 'active' : ''}">
+                                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                                    </li>
+                                `;
             }
 
             paginationContainer.innerHTML += `
-                            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                                <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">›</a>
-                            </li>
-                        `;
+                                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">›</a>
+                                </li>
+                            `;
         }
 
         function changePage(page) {
@@ -679,6 +759,7 @@
             document.getElementById("shopForm").reset();
             document.getElementById("shopId").value = "";
             document.getElementById("shopTariff").value = "200000";
+            document.getElementById("shopCreditLimit").value = "0";
             document.getElementById("shopUsername").classList.remove("is-invalid");
             document.getElementById("modalTitle").innerText = "Yangi Savdo Nuqtasini Yaratish";
             document.getElementById("saveButtonText").innerText = "Saqlash va Yaratish";
@@ -697,6 +778,7 @@
             document.getElementById("shopUsername").value = shop.username || '';
             document.getElementById("shopUsername").classList.remove("is-invalid");
             document.getElementById("shopTariff").value = shop.tariff || 200000;
+            document.getElementById("shopCreditLimit").value = Number(shop.creditLimit) || 0;
             document.getElementById("shopPassword").value = "";
             document.getElementById("shopPassword").removeAttribute("required");
 
@@ -731,6 +813,7 @@
             const phone = document.getElementById("shopPhone").value;
             const username = document.getElementById("shopUsername").value.trim();
             const tariff = document.getElementById("shopTariff").value;
+            const creditLimit = Number(document.getElementById("shopCreditLimit").value) || 0;
             const password = document.getElementById("shopPassword").value;
 
             // Takroriy login tekshiruvi (faqat yangi qo'shish jarayonida)
@@ -750,7 +833,7 @@
                 let response = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json', 'Secret-Key': SECRET_KEY },
-                    body: JSON.stringify({ name, region, phone, username, tariff: Number(tariff), password })
+                    body: JSON.stringify({ name, region, phone, username, tariff: Number(tariff), creditLimit, password })
                 });
 
                 if (response.ok) {
@@ -786,6 +869,180 @@
                 }
             } catch (err) {
                 console.error(err);
+            }
+        }
+
+        // ===== BALANS: to'ldirish va tarix =====
+        function formatAdminDate(value) {
+            const d = new Date(value);
+            if (isNaN(d.getTime())) return "—";
+            const p = n => String(n).padStart(2, "0");
+            return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`;
+        }
+
+        function formatAdminDateTime(value) {
+            const d = new Date(value);
+            if (isNaN(d.getTime())) return "—";
+            const p = n => String(n).padStart(2, "0");
+            return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+        }
+
+        function adminSom(n) {
+            return (Number(n) || 0).toLocaleString('uz-UZ') + " so'm";
+        }
+
+        function adminEsc(text) {
+            const div = document.createElement("div");
+            div.textContent = text ?? "";
+            return div.innerHTML;
+        }
+
+        // Do'kon bloklanadimi? (serverdagi qoida bilan bir xil)
+        function willBeBlocked(balance, limit) {
+            return limit > 0 ? balance <= -limit : balance < 0;
+        }
+
+        function openDepositModal(shopId) {
+            const shop = allShops.find(s => s.id === shopId);
+            if (!shop) return;
+
+            document.getElementById("depositShopId").value = shop.id;
+            document.getElementById("depositShopName").textContent = `#${shop.id} — ${shop.name}`;
+            document.getElementById("depositCurrent").textContent = adminSom(shop.balance);
+            document.getElementById("depositTariff").textContent = adminSom(shop.tariff);
+            document.getElementById("depositNextDate").textContent = shop.nextBillingDate ? formatAdminDate(shop.nextBillingDate) : "—";
+            document.getElementById("depositLimit").textContent = adminSom(shop.creditLimit);
+            document.getElementById("depositAmount").value = "";
+            document.getElementById("depositNote").value = "";
+
+            // Tezkor tugmalar
+            const balance = Number(shop.balance) || 0;
+            const tariff = Number(shop.tariff) || 0;
+            const quick = [];
+            if (tariff > 0) quick.push({ label: `Bir oylik tarif (${tariff.toLocaleString('uz-UZ')})`, value: tariff });
+            if (balance < 0) {
+                quick.push({ label: `Qarzni yopish (${(-balance).toLocaleString('uz-UZ')})`, value: -balance });
+                if (tariff > 0) quick.push({ label: `Qarz + 1 oy (${(-balance + tariff).toLocaleString('uz-UZ')})`, value: -balance + tariff });
+            }
+            const box = document.getElementById("depositQuickBtns");
+            box.innerHTML = "";
+            quick.forEach(q => {
+                const b = document.createElement("button");
+                b.type = "button";
+                b.className = "btn btn-outline-secondary btn-sm";
+                b.textContent = q.label;
+                b.onclick = () => { document.getElementById("depositAmount").value = q.value; updateDepositPreview(); };
+                box.appendChild(b);
+            });
+
+            updateDepositPreview();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("depositModal")).show();
+        }
+
+        // Summa yozilganda: yangi balans va keyingi oy nima bo'lishini ko'rsatadi
+        function updateDepositPreview() {
+            const shop = allShops.find(s => s.id === Number(document.getElementById("depositShopId").value));
+            const preview = document.getElementById("depositPreview");
+            if (!shop) return;
+
+            const amount = Number(document.getElementById("depositAmount").value) || 0;
+            if (amount <= 0) {
+                preview.innerHTML = "Summani kiriting...";
+                return;
+            }
+
+            const balance = Number(shop.balance) || 0;
+            const tariff = Number(shop.tariff) || 0;
+            const limit = Number(shop.creditLimit) || 0;
+            const newBalance = balance + amount;
+            const afterBilling = newBalance - tariff;
+            const dateText = shop.nextBillingDate ? formatAdminDate(shop.nextBillingDate) : "keyingi oy";
+
+            let html = `<div>To'ldirgandan keyin balans: <b class="${newBalance < 0 ? 'text-danger' : 'text-success'}">${adminSom(newBalance)}</b></div>`;
+            if (willBeBlocked(balance, limit) && !willBeBlocked(newBalance, limit)) {
+                html += `<div class="text-success">✔ Do'kon qayta ochiladi.</div>`;
+            } else if (willBeBlocked(newBalance, limit)) {
+                html += `<div class="text-danger">⚠ Balans hali ham yetarli emas, do'kon bloklangan holda qoladi.</div>`;
+            }
+            if (tariff > 0) {
+                html += `<div class="mt-1">${dateText} kuni tarif (${adminSom(tariff)}) yechiladi va balans: <b class="${afterBilling < 0 ? 'text-danger' : 'text-success'}">${adminSom(afterBilling)}</b> bo'ladi.</div>`;
+                if (willBeBlocked(afterBilling, limit)) {
+                    html += `<div class="text-danger">⚠ Shu sanada do'kon bloklanadi. Uzluksiz ishlashi uchun kamida ${adminSom(Math.max(0, tariff - balance - (limit > 0 ? limit - 1 : 0)))} to'ldirish kerak.</div>`;
+                } else {
+                    html += `<div class="text-success">✔ Shu sanadan keyin ham do'kon ishlaydi.</div>`;
+                }
+            }
+            preview.innerHTML = html;
+        }
+
+        async function submitDeposit() {
+            const id = document.getElementById("depositShopId").value;
+            const amount = Number(document.getElementById("depositAmount").value) || 0;
+            const note = document.getElementById("depositNote").value.trim();
+
+            if (amount <= 0) {
+                showNotification("Summani to'g'ri kiriting!", "danger");
+                return;
+            }
+
+            const btn = document.getElementById("depositSubmitBtn");
+            btn.disabled = true;
+            try {
+                const response = await fetch(`/api/super-admin/shops/${id}/deposit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Secret-Key': SECRET_KEY },
+                    body: JSON.stringify({ amount, note })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById("depositModal")).hide();
+                    await loadShops();
+                    showNotification(`Balans to'ldirildi. Yangi balans: ${adminSom(data.newBalance)}`);
+                } else {
+                    const errData = await response.json().catch(() => ({}));
+                    showNotification("Xatolik: " + (errData.message || "Balansni to'ldirib bo'lmadi."), "danger");
+                }
+            } catch (err) {
+                console.error(err);
+                showNotification("Tarmoqda xatolik yuz berdi!", "danger");
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function openHistoryModal(shopId) {
+            const shop = allShops.find(s => s.id === shopId);
+            document.getElementById("historyTitle").textContent = `📜 Balans tarixi — ${shop ? shop.name : '#' + shopId}`;
+            const tbody = document.getElementById("historyBody");
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">Yuklanmoqda...</td></tr>`;
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("historyModal")).show();
+
+            try {
+                const response = await fetch(`/api/super-admin/shops/${shopId}/transactions`, {
+                    headers: { 'Secret-Key': SECRET_KEY }
+                });
+                if (!response.ok) throw new Error("Xatolik");
+                const list = await response.json();
+
+                if (!list.length) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">Hozircha amaliyotlar yo'q.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = list.map(t => {
+                    const isTopup = t.type === "topup";
+                    const amount = Number(t.amount) || 0;
+                    return `<tr>
+                                    <td>${formatAdminDateTime(t.createdAt)}</td>
+                                    <td>${isTopup ? '<span class="badge bg-success">To\'ldirish</span>' : '<span class="badge bg-secondary">Oylik tarif</span>'}</td>
+                                    <td class="text-end fw-bold ${amount < 0 ? 'text-danger' : 'text-success'}">${amount > 0 ? '+' : ''}${amount.toLocaleString('uz-UZ')}</td>
+                                    <td class="text-end">${adminSom(t.balanceAfter)}</td>
+                                    <td>${adminEsc(t.note)}</td>
+                                </tr>`;
+                }).join("");
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">Tarixni yuklab bo'lmadi.</td></tr>`;
             }
         }
 
