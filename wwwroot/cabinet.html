@@ -2109,14 +2109,55 @@
                                     <input class="form-check-input" type="checkbox" id="qlShowEmpty" onchange="qlRender()">
                                     <label class="form-check-label small" for="qlShowEmpty">Tugaganlarni ham ko'rsatish</label>
                                 </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="qlFilterBtn"
+                                            data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                                        🔍 Filtr
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 320px;" aria-labelledby="qlFilterBtn">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="fw-bold small text-muted text-uppercase">Qoldiq bo'yicha filtr</span>
+                                            <a href="#" class="small text-decoration-none" onclick="qlResetFilter(event)">Tozalash</a>
+                                        </div>
+
+                                        <div class="form-check mb-1">
+                                            <input class="form-check-input" type="radio" name="qlModeRadio" id="qlModeAll" checked onchange="qlSetMode('all')">
+                                            <label class="form-check-label small" for="qlModeAll">Barchasi</label>
+                                        </div>
+                                        <div class="form-check mb-1">
+                                            <input class="form-check-input" type="radio" name="qlModeRadio" id="qlModeZero" onchange="qlSetMode('zero')">
+                                            <label class="form-check-label small" for="qlModeZero">Tugaganlar (qoldiq 0) <span class="badge bg-danger-subtle text-danger-emphasis" id="qlCntZero">0</span></label>
+                                        </div>
+                                        <div class="form-check mb-1">
+                                            <input class="form-check-input" type="radio" name="qlModeRadio" id="qlModeLow" onchange="qlSetMode('low')">
+                                            <label class="form-check-label small" for="qlModeLow">Kam qolganlar <span class="badge bg-warning-subtle text-warning-emphasis" id="qlCntLow">0</span></label>
+                                        </div>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="radio" name="qlModeRadio" id="qlModeZeroLow" onchange="qlSetMode('zerolow')">
+                                            <label class="form-check-label small" for="qlModeZeroLow">Tugagan + kam qolganlar <span class="badge bg-secondary-subtle text-secondary-emphasis" id="qlCntZeroLow">0</span></label>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <label class="form-label small text-muted mb-1">Kam qolish chegarasi (shu sondan kam yoki teng bo'lsa)</label>
+                                            <input type="number" min="0" step="any" id="qlThreshold" value="5" class="form-control form-control-sm" oninput="qlRender()">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small text-muted mb-1">Nomi bo'yicha qidirish</label>
+                                            <input type="text" id="qlSearch" class="form-control form-control-sm" placeholder="Mahsulot nomi..." oninput="qlRender()">
+                                        </div>
+
+                                        <div class="small text-muted">Jadvaldagi katakchalar orqali kerakli mahsulotlarni tanlang, keyin <b>Excel</b> tugmasini bosing. Hech narsa tanlanmasa, ko'ringan hammasi yuklanadi.</div>
+                                    </div>
+                                </div>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" onclick="qlLoad()">↻ Yangilash</button>
-                                <button type="button" class="btn btn-success btn-sm" onclick="qlExportExcel()">⬇ Excel</button>
+                                <button type="button" class="btn btn-success btn-sm" id="qlExcelBtn" onclick="qlExportExcel()">⬇ Excel</button>
                             </div>
                         </div>
                         <div class="table-responsive" style="max-height: 68vh; overflow-y: auto;">
                             <table class="table table-hover table-bordered align-middle mb-0">
                                 <thead class="table-light sticky-top">
                                     <tr>
+                                        <th class="text-center" style="width: 44px;"><input type="checkbox" class="form-check-input" id="qlSelectAll" title="Hammasini tanlash" onchange="qlToggleAll(this.checked)"></th>
                                         <th class="text-center" style="width: 70px;">№</th>
                                         <th>Mahsulot</th>
                                         <th class="text-end" style="width: 200px;">Qoldiq</th>
@@ -2124,7 +2165,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="qlBody">
-                                    <tr><td colspan="4" class="text-center text-muted py-4">Yuklanmoqda...</td></tr>
+                                    <tr><td colspan="5" class="text-center text-muted py-4">Yuklanmoqda...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -4853,30 +4894,144 @@
                     qlAll = [];
                 }
                 qlRender();
+                qlLoadThreshold();
+            }
+
+            // "Kam qolish chegarasi"ni Telegram bot sozlamasidan bir marta olib qo'yadi (o'zgartirish mumkin)
+            let qlThresholdLoaded = false;
+            async function qlLoadThreshold() {
+                if (qlThresholdLoaded) return;
+                qlThresholdLoaded = true;
+                try {
+                    const res = await fetch(`/api/shop-cabinet/${wsShopId()}/telegram-settings`);
+                    if (!res.ok) return;
+                    const d = await res.json();
+                    const v = Number(d.lowStockThreshold);
+                    if (v > 0) {
+                        document.getElementById("qlThreshold").value = v;
+                        qlRender();
+                    }
+                } catch (err) { /* chegara 5 bo'lib qoladi */ }
+            }
+
+            // ---- Qoldiqlar filtri va tanlash ----
+            let qlMode = "all";            // all | zero | low | zerolow
+            let qlSelected = new Set();    // tanlangan qatorlar kaliti
+
+            function qlKey(s) { return String(s.elementId ?? s.name); }
+
+            function qlThreshold() {
+                const v = parseFloat(document.getElementById("qlThreshold").value);
+                return isNaN(v) || v < 0 ? 0 : v;
+            }
+
+            function qlSetMode(m) { qlMode = m; qlRender(); }
+
+            function qlResetFilter(e) {
+                if (e) e.preventDefault();
+                qlMode = "all";
+                document.getElementById("qlModeAll").checked = true;
+                document.getElementById("qlSearch").value = "";
+                qlRender();
+            }
+
+            function qlToggleRow(i, checked) {
+                const s = qlShown[i];
+                if (!s) return;
+                if (checked) qlSelected.add(qlKey(s)); else qlSelected.delete(qlKey(s));
+                qlUpdateSelectionUi();
+            }
+
+            function qlToggleAll(checked) {
+                qlSelected = checked ? new Set(qlShown.map(qlKey)) : new Set();
+                qlRender();
+            }
+
+            function qlFilterLabel() {
+                const th = qlThreshold();
+                const search = (document.getElementById("qlSearch").value || "").trim();
+                let label = "Barchasi";
+                if (qlMode === "zero") label = "Tugaganlar (qoldiq 0)";
+                else if (qlMode === "low") label = `Kam qolganlar (0 dan katta, ${th} gacha)`;
+                else if (qlMode === "zerolow") label = `Tugagan va kam qolganlar (${th} gacha)`;
+                else if (!document.getElementById("qlShowEmpty").checked) label = "Barchasi (tugaganlarsiz)";
+                if (search) label += `, qidiruv: "${search}"`;
+                return label;
+            }
+
+            // Excel tugmasi, "hammasini tanlash" katakchasi va filtr tugmasi ko'rinishini yangilaydi
+            function qlUpdateSelectionUi() {
+                const n = qlSelected.size;
+                document.getElementById("qlExcelBtn").textContent = n > 0 ? `⬇ Excel (${n} ta tanlangan)` : "⬇ Excel";
+                const all = document.getElementById("qlSelectAll");
+                all.checked = qlShown.length > 0 && n === qlShown.length;
+                all.indeterminate = n > 0 && n < qlShown.length;
+                const fb = document.getElementById("qlFilterBtn");
+                const active = qlMode !== "all" || (document.getElementById("qlSearch").value || "").trim() !== "";
+                fb.classList.toggle("btn-primary", active);
+                fb.classList.toggle("btn-outline-primary", !active);
             }
 
             // "Metr (m)" kabi birlikdan faqat son ko'rsatiladi, birlik alohida ustunda
             function qlRender() {
                 const showEmpty = document.getElementById("qlShowEmpty").checked;
+                const th = qlThreshold();
+                const search = (document.getElementById("qlSearch").value || "").trim().toLowerCase();
+                const isZero = s => Number(s.stock) <= 0;
+                const isLow = s => Number(s.stock) > 0 && Number(s.stock) <= th;
+
+                // Filtr ichidagi sonlar
+                document.getElementById("qlCntZero").textContent = qlAll.filter(isZero).length;
+                document.getElementById("qlCntLow").textContent = qlAll.filter(isLow).length;
+                document.getElementById("qlCntZeroLow").textContent = qlAll.filter(s => isZero(s) || isLow(s)).length;
+
+                // Filtr tanlanganda "Tugaganlarni ham ko'rsatish" almashtirgichi kerak emas
+                document.getElementById("qlShowEmpty").disabled = qlMode !== "all";
+
                 qlShown = qlAll
-                    .filter(s => showEmpty || Number(s.stock) > 0)
-                    .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+                    .filter(s => {
+                        if (qlMode === "zero") return isZero(s);
+                        if (qlMode === "low") return isLow(s);
+                        if (qlMode === "zerolow") return isZero(s) || isLow(s);
+                        return showEmpty || Number(s.stock) > 0;
+                    })
+                    .filter(s => !search || String(s.name).toLowerCase().includes(search))
+                    .sort((a, b) => {
+                        if (qlMode === "low" || qlMode === "zerolow") {
+                            const d = Number(a.stock) - Number(b.stock);   // eng kam qolgani tepada
+                            if (d !== 0) return d;
+                        }
+                        return String(a.name).localeCompare(String(b.name));
+                    });
+
+                // Ko'rinmay qolgan qatorlarning tanlovi olib tashlanadi
+                const visibleKeys = new Set(qlShown.map(qlKey));
+                qlSelected = new Set([...qlSelected].filter(k => visibleKeys.has(k)));
 
                 document.getElementById("qlTotal").textContent = `${qlShown.length} ta element`;
                 const tbody = document.getElementById("qlBody");
                 if (qlShown.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Qolgan mahsulot yo'q</td></tr>`;
+                    const emptyText = qlMode === "zero" ? "Tugagan mahsulot yo'q"
+                        : qlMode === "low" ? "Kam qolgan mahsulot yo'q"
+                            : qlMode === "zerolow" ? "Tugagan yoki kam qolgan mahsulot yo'q"
+                                : "Qolgan mahsulot yo'q";
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">${emptyText}</td></tr>`;
+                    qlUpdateSelectionUi();
                     return;
                 }
                 tbody.innerHTML = qlShown.map((s, i) => {
                     const out = Number(s.stock) <= 0;
+                    const low = (qlMode === "low" || qlMode === "zerolow") && isLow(s);
+                    const checked = qlSelected.has(qlKey(s)) ? "checked" : "";
                     return `<tr>
+                                                            <td class="text-center"><input type="checkbox" class="form-check-input" ${checked} onchange="qlToggleRow(${i}, this.checked)"></td>
                                                             <td class="text-center text-muted">${i + 1}</td>
                                                             <td class="fw-semibold">${wsEsc(s.name)}</td>
-                                                            <td class="text-end fw-bold fs-6 ${out ? "text-danger" : "text-success"}">${wsNum(s.stock)}</td>
+                                                            <td class="text-end fw-bold fs-6 ${out ? "text-danger" : (low ? "text-warning" : "text-success")}">${wsNum(s.stock)}</td>
                                                             <td class="text-center"><span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border px-3 py-2">${wsEsc(s.unit)}</span></td>
                                                         </tr>`;
                 }).join("");
+                qlUpdateSelectionUi();
             }
 
             // ---- Excel (.xlsx) yasovchi (tashqi kutubxonasiz) ----
@@ -4991,7 +5146,9 @@
 
 
             function qlExportExcel() {
-                if (qlShown.length === 0) {
+                // Tanlangan qatorlar bo'lsa faqat o'shalar, bo'lmasa filtrdan keyin ko'ringan hammasi
+                const qlList = qlSelected.size > 0 ? qlShown.filter(s => qlSelected.has(qlKey(s))) : qlShown;
+                if (qlList.length === 0) {
                     showToast("Yuklab olish uchun ma'lumot yo'q!", false);
                     return;
                 }
@@ -5003,12 +5160,13 @@
                 const rows = [
                     [B("Ombordagi qoldiqlar")],
                     ["Sana:", stamp],
+                    ["Filtr:", qlFilterLabel() + (qlSelected.size > 0 ? `, tanlangan: ${qlSelected.size} ta` : "")],
                     [],
                     [B("№"), B("Mahsulot"), B("Qoldiq"), B("O'lchov birligi")]
                 ];
-                qlShown.forEach((s, i) => rows.push([i + 1, s.name, Math.round(Number(s.stock) * 1000) / 1000, s.unit]));
+                qlList.forEach((s, i) => rows.push([i + 1, s.name, Math.round(Number(s.stock) * 1000) / 1000, s.unit]));
                 rows.push([]);
-                rows.push([B("Jami:"), B(`${qlShown.length} ta element`)]);
+                rows.push([B("Jami:"), B(`${qlList.length} ta element`)]);
 
                 const blob = qxBuildXlsx([{ name: "Qoldiqlar", rows: rows, widths: [6, 40, 16, 22] }]);
                 const url = URL.createObjectURL(blob);
